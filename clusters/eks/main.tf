@@ -1,8 +1,4 @@
-provider "aws" {
-  region = var.cluster_location
-}
-
-data "aws_availability_zones" "this" {}
+data "aws_availability_zones" "traefik_demo" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -10,7 +6,7 @@ module "vpc" {
 
   name                 = "${var.cluster_name}-vpc"
   cidr                 = "10.0.0.0/16"
-  azs                  = data.aws_availability_zones.this.names
+  azs                  = data.aws_availability_zones.traefik_demo.names
   private_subnets      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
   enable_nat_gateway   = true
@@ -62,7 +58,7 @@ module "ebs_csi_controller_role" {
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
 
-resource "aws_eks_addon" "this" {
+resource "aws_eks_addon" "traefik_demo" {
   cluster_name                = module.eks.cluster_name
   addon_name                  = "aws-ebs-csi-driver"
   resolve_conflicts_on_create = "OVERWRITE"
