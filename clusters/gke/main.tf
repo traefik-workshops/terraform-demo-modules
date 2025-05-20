@@ -10,23 +10,11 @@ resource "google_container_cluster" "traefik_demo" {
   # separately managed node pools. So we create the smallest possible default
   # node pool and immediately delete it.
   remove_default_node_pool = true
-  initial_node_count       = 1
+  initial_node_count       = var.cluster_node_count
 
   monitoring_config {
     managed_prometheus {
       enabled = false
     }
-  }
-}
-
-resource "google_container_node_pool" "traefik_demo" {
-  name       = "${var.cluster_name}-np"
-  cluster    = google_container_cluster.traefik_demo.name
-  version    = var.gke_version
-  location   = google_container_cluster.traefik_demo.location
-  node_count = var.cluster_node_count
-
-  node_config {
-    machine_type = var.cluster_node_machine_type
   }
 }
