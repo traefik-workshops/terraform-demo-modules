@@ -28,6 +28,10 @@ module "eks" {
 
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
+
+  node_security_group_tags = {
+    "kubernetes.io/cluster/${var.cluster_name}" = null
+  }
 }
 
 module "eks_node_groups" {
