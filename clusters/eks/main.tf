@@ -1,5 +1,9 @@
 data "aws_availability_zones" "traefik_demo" {}
 
+data "aws_eks_cluster_auth" "eks" {
+  name = var.cluster_name
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
