@@ -1,4 +1,4 @@
-output "host" {
+output "cluster_endpoint" {
   description = "EKS cluster host"
   value = module.eks.cluster_endpoint
 }
