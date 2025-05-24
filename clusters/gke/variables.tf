@@ -15,7 +15,7 @@ variable "cluster_node_count" {
   description = "Number of nodes for the cluster."
 }
 
-variable "cluster_node_machine_type" {
+variable "cluster_machine_type" {
   type        = string
   default     = "e2-standard-2"
   description = "Default machine type for cluster"
