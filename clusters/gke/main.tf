@@ -7,6 +7,10 @@ resource "google_container_cluster" "traefik_demo" {
   deletion_protection = false
   initial_node_count  = var.cluster_node_count
 
+  node_config {
+    machine_type = var.cluster_machine_type
+  }
+
   monitoring_config {
     managed_prometheus {
       enabled = false

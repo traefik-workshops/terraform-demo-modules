@@ -51,7 +51,7 @@ module "eks_node_groups" {
   vpc_security_group_ids            = [module.eks.node_security_group_id]
   cluster_service_cidr              = module.eks.cluster_service_cidr
 
-  instance_types = [var.cluster_node_machine_type]
+  instance_types = [var.cluster_machine_type]
   desired_size   = var.cluster_node_count
 }
 
