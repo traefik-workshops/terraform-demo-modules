@@ -5,7 +5,7 @@ data "azuread_domains" "traefik_demo" {
 
 # Create users
 resource "azuread_user" "traefik_demo" {
-  for_each = toset(var.entraid_users)
+  for_each = toset(var.users)
 
   user_principal_name     = "${each.value}@${data.azuread_domains.traefik_demo.domains[0].domain_name}"
   display_name            = each.value
@@ -16,7 +16,7 @@ resource "azuread_user" "traefik_demo" {
 
 # Create groups
 resource "azuread_group" "traefik_demo" {
-  for_each = toset(var.entraid_users)
+  for_each = toset(var.users)
 
   display_name     = each.value
   security_enabled = true
@@ -24,7 +24,7 @@ resource "azuread_group" "traefik_demo" {
 
 # Add users to their respective groups
 resource "azuread_group_member" "traefik_demo" {
-  for_each = toset(var.entraid_users)
+  for_each = toset(var.users)
 
   group_object_id  = azuread_group.traefik_demo[each.value].object_id
   member_object_id = azuread_user.traefik_demo[each.value].object_id
@@ -97,12 +97,12 @@ resource "azuread_application" "traefik_demo" {
 }
 
 resource "random_uuid" "traefik_demo_app_role_id" {
-  for_each = toset(var.entraid_users)
+  for_each = toset(var.users)
 }
 
 # Create app roles
 resource "azuread_application_app_role" "traefik_demo" {
-  for_each = toset(var.entraid_users)
+  for_each = toset(var.users)
 
   application_id = azuread_application.traefik_demo.id
   role_id        = random_uuid.traefik_demo_app_role_id[each.value].id
@@ -127,7 +127,7 @@ resource "azuread_service_principal" "traefik_demo" {
 
 # Assign roles to users
 resource "azuread_app_role_assignment" "traefik_demo" {
-  for_each = toset(var.entraid_users)
+  for_each = toset(var.users)
 
   app_role_id         = azuread_application_app_role.traefik_demo[each.value].role_id
   principal_object_id = azuread_user.traefik_demo[each.value].object_id
