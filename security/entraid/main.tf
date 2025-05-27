@@ -42,16 +42,25 @@ resource "random_uuid" "traefik_demo_app_role_id" {
 resource "azuread_application" "traefik_demo" {
   display_name = "traefik_demo"
   
-  # Configure optional claims and group membership claims
+  # Configure optional claims to include group names
   optional_claims {
+    id_token {
+      name                  = "groups"
+      source                = null
+      essential             = false
+      additional_properties = ["dns_domain_and_sam_account_name"]
+    }
     access_token {
-      name      = "groups"
-      essential = true
+      name                  = "groups"
+      source                = null
+      essential             = false
+      additional_properties = ["dns_domain_and_sam_account_name"]
     }
   }
   
+  # Configure group membership claims to use names
   group_membership_claims = ["All"]
-
+  
   web {
     redirect_uris = [
       "http://localhost/*"
