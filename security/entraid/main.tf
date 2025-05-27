@@ -44,16 +44,9 @@ resource "azuread_application" "traefik_demo" {
   
   # Configure optional claims to include group names
   optional_claims {
-    id_token {
-      name                  = "groups"
-      source                = null
-      essential             = false
-      additional_properties = ["dns_domain_and_sam_account_name"]
-    }
     access_token {
       name                  = "groups"
-      source                = null
-      essential             = false
+      essential             = true
       additional_properties = ["dns_domain_and_sam_account_name"]
     }
   }
