@@ -105,11 +105,11 @@ resource "azuread_application" "traefik_demo" {
 
     content {
       allowed_member_types = ["User", "Application"]
-      display_name         = "${title(each.value)}"
-      description          = "${title(each.value)} role for full access"
+      display_name         = title(app_role.value)
+      description          = "${title(app_role.value)} role for full access"
       enabled              = true
-      id                   = random_uuid.traefik_demo_app_role_id[each.value].id
-      value                = "${each.value}"
+      id                   = random_uuid.traefik_demo_app_role_id[app_role.value].id
+      value                = app_role.value
     }
   }
 }
