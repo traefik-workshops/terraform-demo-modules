@@ -33,6 +33,11 @@ resource "azuread_group_member" "traefik_demo" {
 # Create permission scope uuid
 resource "random_uuid" "traefik_demo_permission_scope_id" {}
 
+# Create app role uuid
+resource "random_uuid" "traefik_demo_app_role_id" {
+  for_each = toset(var.users)
+}
+
 # Create app registration
 resource "azuread_application" "traefik_demo" {
   display_name = "traefik_demo"
@@ -86,31 +91,27 @@ resource "azuread_application" "traefik_demo" {
     oauth2_permission_scope {
       admin_consent_description  = "Allow the application to access group membership information"
       admin_consent_display_name = "Access Groups"
-      enabled                   = true
-      id                        = random_uuid.traefik_demo_permission_scope_id.id
-      type                      = "User"
-      user_consent_description  = "Allow this application to access your group membership information"
-      user_consent_display_name = "Access your groups"
-      value                     = "groups"
+      enabled                    = true
+      id                         = random_uuid.traefik_demo_permission_scope_id.id
+      type                       = "User"
+      user_consent_description   = "Allow this application to access your group membership information"
+      user_consent_display_name  = "Access your groups"
+      value                      = "groups"
     }
   }
-}
 
-resource "random_uuid" "traefik_demo_app_role_id" {
-  for_each = toset(var.users)
-}
+  dynamic app_role {
+    for_each = toset(var.users)
 
-# Create app roles
-resource "azuread_application_app_role" "traefik_demo" {
-  for_each = toset(var.users)
-
-  application_id = azuread_application.traefik_demo.id
-  role_id        = random_uuid.traefik_demo_app_role_id[each.value].id
-
-  allowed_member_types = ["User", "Application"]
-  description          = "${title(each.value)} role for full access"
-  display_name         = "${title(each.value)}"
-  value                = "${each.value}"
+    content {
+      allowed_member_types = ["User", "Application"]
+      display_name         = "${title(each.value)}"
+      description          = "${title(each.value)} role for full access"
+      enabled              = true
+      id                   = random_uuid.traefik_demo_app_role_id[each.value].id
+      value                = "${each.value}"
+    }
+  }
 }
 
 # Create client secret
@@ -129,7 +130,7 @@ resource "azuread_service_principal" "traefik_demo" {
 resource "azuread_app_role_assignment" "traefik_demo" {
   for_each = toset(var.users)
 
-  app_role_id         = azuread_application_app_role.traefik_demo[each.value].role_id
+  app_role_id         = [for role in azuread_application.traefik_demo.app_role : role.id if role.value == each.value][0]
   principal_object_id = azuread_user.traefik_demo[each.value].object_id
   resource_object_id  = azuread_service_principal.traefik_demo.object_id
 }
