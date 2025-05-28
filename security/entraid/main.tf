@@ -55,9 +55,7 @@ resource "azuread_application" "traefik_demo" {
   group_membership_claims = ["All"]
   
   web {
-    redirect_uris = [
-      "http://localhost/*"
-    ]
+    redirect_uris = var.redirect_uris
     implicit_grant {
       access_token_issuance_enabled = true
       id_token_issuance_enabled     = true
