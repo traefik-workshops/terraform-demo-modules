@@ -106,10 +106,10 @@ resource "azuread_application" "traefik_demo" {
     content {
       allowed_member_types = ["User", "Application"]
       display_name         = title("${app_role.value}s")
-      description          = "${title(app_role.value)}s role for API access"
+      description          = "${title(app_role.value)} role for API access"
       enabled              = true
       id                   = random_uuid.traefik_demo_app_role_id[app_role.value].id
-      value                = app_role.value
+      value                = "${app_role.value}s"
     }
   }
 }
