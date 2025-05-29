@@ -130,7 +130,7 @@ resource "azuread_service_principal" "traefik_demo" {
 resource "azuread_app_role_assignment" "traefik_demo" {
   for_each = toset(var.users)
 
-  app_role_id         = [for role in azuread_application.traefik_demo.app_role : role.id if role.value == each.value][0]
+  app_role_id         = [for role in azuread_application.traefik_demo.app_role : role.id if role.value == "${each.value}s"][0]
   principal_object_id = azuread_user.traefik_demo[each.value].object_id
   resource_object_id  = azuread_service_principal.traefik_demo.object_id
 }
