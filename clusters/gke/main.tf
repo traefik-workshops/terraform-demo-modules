@@ -9,6 +9,7 @@ resource "google_container_cluster" "traefik_demo" {
 
   node_config {
     machine_type = var.cluster_machine_type
+    disk_type    = "pd-standard"
   }
 
   monitoring_config {
