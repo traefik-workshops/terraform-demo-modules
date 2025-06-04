@@ -1,3 +1,7 @@
+locals {
+  domain_name = data.azuread_domains.traefik_demo.domains[0].domain_name
+}
+
 # Get default domain
 data "azuread_domains" "traefik_demo" {
   only_default = true
@@ -7,7 +11,7 @@ data "azuread_domains" "traefik_demo" {
 resource "azuread_user" "traefik_demo" {
   for_each = toset(var.users)
 
-  user_principal_name     = "${each.value}@${data.azuread_domains.traefik_demo.domains[0].domain_name}"
+  user_principal_name     = "${each.value}@${local.domain_name}"
   display_name            = each.value
   password                = "topsecretpassword"
   force_password_change   = false

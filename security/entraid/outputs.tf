@@ -22,3 +22,8 @@ output "users" {
   description = "EntraID users created"
   value       = [for user in azuread_user.traefik_demo : user.user_principal_name]
 }
+
+output "domain_name" {
+  description = "The domain name of the Azure AD directory"
+  value       = local.domain_name
+}
