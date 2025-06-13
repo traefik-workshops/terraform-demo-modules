@@ -21,6 +21,12 @@ variable "cluster_machine_type" {
   description = "Default machine type for cluster"
 }
 
+variable "cluster_machine_ami_type" {
+  type        = string
+  default     = ""
+  description = "EKS cluster AMI ID."
+}
+
 variable "eks_version" {
   type        = string
   default     = ""
