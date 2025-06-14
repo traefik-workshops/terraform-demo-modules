@@ -32,3 +32,15 @@ variable "enable_gpu" {
   default     = false
   description = "Enable GPU nodes"
 }
+
+variable "gpu_type" {
+  type        = string
+  default     = "nvidia-tesla-p4"
+  description = "GPU type"
+}
+
+variable "gpu_count" {
+  type        = number
+  default     = 1
+  description = "GPU count"
+}

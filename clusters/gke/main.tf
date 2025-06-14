@@ -12,10 +12,10 @@ resource "google_container_cluster" "traefik_demo" {
     disk_type    = "pd-standard"
 
     dynamic "guest_accelerator" {
-      for_each = var.enable_gpu ? ["nvidia-tesla-t4"] : []
+      for_each = var.enable_gpu ? [var.gpu_type] : []
       content {
         type  = guest_accelerator.value
-        count = 1
+        count = var.gpu_count
       }
     }
   }
