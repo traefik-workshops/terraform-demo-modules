@@ -10,6 +10,14 @@ resource "google_container_cluster" "traefik_demo" {
   node_config {
     machine_type = var.cluster_machine_type
     disk_type    = "pd-standard"
+
+    dynamic "accelerators" {
+      for_each = var.enable_gpu ? ["nvidia-tesla-t4"] : []
+      content {
+        type  = "nvidia-tesla-t4"
+        count = 1
+      }
+    }
   }
 
   monitoring_config {
