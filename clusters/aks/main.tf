@@ -15,6 +15,10 @@ resource "azurerm_kubernetes_cluster" "traefik_demo" {
       max_surge                     = "10%"
       node_soak_duration_in_minutes = 0
     }
+
+    node_labels = var.enable_gpu ? {
+      accelerator = "nvidia"
+    } : {}
   }
 
   identity {

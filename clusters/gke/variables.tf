@@ -26,3 +26,9 @@ variable "gke_version" {
   default     = ""
   description = "GKE cluster version."
 }
+
+variable "enable_gpu" {
+  type        = bool
+  default     = false
+  description = "Enable GPU nodes"
+}

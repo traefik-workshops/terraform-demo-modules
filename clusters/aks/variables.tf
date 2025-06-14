@@ -31,3 +31,9 @@ variable "aks_version" {
   default     = "1.30"
   description = "AKS Kubernetes version"
 }
+
+variable "enable_gpu" {
+  type        = bool
+  default     = false
+  description = "Enable GPU nodes"
+}
