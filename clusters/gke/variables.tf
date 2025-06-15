@@ -35,7 +35,7 @@ variable "enable_gpu" {
 
 variable "gpu_type" {
   type        = string
-  default     = "nvidia-tesla-p4"
+  default     = ""
   description = "GPU type"
 }
 
@@ -47,7 +47,7 @@ variable "gpu_count" {
 
 variable "gpu_node_type" {
   type        = string
-  default     = "nvidia-tesla-p4"
+  default     = ""
   description = "GPU node type"
 }
 
