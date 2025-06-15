@@ -1,3 +1,9 @@
+variable "gke_version" {
+  type        = string
+  default     = ""
+  description = "GKE cluster version."
+}
+
 variable "cluster_name" {
   type        = string
   description = "GKE cluster name."
@@ -15,22 +21,16 @@ variable "cluster_node_count" {
   description = "Number of nodes for the cluster."
 }
 
-variable "cluster_machine_type" {
+variable "cluster_node_type" {
   type        = string
   default     = "e2-standard-2"
   description = "Default machine type for cluster"
 }
 
-variable "gke_version" {
-  type        = string
-  default     = ""
-  description = "GKE cluster version."
-}
-
 variable "enable_gpu" {
   type        = bool
   default     = false
-  description = "Enable GPU nodes"
+  description = "Enable GPU node pool"
 }
 
 variable "gpu_type" {
@@ -43,4 +43,16 @@ variable "gpu_count" {
   type        = number
   default     = 1
   description = "GPU count"
+}
+
+variable "gpu_node_type" {
+  type        = string
+  default     = "nvidia-tesla-p4"
+  description = "GPU node type"
+}
+
+variable "gpu_node_count" {
+  type        = number
+  default     = 1
+  description = "GPU node count"
 }

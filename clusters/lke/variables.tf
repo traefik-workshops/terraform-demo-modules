@@ -9,7 +9,7 @@ variable "cluster_location" {
   description = "LKE cluster location"
 }
 
-variable "cluster_machine_type" {
+variable "cluster_node_type" {
   type        = string
   default     = "g6-dedicated-2"
   description = "Default machine type for cluster"

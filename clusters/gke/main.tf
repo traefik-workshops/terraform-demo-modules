@@ -8,16 +8,8 @@ resource "google_container_cluster" "traefik_demo" {
   initial_node_count  = var.cluster_node_count
 
   node_config {
-    machine_type = var.cluster_machine_type
+    machine_type = var.cluster_node_type
     disk_type    = "pd-standard"
-
-    dynamic "guest_accelerator" {
-      for_each = var.enable_gpu ? [var.gpu_type] : []
-      content {
-        type  = guest_accelerator.value
-        count = var.gpu_count
-      }
-    }
   }
 
   monitoring_config {
@@ -25,4 +17,29 @@ resource "google_container_cluster" "traefik_demo" {
       enabled = false
     }
   }
+}
+
+resource "google_container_node_pool" "traefik_demo_gpu" {
+  name       = "${google_container_cluster.traefik_demo.name}-gpu"
+  location   = var.cluster_location
+  cluster    = google_container_cluster.traefik_demo.name
+  node_count = var.gpu_node_count
+
+  node_config {
+    machine_type = var.gpu_node_type
+    disk_type    = "pd-standard"
+
+    guest_accelerator {
+      type  = var.gpu_type
+      count = var.gpu_count
+    }
+
+    taint {
+      key    = "nvidia.com/gpu"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    }
+  }
+
+  count = var.enable_gpu ? 1 : 0
 }
