@@ -33,12 +33,6 @@ resource "google_container_node_pool" "traefik_demo_gpu" {
       type  = var.gpu_type
       count = var.gpu_count
     }
-
-    taint {
-      key    = "nvidia.com/gpu"
-      value  = "true"
-      effect = "NO_SCHEDULE"
-    }
   }
 
   count = var.enable_gpu ? 1 : 0
