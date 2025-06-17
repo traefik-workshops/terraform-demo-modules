@@ -1,3 +1,9 @@
+variable "eks_version" {
+  type        = string
+  default     = ""
+  description = "EKS cluster version."
+}
+
 variable "cluster_name" {
   type        = string
   description = "EKS cluster name."
@@ -25,10 +31,4 @@ variable "cluster_machine_ami_type" {
   type        = string
   default     = ""
   description = "EKS cluster AMI ID."
-}
-
-variable "eks_version" {
-  type        = string
-  default     = ""
-  description = "EKS cluster version."
 }

@@ -35,7 +35,7 @@ variable "enable_gpu" {
 
 variable "gpu_type" {
   type        = string
-  default     = ""
+  default     = "nvidia-l4"
   description = "GPU type"
 }
 
@@ -47,7 +47,7 @@ variable "gpu_count" {
 
 variable "gpu_node_type" {
   type        = string
-  default     = ""
+  default     = "g2-standard-8"
   description = "GPU node type"
 }
 
