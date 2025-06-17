@@ -1,10 +1,9 @@
 locals {
-  kubeconfig_raw  = base64decode(linode_lke_cluster.traefik_demo.kubeconfig)
-  kubeconfig_json = yamldecode(local.kubeconfig_raw)
-
-  cluster_entry   = local.kubeconfig_json.clusters[0].cluster
-  cluster_server  = local.cluster_entry.server
-  cluster_ca_cert = local.cluster_entry["certificate-authority-data"]
+  kubeconfig      = yamldecode(base64decode(linode_lke_cluster.traefik_demo.kubeconfig))
+  cluster         = local.kubeconfig.clusters[0].cluster
+  cluster_server  = local.cluster.server
+  cluster_ca_cert = local.cluster["certificate-authority-data"]
+  token           = local.kubeconfig.users[0].user.token
 }
 
 output "host" {
@@ -17,4 +16,10 @@ output "cluster_ca_certificate" {
   sensitive   = true
   description = "LKE cluster CA certificate"
   value       = base64decode(local.cluster_ca_cert)
+}
+
+output "token" {
+  sensitive   = true
+  description = "LKE cluster auth token"
+  value       = local.token
 }
