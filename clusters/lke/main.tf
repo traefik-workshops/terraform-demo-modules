@@ -13,4 +13,6 @@ resource "linode_lke_node_pool" "traefik_demo_gpu" {
   cluster_id  = linode_lke_cluster.traefik_demo.id
   type  = var.gpu_node_type
   node_count = var.gpu_node_count
+
+  count = var.enable_gpu ? 1 : 0
 }
