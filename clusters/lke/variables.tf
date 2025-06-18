@@ -35,7 +35,7 @@ variable "enable_gpu" {
 
 variable "gpu_node_type" {
   type        = string
-  default     = "g2-gpu-rtx4000a1-s"
+  default     = "g2-gpu-rtx4000a1-m"
   description = "GPU node type"
 }
 
