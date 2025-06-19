@@ -1,5 +1,5 @@
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                    = local.cluster_server
     cluster_ca_certificate  = local.cluster_ca_cert
     token                   = local.token
