@@ -30,3 +30,9 @@ output "kubeconfig" {
   description = "LKE cluster kubeconfig"
   value       = local.kubeconfig_raw
 }
+
+output "cluster_id" {
+  sensitive   = true
+  description = "LKE cluster ID"
+  value       = linode_lke_cluster.traefik_demo.id
+}
