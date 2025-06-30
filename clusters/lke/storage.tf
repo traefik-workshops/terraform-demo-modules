@@ -13,7 +13,7 @@ resource "kubernetes_storage_class" "default" {
   }
 
   allow_volume_expansion = true
-  storage_provisioner    = "linode.com/linode-block-storage"
+  storage_provisioner    = "linodebs.csi.linode.com"
   volume_binding_mode    = "Immediate"
   reclaim_policy         = "Delete"
 
