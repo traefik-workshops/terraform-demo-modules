@@ -16,3 +16,13 @@ resource "linode_lke_cluster" "traefik_demo" {
     }
   }
 }
+
+resource "null_resource" "wait" {
+  depends_on = [linode_lke_cluster.traefik_demo]
+
+  provisioner "local-exec" {
+    command = <<EOF
+    sleep 10
+    EOF
+  }
+}
