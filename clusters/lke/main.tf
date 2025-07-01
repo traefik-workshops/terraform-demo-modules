@@ -3,6 +3,10 @@ resource "linode_lke_cluster" "traefik_demo" {
   region      = var.cluster_location
   k8s_version = var.lke_version
 
+  control_plane {
+    high_availability = true
+  }
+
   pool {
     type  = var.cluster_node_type
     count = var.cluster_node_count
