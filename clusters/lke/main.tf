@@ -4,7 +4,7 @@ resource "linode_lke_cluster" "traefik_demo" {
   k8s_version = var.lke_version
 
   control_plane {
-    high_availability = true
+    high_availability = var.control_plane_high_availability
   }
 
   pool {

@@ -44,3 +44,9 @@ variable "gpu_node_count" {
   default     = 1
   description = "GPU node count"
 }
+
+variable "control_plane_high_availability" {
+  type        = bool
+  default     = false
+  description = "Enable high availability for control plane"
+}
