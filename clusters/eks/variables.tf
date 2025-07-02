@@ -29,6 +29,6 @@ variable "cluster_node_type" {
 
 variable "cluster_machine_ami_type" {
   type        = string
-  default     = ""
-  description = "EKS cluster AMI ID."
+  default     = "AL2_x86_64"
+  description = "EKS cluster AMI Type."
 }
