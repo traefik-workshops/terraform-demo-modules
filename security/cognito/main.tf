@@ -76,7 +76,7 @@ resource "aws_cognito_user" "users" {
 resource "aws_cognito_user_group" "groups" {
   for_each = toset(var.users)
   
-  name         = each.value
+  name         = "${each.value}s"
   description  = "${title(each.value)} group"
   user_pool_id = aws_cognito_user_pool.pool.id
 }
