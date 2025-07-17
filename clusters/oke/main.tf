@@ -33,6 +33,12 @@ resource "oci_core_internet_gateway" "traefik_demo" {
   enabled        = true
 }
 
+resource "oci_core_nat_gateway" "traefik_demo" {
+  compartment_id = var.compartment_id
+  vcn_id         = oci_core_vcn.traefik_demo.id
+  display_name   = "${var.cluster_name}-natgw"
+}
+
 # Create Route Table
 resource "oci_core_route_table" "traefik_demo" {
   compartment_id = var.compartment_id
