@@ -4,6 +4,7 @@ locals {
   cluster         = local.kubeconfig.clusters[0].cluster
   cluster_server  = local.cluster.server
   cluster_ca_cert = base64decode(local.cluster["certificate-authority-data"])
+  token           = data.external.cluster_token.result.token
 }
 
 output "host" {
@@ -21,7 +22,7 @@ output "cluster_ca_certificate" {
 output "token" {
   sensitive   = true
   description = "OKE cluster auth token"
-  value       = data.external.cluster_token.result.token
+  value       = local.token
 }
 
 output "kubeconfig" {
