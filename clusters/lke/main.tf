@@ -26,7 +26,7 @@ resource "null_resource" "wait" {
 
   provisioner "local-exec" {
     command = <<EOF
-    sleep 10
+    sleep 30
     EOF
   }
 }
