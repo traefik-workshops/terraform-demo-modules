@@ -179,10 +179,12 @@ data "oci_containerengine_cluster_kube_config" "kubeconfig" {
   token_version = "2.0.0"
   cluster_id    = oci_containerengine_cluster.traefik_demo.id
   endpoint      = "PUBLIC_ENDPOINT"
+
+  depends_on = [oci_containerengine_node_pool.traefik_demo]
 }
 
 data "external" "cluster_token" {
-  depends_on = [oci_containerengine_cluster.traefik_demo]
+  depends_on = [oci_containerengine_node_pool.traefik_demo]
   
   program = ["bash", "-c", <<-EOT
     token_response=$(oci ce cluster generate-token --cluster-id ${oci_containerengine_cluster.traefik_demo.id} --region ${var.cluster_location})

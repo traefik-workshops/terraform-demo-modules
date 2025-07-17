@@ -14,5 +14,5 @@ resource "helm_release" "metrics_server" {
 
   namespace  = "kube-system"
 
-  depends_on = [null_resource.wait]
+  depends_on = [oci_containerengine_node_pool.traefik_demo]
 }
