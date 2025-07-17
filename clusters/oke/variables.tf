@@ -1,0 +1,35 @@
+variable "oke_version" {
+  type        = string
+  default     = "v1.33.1"
+  description = "OKE cluster version."
+}
+
+variable "cluster_name" {
+  type        = string
+  description = "OKE cluster name."
+}
+
+variable "cluster_location" {
+  type        = string
+  default     = "us-chicago-1"
+  description = "OKE cluster location."
+}
+
+variable "cluster_node_count" {
+  type        = number
+  default     = 1
+  description = "Number of nodes for the cluster."
+}
+
+variable "cluster_node_type" {
+  type        = string
+  default     = "VM.Standard3.Flex"
+  description = "Default machine type for cluster"
+}
+
+# Required OKE variables
+variable "compartment_id" {
+  type        = string
+  default = "ocid1.compartment.oc1..aaaaaaaa5lzebpklmesa7hqpi5242wdiqhhe5tjnha44ccxzcj4coekjpjvq"
+  description = "Oracle Cloud compartment ID."
+}

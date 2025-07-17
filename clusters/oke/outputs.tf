@@ -1,0 +1,36 @@
+locals {
+  kubeconfig      = yamldecode(data.oci_containerengine_cluster_kube_config.kubeconfig.content)
+  cluster         = local.kubeconfig.clusters[0].cluster
+  cluster_server  = local.cluster.server
+  cluster_ca_cert = base64decode(local.cluster["certificate-authority-data"])
+}
+
+output "host" {
+  sensitive   = true
+  description = "OKE cluster host"
+  value       = local.cluster_server
+}
+
+output "cluster_ca_certificate" {
+  sensitive   = true
+  description = "OKE cluster CA certificate"
+  value       = local.cluster_ca_cert
+}
+
+output "token" {
+  sensitive   = true
+  description = "OKE cluster auth token"
+  value       = data.external.cluster_token.result.token
+}
+
+output "kubeconfig" {
+  sensitive   = true
+  description = "OKE cluster kubeconfig"
+  value       = local.kubeconfig
+}
+
+output "cluster_id" {
+  sensitive   = true
+  description = "OKE cluster ID"
+  value       = oci_containerengine_cluster.traefik_demo.id
+}
