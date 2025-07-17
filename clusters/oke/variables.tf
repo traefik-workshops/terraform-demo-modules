@@ -23,7 +23,7 @@ variable "cluster_node_count" {
 
 variable "cluster_node_type" {
   type        = string
-  default     = "VM.Standard3.Flex"
+  default     = "VM.Standard.E4.Flex"
   description = "Default machine type for cluster"
 }
 

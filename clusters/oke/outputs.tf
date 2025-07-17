@@ -1,5 +1,6 @@
 locals {
-  kubeconfig      = yamldecode(data.oci_containerengine_cluster_kube_config.kubeconfig.content)
+  kubeconfig_raw  = data.oci_containerengine_cluster_kube_config.kubeconfig.content
+  kubeconfig      = yamldecode(local.kubeconfig_raw)
   cluster         = local.kubeconfig.clusters[0].cluster
   cluster_server  = local.cluster.server
   cluster_ca_cert = base64decode(local.cluster["certificate-authority-data"])
@@ -26,7 +27,7 @@ output "token" {
 output "kubeconfig" {
   sensitive   = true
   description = "OKE cluster kubeconfig"
-  value       = local.kubeconfig
+  value       = local.kubeconfig_raw
 }
 
 output "cluster_id" {
