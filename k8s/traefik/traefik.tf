@@ -202,7 +202,7 @@ resource "helm_release" "traefik" {
 
       tracing = {
         otlp = {
-          enabled = var.enable_otlp_tracing
+          enabled = var.enable_otlp_traces
           http = {
             enabled  = true
             endpoint = "http://opentelemetry-opentelemetry-collector.traefik-observability:4318/v1/traces"

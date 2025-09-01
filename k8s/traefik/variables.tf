@@ -87,9 +87,9 @@ variable "enable_otlp_metrics" {
   default     = false
 }
 
-variable "enable_otlp_tracing" {
+variable "enable_otlp_traces" {
   type        = bool
-  description = "Enable OTLP tracing"
+  description = "Enable OTLP traces"
   default     = false
 }
 
