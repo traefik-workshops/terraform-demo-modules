@@ -32,11 +32,13 @@ variable "enable_offline_mode" {
 variable "traefik_chart_version" {
   description = "Traefik chart version"
   type        = string
+  default     = "v37.0.0"
 }
 
 variable "traefik_hub_tag" {
   description = "Traefik Hub tag"
   type        = string
+  default     = "v3.18.0-beta3"
 }
 
 variable "redis_password" {
