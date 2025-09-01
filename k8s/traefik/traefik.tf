@@ -223,5 +223,5 @@ resource "helm_release" "traefik" {
     })
   ]
 
-  depends_on = [helm_release.redis, kubernetes_secret.traefik-hub-license, helm_release.traefik-crds]
+  depends_on = [kubernetes_secret.traefik-hub-license, helm_release.traefik-crds]
 }

@@ -22,6 +22,4 @@ resource "helm_release" "traefik-crds" {
       value = true
     }
   ]
-
-  depends_on = [helm_release.redis]
 }
