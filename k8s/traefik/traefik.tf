@@ -1,5 +1,5 @@
 locals {
-  otlp_address = var.otlp_address ? var.otlp_address : "http://opentelemetry-opentelemetry-collector.traefik-observability:4318"
+  otlp_address = var.otlp_address != "" ? var.otlp_address : "http://opentelemetry-opentelemetry-collector.traefik-observability:4318"
 
   additional_arguments = concat(var.enable_otlp_access_logs ? [
     "--experimental.otlpLogs=true", 
