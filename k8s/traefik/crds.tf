@@ -1,11 +1,12 @@
 
 resource "helm_release" "traefik-crds" {
-  name      = "traefik-crds"
-  namespace = var.namespace
-  chart     = "oci://registry-1.docker.io/traefik/traefik-crds"
-  version   = "1.10.0"
-  timeout   = 900
-  atomic    = true
+  name       = "traefik-crds"
+  namespace  = var.namespace
+  repository = "https://traefik.github.io/charts"
+  chart      = "traefik-crds"
+  version    = "1.10.0"
+  timeout    = 900
+  atomic     = true
   
   set = [
     {
