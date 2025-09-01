@@ -30,7 +30,7 @@ locals {
   )
 
   plugins = var.custom_plugins
-  extra_objects = var.extra_objects
+  extra_objects = var.custom_objects
 }
 
 resource "kubernetes_namespace" "traefik" {
@@ -84,7 +84,7 @@ resource "helm_release" "traefik" {
       ingressRoute = {
         dashboard = {
           enabled = true
-          matchRule = "Host(`dashboard.traefik.cloud`) || Host(`dashboard.traefik.localhost`)"
+          matchRule = var.dashboard_match_rule
         }
       }
 
@@ -125,6 +125,15 @@ resource "helm_release" "traefik" {
         }
       }
 
+      deplyment = {
+        replicas = var.replicaCount
+      }
+
+      env = [concat(
+        { name = "traefiker", value = "traefiker" },
+        var.custom_envs
+      )]
+
       logs = {
         general = {
           level = var.log_level
@@ -154,7 +163,7 @@ resource "helm_release" "traefik" {
         }
         kubernetesGateway = {
           enabled = true
-          experimentalChannel = false
+          experimentalChannel = true
         }
       }
 

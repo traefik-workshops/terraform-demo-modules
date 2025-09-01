@@ -45,6 +45,18 @@ variable "redis_password" {
   default     = "topsecretpassword"
 }
 
+variable "dashboard_match_rule" {
+  description = "Dashboard match rule"
+  type        = string
+  default     = "Host(`dashboard.traefik.cloud`) || Host(`dashboard.traefik.localhost`)"
+}
+
+variable "replicaCount" {
+  description = "Number of replicas for the Traefik Hub deployment"
+  type        = number
+  default     = 1
+}
+
 variable "log_level" {
   description = "Log level for Traefik Hub"
   type        = string
@@ -119,8 +131,17 @@ variable "custom_arguments" {
   default     = []
 }
 
-variable "extra_objects" {
+variable "custom_objects" {
   type        = list(object({}))
   description = "Extra objects to use for the deployment"
+  default     = []
+}
+
+variable "custom_envs" {
+  type        = list(object({
+    name  = string
+    value = string
+  }))
+  description = "Custom environment variables to use for the deployment"
   default     = []
 }
