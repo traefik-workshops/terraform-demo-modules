@@ -132,7 +132,7 @@ resource "helm_release" "traefik" {
       }
 
       env = [concat(
-        { name = "traefiker", value = "traefiker" },
+        [{ name = "traefiker", value = "traefiker" }],
         var.custom_envs
       )]
 
