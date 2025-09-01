@@ -157,7 +157,7 @@ resource "helm_release" "traefik" {
         }
         kubernetesGateway = {
           enabled = true
-          experimentalChannel = true
+          experimentalChannel = false
         }
       }
 
