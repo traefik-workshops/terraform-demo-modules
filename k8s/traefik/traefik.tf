@@ -35,12 +35,6 @@ locals {
   extra_objects = var.custom_objects
 }
 
-resource "kubernetes_namespace" "traefik" {
-  metadata {
-    name = var.namespace
-  }
-}
-
 resource "kubernetes_secret" "traefik-hub-license" {
   metadata {
     name = "traefik-hub-license"
@@ -51,8 +45,6 @@ resource "kubernetes_secret" "traefik-hub-license" {
   data = {
     token = var.traefik_license
   }
-
-  depends_on = [ kubernetes_namespace.traefik ]
 }
 
 resource "helm_release" "traefik" {
