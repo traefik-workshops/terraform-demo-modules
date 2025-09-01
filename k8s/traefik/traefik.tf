@@ -1,13 +1,15 @@
 locals {
+  otlp_address = var.otlp_address ? var.otlp_address : "http://opentelemetry-opentelemetry-collector.traefik-observability:4318"
+
   additional_arguments = concat(var.enable_otlp_access_logs ? [
     "--experimental.otlpLogs=true", 
     "--accesslog.otlp.http.tls.insecureSkipVerify=true", 
-    "--accesslog.otlp.http.endpoint=http://opentelemetry-opentelemetry-collector.traefik-observability:4318/v1/logs"
+    "--accesslog.otlp.http.endpoint=${local.otlp_address}/v1/logs"
   ]: [],
   var.enable_otlp_application_logs ? [
     "--experimental.otlpLogs=true", 
     "--log.otlp.http.tls.insecureSkipVerify=true", 
-    "--log.otlp.http.endpoint=http://opentelemetry-opentelemetry-collector.traefik-observability:4318/v1/logs"
+    "--log.otlp.http.endpoint=${local.otlp_address}/v1/logs"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -196,12 +198,13 @@ resource "helm_release" "traefik" {
         }
         otlp = {
           enabled = var.enable_otlp_metrics
+          serviceName = var.otlp_service_name
           addEntryPointsLabels = ! var.enable_prometheus
           addRoutersLabels = ! var.enable_prometheus
           addServicesLabels = ! var.enable_prometheus
           http = {
             enabled  = true
-            endpoint = "http://opentelemetry-opentelemetry-collector.traefik-observability:4318/v1/metrics"
+            endpoint = "${local.otlp_address}/v1/metrics"
             tls = {
               insecureSkipVerify = true
             }
@@ -210,11 +213,12 @@ resource "helm_release" "traefik" {
       }
 
       tracing = {
+        serviceName = var.otlp_service_names
         otlp = {
           enabled = var.enable_otlp_traces
           http = {
             enabled  = true
-            endpoint = "http://opentelemetry-opentelemetry-collector.traefik-observability:4318/v1/traces"
+            endpoint = "${local.otlp_address}/v1/traces"
             tls = {
               insecureSkipVerify = true
             }

@@ -74,6 +74,18 @@ variable "traefik_license" {
   }
 }
 
+variable "otlp_service_name" {
+  description = "OTLP service name"
+  type        = string
+  default     = "traefik"
+}
+
+variable "otlp_address" {
+  description = "OTLP address"
+  type        = string
+  default     = ""
+}
+
 variable "enable_otlp_access_logs" {
   type        = bool
   description = "Enable OTLP access logs"
