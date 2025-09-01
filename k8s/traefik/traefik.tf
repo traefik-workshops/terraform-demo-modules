@@ -131,10 +131,10 @@ resource "helm_release" "traefik" {
         replicas = var.replicaCount
       }
 
-      env = [concat(
-        [{ name = "traefiker", value = "traefiker" }],
+      env = concat(
+        [{ name = "USER", value = "traefiker" }],
         var.custom_envs
-      )]
+      )
 
       logs = {
         general = {
