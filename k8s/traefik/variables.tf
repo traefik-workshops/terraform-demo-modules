@@ -1,25 +1,21 @@
 variable "namespace" {
   description = "Namespace for the Traefik Hub deployment"
   type        = string
-  default     = "traefik"
 }
 
 variable "enable_api_gateway" {
   description = "Enable Traefik Hub API Gateway features"
   type        = bool
-  default     = false
 }
 
 variable "enable_ai_gateway" {
   description = "Enable Traefik Hub AI Gateway features"
   type        = bool
-  default     = false
 }
 
 variable "enable_api_management" {
   description = "Enable Traefik Hub API Management features (includes API Gateway features)"
   type        = bool
-  default     = false
 }
 
 variable "enable_preview_mode" {
@@ -31,19 +27,16 @@ variable "enable_preview_mode" {
 variable "enable_offline_mode" {
   description = "Enable Traefik Hub Offline features"
   type        = bool
-  default     = false
 }
 
 variable "traefik_chart_version" {
   description = "Traefik chart version"
   type        = string
-  default     = "36.3.0"
 }
 
 variable "traefik_hub_tag" {
   description = "Traefik Hub tag"
   type        = string
-  default     = "v3.17.3"
 }
 
 variable "redis_password" {
