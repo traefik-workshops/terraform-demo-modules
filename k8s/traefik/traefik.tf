@@ -213,7 +213,7 @@ resource "helm_release" "traefik" {
       }
 
       tracing = {
-        serviceName = var.otlp_service_names
+        serviceName = var.otlp_service_name
         otlp = {
           enabled = var.enable_otlp_traces
           http = {
