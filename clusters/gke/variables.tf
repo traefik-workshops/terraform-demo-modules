@@ -56,3 +56,9 @@ variable "gpu_node_count" {
   default     = 1
   description = "GPU node count"
 }
+
+variable "update_kubeconfig" {
+  type        = bool
+  default     = true
+  description = "Update kubeconfig after cluster creation"
+}

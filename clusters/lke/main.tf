@@ -30,3 +30,29 @@ resource "null_resource" "wait" {
     EOF
   }
 }
+
+resource "null_resource" "lke_cluster" {
+  provisioner "local-exec" {
+    
+    command = <<EOT
+      echo '${module.lke.kubeconfig}' > lke-kubeconfig.yaml
+
+      export KUBECONFIG=~/.kube/config:lke-kubeconfig.yaml
+      kubectl config view --flatten > merged.yaml
+      mv merged.yaml ~/.kube/config
+
+      kubectl config delete-context "lke-${var.cluster_name}" 2>/dev/null || true
+      kubectl config rename-context "lke${module.lke.cluster_id}-ctx" "lke-${var.cluster_name}"
+      kubectl config use-context "lke-${var.cluster_name}"
+
+      rm lke-kubeconfig.yaml
+    EOT
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  count      = var.update_kubeconfig ? 1 : 0
+  depends_on = [null_resource.wait]
+}

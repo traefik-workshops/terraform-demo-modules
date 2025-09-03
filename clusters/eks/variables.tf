@@ -32,3 +32,9 @@ variable "cluster_machine_ami_type" {
   default     = "AL2023_x86_64_STANDARD"
   description = "EKS cluster AMI Type."
 }
+
+variable "update_kubeconfig" {
+  type        = bool
+  default     = true
+  description = "Update kubeconfig after cluster creation"
+}

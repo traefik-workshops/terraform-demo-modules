@@ -81,3 +81,21 @@ resource "aws_eks_addon" "traefik_demo" {
 
   depends_on = [module.eks, module.eks_node_groups]
 }
+
+resource "null_resource" "eks_cluster" {
+  provisioner "local-exec" {
+    command = <<EOT
+      aws eks --region "${var.cluster_location}" update-kubeconfig \
+        --name "${var.cluster_name}" \
+        --alias "eks-${var.cluster_name}"
+      kubectl config use-context "eks-${var.cluster_name}"
+    EOT
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  count      = var.update_kubeconfig ? 1 : 0
+  depends_on = [aws_eks_addon.traefik_demo]
+}

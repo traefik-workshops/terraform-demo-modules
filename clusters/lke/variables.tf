@@ -50,3 +50,9 @@ variable "control_plane_high_availability" {
   default     = false
   description = "Enable high availability for control plane"
 }
+
+variable "update_kubeconfig" {
+  type        = bool
+  default     = true
+  description = "Update kubeconfig after cluster creation"
+}

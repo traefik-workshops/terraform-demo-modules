@@ -176,3 +176,32 @@ data "external" "cluster_token" {
   EOT
   ]
 }
+
+resource "null_resource" "oke_cluster" {
+  provisioner "local-exec" {
+    
+    command = <<EOT
+      echo '${module.oke.kubeconfig}' > oke-kubeconfig.yaml
+
+      # Get the current context name from the OKE kubeconfig
+      OKE_CONTEXT=$(kubectl --kubeconfig=oke-kubeconfig.yaml config current-context)
+      
+      export KUBECONFIG=~/.kube/config:oke-kubeconfig.yaml
+      kubectl config view --flatten > merged.yaml
+      mv merged.yaml ~/.kube/config
+
+      kubectl config delete-context "oke-${var.cluster_name}" 2>/dev/null || true
+      kubectl config rename-context "$OKE_CONTEXT" "oke-${var.cluster_name}"
+      kubectl config use-context "oke-${var.cluster_name}"
+
+      rm oke-kubeconfig.yaml
+    EOT
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  count      = var.update_kubeconfig ? 1 : 0
+  depends_on = [oci_containerengine_cluster.traefik_demo, oci_containerengine_node_pool.traefik_demo]
+}

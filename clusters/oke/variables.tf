@@ -33,3 +33,9 @@ variable "compartment_id" {
   default = "ocid1.compartment.oc1..aaaaaaaa5lzebpklmesa7hqpi5242wdiqhhe5tjnha44ccxzcj4coekjpjvq"
   description = "Oracle Cloud compartment ID."
 }
+
+variable "update_kubeconfig" {
+  type        = bool
+  default     = true
+  description = "Update kubeconfig after cluster creation"
+}

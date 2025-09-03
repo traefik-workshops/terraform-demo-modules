@@ -37,3 +37,23 @@ resource "google_container_node_pool" "traefik_demo_gpu" {
 
   count = var.enable_gpu ? 1 : 0
 }
+
+resource "null_resource" "gke_cluster" {
+  provisioner "local-exec" {
+    command = <<EOT
+      gcloud container clusters get-credentials ${var.cluster_name} \
+        --zone ${var.cluster_location} \
+        --project ${data.google_client_config.traefik_demo.project}
+
+      kubectl config delete-context "gke-${var.cluster_name}" 2>/dev/null || true
+      kubectl config rename-context "gke_${data.google_client_config.traefik_demo.project}_${var.cluster_location}_${var.cluster_name}" "gke-${var.cluster_name}"
+      kubectl config use-context "gke-${var.cluster_name}"
+    EOT
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  depends_on = [google_container_cluster.traefik_demo, google_container_node_pool.traefik_demo_gpu]
+}

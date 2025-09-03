@@ -44,3 +44,23 @@ resource "azurerm_kubernetes_cluster_node_pool" "traefik_demo_gpu" {
 
   count = var.enable_gpu ? 1 : 0
 }
+
+resource "null_resource" "aks_cluster" {
+  provisioner "local-exec" {
+    command = <<EOT
+      az aks get-credentials \
+        --overwrite-existing \
+        --resource-group ${var.resource_group_name} \
+        --name ${var.cluster_name} \
+        --context "aks-${var.cluster_name}"
+      kubectl config use-context "aks-${var.cluster_name}"
+    EOT
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  count      = var.update_kubeconfig ? 1 : 0
+  depends_on = [azurerm_kubernetes_cluster.traefik_demo, azurerm_kubernetes_cluster_node_pool.traefik_demo_gpu]
+}
