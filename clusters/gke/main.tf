@@ -55,5 +55,6 @@ resource "null_resource" "gke_cluster" {
     always_run = timestamp()
   }
 
+  count      = var.update_kubeconfig ? 1 : 0
   depends_on = [google_container_cluster.traefik_demo, google_container_node_pool.traefik_demo_gpu]
 }
