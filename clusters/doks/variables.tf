@@ -45,6 +45,12 @@ variable "max_nodes" {
   description = "Maximum number of nodes in the default node pool"
 }
 
+variable "namespace" {
+  type        = string
+  default     = "default"
+  description = "Kubernetes namespace to use for resources"
+}
+
 variable "enable_gpu" {
   type        = bool
   default     = false
