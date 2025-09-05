@@ -58,6 +58,7 @@ resource "helm_release" "traefik" {
   wait             = true
 
   values = [
+    # TODO: Consider a values.yaml file in the downstream repo instead of rebuilding it in TF
     yamlencode({
       hub = {
         token = var.enable_api_gateway || var.enable_api_management ? "traefik-hub-license" : ""
@@ -69,7 +70,7 @@ resource "helm_release" "traefik" {
           maxRequestBodySize = 1048576
         }
         redis = var.enable_api_management ? {
-          endpoints = "traefik-redis-master.traefik.svc:6379"
+          endpoints = "traefik-redis-master.${var.namespace}.svc:6379"
           password  = var.redis_password
         } : {}
         platformUrl = var.enable_preview_mode ? "https://api-preview.hub.traefik.io/agent" : ""
@@ -171,6 +172,8 @@ resource "helm_release" "traefik" {
             }
           }
         }
+        # TODO: use distributed acme with k8s storage when var.enable_api_gateway || var.enable_api_management is true
+        # TODO: allow configuring a different challenge type
         le = {
           acme = {
             email = "zaid@traefik.io"
