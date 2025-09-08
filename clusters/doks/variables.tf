@@ -50,43 +50,6 @@ variable "namespace" {
   default     = "default"
   description = "Kubernetes namespace to use for resources"
 }
-
-variable "enable_gpu" {
-  type        = bool
-  default     = false
-  description = "Enable GPU node pool"
-}
-
-variable "gpu_node_type" {
-  type        = string
-  default     = "g-2vcpu-8gb-nvidia-l4"
-  description = "GPU droplet size"
-}
-
-variable "gpu_node_count" {
-  type        = number
-  default     = 1
-  description = "GPU node count"
-}
-
-variable "gpu_enable_autoscaling" {
-  type        = bool
-  default     = false
-  description = "Enable autoscaling for GPU node pool"
-}
-
-variable "gpu_min_nodes" {
-  type        = number
-  default     = 1
-  description = "Minimum number of nodes in the GPU node pool"
-}
-
-variable "gpu_max_nodes" {
-  type        = number
-  default     = 2
-  description = "Maximum number of nodes in the GPU node pool"
-}
-
 variable "update_kubeconfig" {
   type        = bool
   default     = true

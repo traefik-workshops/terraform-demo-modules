@@ -11,28 +11,6 @@ resource "digitalocean_kubernetes_cluster" "traefik_demo" {
     min_nodes  = var.min_nodes
     max_nodes  = var.max_nodes
   }
-
-  dynamic "node_pool" {
-    for_each = var.enable_gpu ? ["gpu"] : []
-    content {
-      name       = "gpu"
-      size       = var.gpu_node_type
-      node_count = var.gpu_node_count
-      auto_scale = var.gpu_enable_autoscaling
-      min_nodes  = var.gpu_min_nodes
-      max_nodes  = var.gpu_max_nodes
-
-      labels = {
-        "node-type" = "gpu"
-      }
-
-      taint {
-        key    = "nvidia.com/gpu"
-        value  = "present"
-        effect = "NoSchedule"
-      }
-    }
-  }
 }
 
 resource "null_resource" "wait" {
