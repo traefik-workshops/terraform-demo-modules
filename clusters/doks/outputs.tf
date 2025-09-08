@@ -7,6 +7,7 @@ locals {
   token           = local.kubeconfig.users[0].user.token
 }
 
+
 output "host" {
   sensitive   = true
   description = "DOKS cluster host"
