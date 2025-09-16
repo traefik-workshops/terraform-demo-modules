@@ -27,7 +27,7 @@ options:
 %{ for instance in range(0, node.count) ~}
       - label: ${node.label}
         nodeFilters:
-          - agent:${sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance}
+          - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}
 %{ endfor ~}
 %{ endif ~}
 %{ endfor ~}
