@@ -78,6 +78,7 @@ variable "serviceType" {
 }
 
 variable "resources" {
+  description = "Resources for the Traefik deployment"
   type = object({
     requests = object({
       cpu    = string
@@ -102,12 +103,15 @@ variable "resources" {
 }
 
 variable "tolerations" {
+  description = "Tolerations for the Traefik deployment"
   type = list(object({
     key      = string
     operator = string
     value    = string
     effect   = string
   }))
+
+  default = []
 }
 
 variable "log_level" {
