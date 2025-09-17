@@ -20,12 +20,13 @@ options:
       - arg: "--disable=traefik"
         nodeFilters:
           - "server:*"
-          - "agent:*"
-    nodeLabels:
 %{ for node_idx, node in var.worker_nodes ~}
 %{ if node.label != "" ~}
 %{ for instance in range(0, node.count) ~}
-      - label: ${node.label}
+      - arg: "--node-taint=node=${node.label}:NoSchedule"
+        nodeFilters:
+          - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}
+      - arg: "--node-label=node=${node.label}"
         nodeFilters:
           - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}
 %{ endfor ~}
