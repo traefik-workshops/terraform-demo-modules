@@ -21,11 +21,15 @@ options:
         nodeFilters:
           - "server:*"
 %{ for node_idx, node in var.worker_nodes ~}
-%{ if node.label != "" ~}
+%{ if node.taint != "" ~}
 %{ for instance in range(0, node.count) ~}
-      - arg: "--node-taint=node=${node.label}:NoSchedule"
+      - arg: "--node-taint=node=${node.taint}:NoSchedule"
         nodeFilters:
           - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}
+%{ endfor ~}
+%{ endif ~}
+%{ if node.label != "" ~}
+%{ for instance in range(0, node.count) ~}
       - arg: "--node-label=node=${node.label}"
         nodeFilters:
           - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}

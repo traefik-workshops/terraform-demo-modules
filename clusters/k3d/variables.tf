@@ -14,6 +14,7 @@ variable "control_plane_nodes" {
 variable "worker_nodes" {
   type = list(object({
     label = string
+    taint = string
     count = number
   }))
   default = []
