@@ -32,7 +32,13 @@ variable "enable_offline_mode" {
 variable "traefik_chart_version" {
   description = "Traefik chart version"
   type        = string
-  default     = "v37.0.0"
+  default     = "v37.1.1"
+}
+
+variable "traefik_tag" {
+  description = "Traefik tag"
+  type        = string
+  default     = "v3.5.2"
 }
 
 variable "traefik_hub_tag" {
@@ -53,10 +59,55 @@ variable "dashboard_match_rule" {
   default     = "Host(`dashboard.traefik.cloud`) || Host(`dashboard.traefik.localhost`)"
 }
 
+variable "deploymentType" {
+  description = "Traefik deployment type."
+  type        = string
+  default     = "LoadBalancer" 
+}
+
 variable "replicaCount" {
   description = "Number of replicas for the Traefik Hub deployment"
   type        = number
   default     = 1
+}
+
+variable "serviceType" {
+  description = "Traefik service type."
+  type        = string
+  default     = "LoadBalancer" 
+}
+
+variable "resources" {
+  type = object({
+    requests = object({
+      cpu    = string
+      memory = string
+    })
+    limits = object({
+      cpu    = string
+      memory = string
+    })
+  })
+
+  default = {
+    requests = {
+      cpu    = "0"
+      memory = "0"
+    }
+    limits = {
+      cpu    = "0"
+      memory = "0"
+    }
+  }
+}
+
+variable "tolerations" {
+  type = list(object({
+    key      = string
+    operator = string
+    value    = string
+    effect   = string
+  }))
 }
 
 variable "log_level" {

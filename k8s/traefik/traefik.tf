@@ -45,6 +45,8 @@ resource "kubernetes_secret" "traefik-hub-license" {
   data = {
     token = var.traefik_license
   }
+
+  count = var.enable_api_gateway || var.enable_api_management ? 1 : 0
 }
 
 resource "helm_release" "traefik" {
@@ -121,7 +123,12 @@ resource "helm_release" "traefik" {
       }
 
       deplyment = {
+        kind     = var.deploymentType
         replicas = var.replicaCount
+      }
+      
+      service = {
+        kind = var.serviceType
       }
 
       env = concat(
@@ -146,6 +153,8 @@ resource "helm_release" "traefik" {
         repository = var.enable_preview_mode ? "traefik-hub/traefik-hub" : "traefik/traefik-hub"
         tag        = var.enable_preview_mode ? "latest-v3" : var.traefik_hub_tag
         pullPolicy = var.enable_preview_mode ? "Always" : "IfNotPresent"
+      } : var.traefik_tag != "" ? {
+        tag = var.traefik_tag
       } : {}
 
       providers = {
@@ -220,6 +229,9 @@ resource "helm_release" "traefik" {
           }
         }
       }
+
+      resources   = var.resources
+      tolerations = var.tolerations
 
       additionalArguments = local.additional_arguments
       extra_objects = local.extra_objects
