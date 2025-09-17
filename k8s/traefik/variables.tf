@@ -62,7 +62,7 @@ variable "dashboard_match_rule" {
 variable "deploymentType" {
   description = "Traefik deployment type."
   type        = string
-  default     = "LoadBalancer" 
+  default     = "Deployment" 
 }
 
 variable "replicaCount" {
