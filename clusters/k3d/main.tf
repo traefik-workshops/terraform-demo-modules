@@ -7,7 +7,7 @@ kind: Simple
 metadata:
   name: ${var.cluster_name}
 servers: ${var.control_plane_nodes.count}
-agents: ${sum([for node in var.worker_nodes : node.count])}
+agents: ${length(var.worker_nodes) == 0 ? 0 : sum([for node in var.worker_nodes : node.count])}
 ports:
 %{ for port in var.ports ~}
   - port: ${port.to}:${port.from}
