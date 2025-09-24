@@ -76,7 +76,7 @@ resource "helm_release" "traefik" {
           password  = var.redis_password
         } : {}
         platformUrl = var.enable_preview_mode ? "https://api-preview.hub.traefik.io/agent" : ""
-        offline = var.enable_offline_mode && var.enable_api_management
+        offline = var.enable_offline_mode
       }
       ingressRoute = {
         dashboard = {
