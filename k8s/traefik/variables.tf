@@ -47,6 +47,12 @@ variable "traefik_hub_tag" {
   default     = "v3.18.0-beta3"
 }
 
+variable "traefik_hub_preview_tag" {
+  description = "Traefik Hub preview tag"
+  type        = string
+  default     = ""
+}
+
 variable "redis_password" {
   description = "Redis password"
   type        = string
