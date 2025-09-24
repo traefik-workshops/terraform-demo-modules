@@ -151,7 +151,7 @@ resource "helm_release" "traefik" {
       image = var.enable_api_gateway || var.enable_api_management ? {
         registry   = var.enable_preview_mode ? "europe-west9-docker.pkg.dev/traefiklabs" : "ghcr.io"
         repository = var.enable_preview_mode ? "traefik-hub/traefik-hub" : "traefik/traefik-hub"
-        tag        = var.enable_preview_mode ? var.traefik_hub_preview_tag != "" ? var.traefik_hub_preview_tag : "latest-v3" : "latest-v3" 
+        tag        = var.enable_preview_mode ? var.traefik_hub_preview_tag != "" ? var.traefik_hub_preview_tag : "latest-v3" : var.traefik_hub_tag
         pullPolicy = var.enable_preview_mode ? "Always" : "IfNotPresent"
       } : var.traefik_tag != "" ? {
         tag = var.traefik_tag
