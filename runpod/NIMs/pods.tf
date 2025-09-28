@@ -8,7 +8,6 @@ resource "null_resource" "pods" {
     runpod_api_key   = var.runpod_api_key
     ngc_token        = var.ngc_token
     pod_type         = var.pod_type
-    registry_auth_id = data.external.registry_auth.result.id
   }
 
   provisioner "local-exec" {
