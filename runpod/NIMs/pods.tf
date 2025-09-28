@@ -19,7 +19,7 @@ resource "null_resource" "pods" {
         --runpod-api-key "${self.triggers.runpod_api_key}" \
         --ngc-token "${self.triggers.ngc_token}" \
         --pod-type "${self.triggers.pod_type}" \
-        --registry-auth-id "${self.triggers.registry_auth_id}" \
+        --registry-auth-id "${data.external.registry_auth.result.id}" \
         --output-file "${path.module}/terraform.tfstate.pods"
     EOT
   }
