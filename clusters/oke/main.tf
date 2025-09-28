@@ -181,8 +181,7 @@ resource "null_resource" "oke_cluster" {
   provisioner "local-exec" {
     
     command = <<EOT
-      echo '${module.oke.kubeconfig}' > oke-kubeconfig.yaml
-
+      echo '${data.oci_containerengine_cluster_kube_config.kubeconfig.content}' > oke-kubeconfig.yaml
       # Get the current context name from the OKE kubeconfig
       OKE_CONTEXT=$(kubectl --kubeconfig=oke-kubeconfig.yaml config current-context)
       
