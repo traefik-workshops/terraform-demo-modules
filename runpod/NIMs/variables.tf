@@ -19,7 +19,7 @@ variable "ngc_username" {
 variable "pod_type" {
   description = "The type of pod to deploy (e.g., NVIDIA L40, NVIDIA A100, etc.)"
   type        = string
-  default     = "NVIDIA L40"
+  default     = "NVIDIA A40"
 }
 
 # Topic Control NIM
