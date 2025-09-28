@@ -21,7 +21,7 @@ resource "oci_core_vcn" "traefik_demo" {
   compartment_id = var.compartment_id
   display_name   = "${var.cluster_name}-vcn"
   cidr_blocks    = ["10.0.0.0/16"]
-  dns_label      = "oke${replace(var.cluster_name, "-", "")}"
+  dns_label      = substr(replace("oke${var.cluster_name}", "-", ""), 0, min(15, length(replace("oke${var.cluster_name}", "-", ""))))
 }
 
 resource "oci_core_internet_gateway" "traefik_demo" {
