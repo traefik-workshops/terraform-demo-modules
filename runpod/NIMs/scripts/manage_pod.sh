@@ -1,41 +1,48 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
-# Parse command line arguments
-NAME=""
-IMAGE=""
-TAG=""
-RUNPOD_API_KEY=""
-NGC_TOKEN=""
-POD_TYPE=""
-REGISTRY_AUTH_ID=""
-OUTPUT_FILE=""
+# Function to output a valid JSON response
+json_response() {
+    local status=$1
+    local message=$2
+    local data=${3:-{}}
+    
+    if [ "$status" = "error" ]; then
+        jq -n --arg error "$message" '{error: $error}'
+        exit 1
+    else
+        # Ensure all values are strings and create a simple key-value map
+        jq -n --arg message "$message" --arg data "$data" '
+        {
+            "status": "success",
+            "message": $message,
+            "data": $data | fromjson
+        }'
+        exit 0
+    fi
+}
 
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --name) NAME="$2"; shift 2;;
-    --image) IMAGE="$2"; shift 2;;
-    --tag) TAG="$2"; shift 2;;
-    --runpod-api-key) RUNPOD_API_KEY="$2"; shift 2;;
-    --ngc-token) NGC_TOKEN="$2"; shift 2;;
-    --pod-type) POD_TYPE="$2"; shift 2;;
-    --registry-auth-id) REGISTRY_AUTH_ID="$2"; shift 2;;
-    --output-file) OUTPUT_FILE="$2"; shift 2;;
-    *) echo "Unknown parameter: $1"; exit 1;;
-  esac
-done
+# Read input JSON from stdin
+input=$(cat -)
+
+echo "Input JSON: $input" >&2
+
+# Parse JSON input
+action=$(echo "$input" | jq -r '.action // "create"')
+NAME=$(echo "$input" | jq -r '.name // empty')
+IMAGE=$(echo "$input" | jq -r '.image // empty')
+TAG=$(echo "$input" | jq -r '.tag // empty')
+RUNPOD_API_KEY=$(echo "$input" | jq -r '.runpod_api_key // empty')
+NGC_TOKEN=$(echo "$input" | jq -r '.ngc_token // empty')
+POD_TYPE=$(echo "$input" | jq -r '.pod_type // empty')
+REGISTRY_AUTH_ID=$(echo "$input" | jq -r '.registry_auth_id // empty')
+OUTPUT_FILE=$(echo "$input" | jq -r '.output_file // empty')
 
 echo "Starting pod management script" >&2
 
 # Verify required parameters
-if [ -z "${REGISTRY_AUTH_ID:-}" ]; then
-    jq -n --arg error 'registry_auth_id is required' '{error: $error}'
-    exit 1
-fi
-
-if [ -z "${OUTPUT_FILE:-}" ]; then
-    jq -n --arg error 'output-file is required' '{error: $error}'
-    exit 1
+if [ -z "$NAME" ] || [ -z "$IMAGE" ] || [ -z "$TAG" ] || [ -z "$RUNPOD_API_KEY" ] || [ -z "$NGC_TOKEN" ] || [ -z "$POD_TYPE" ] || [ -z "$REGISTRY_AUTH_ID" ] || [ -z "$OUTPUT_FILE" ]; then
+    json_response "error" "Missing required parameters. Required: name, image, tag, runpod_api_key, ngc_token, pod_type, registry_auth_id, output_file"
 fi
 
 # Initialize output file if it doesn't exist
@@ -49,12 +56,10 @@ check_existing_pod() {
     echo "Checking for existing pod: $pod_name" >&2
     
     # Get all pods and filter by name
-    if ! runpodctl_output=$(runpodctl get pods 2>&1); then
-        echo "Error running 'runpodctl get pods': $runpodctl_output" >&2
+    if ! runpodctl_output=$(runpodctl get pod 2>/dev/null); then
+        echo "Error running 'runpodctl get pod': $runpodctl_output" >&2
         return 1
     fi
-    
-    echo "runpodctl output: $runpodctl_output" >&2
     
     local pod_line
     pod_line=$(echo "$runpodctl_output" | awk -v name="$pod_name" '$2 == name' | head -n 1)
@@ -65,28 +70,19 @@ check_existing_pod() {
         local pod_id=$(echo "$pod_line" | awk '{print $1}')
         echo "Extracted pod ID: $pod_id" >&2
         
-        # Get detailed pod info
-        local pod_info
-        if ! pod_info=$(runpodctl get pods "$pod_id" 2>&1); then
-            return 1
-        fi
-        
-        if [ -n "$pod_info" ]; then
-            echo "Pod info: $pod_info" >&2
-            # Format the output as JSON with host key
-            jq -n --arg id "$pod_id" --arg name "$pod_name" \
-                --arg host "https://${pod_id}-8000.proxy.runpod.net/" \
-                '{id: $id, name: $name, desiredStatus: "RUNNING", host: $host}' || {
-                echo "Failed to format pod info as JSON" >&2
-                return 1
-            }
-            return 0
-        fi
+        # Create a simple pod info object
+        jq -n --arg id "$pod_id" --arg name "$pod_name" --arg host "https://${pod_id}-8000.proxy.runpod.net/" '
+        {
+            "id": $id,
+            "name": $name,
+            "desiredStatus": "RUNNING",
+            "host": $host
+        }'
+        return 0
     else
         echo "No existing pod found with name: $pod_name" >&2
+        return 1
     fi
-    
-    return 1
 }
 
 # Check if pod already exists
@@ -112,37 +108,54 @@ EOF
       "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY")
 
     # Extract pod info from response and add host key
-    pod_info=$(echo "$RESPONSE" | jq --arg host "https://$(echo "$RESPONSE" | jq -r '.data.podFindAndDeployOnDemand.id')-8000.proxy.runpod.net/" \
-        '.data.podFindAndDeployOnDemand | {id, name, desiredStatus, host: $host}' 2>/dev/null)
+    pod_id=$(echo "$RESPONSE" | jq -r '.data.podFindAndDeployOnDemand.id // empty')
     
-    if [ -z "$pod_info" ] || [ "$pod_info" = "null" ]; then
+    if [ -z "$pod_id" ] || [ "$pod_id" = "null" ]; then
         echo "Failed to create pod. Response: $RESPONSE" >&2
-        exit 1
+        json_response "error" "Failed to create pod: $(echo "$RESPONSE" | jq -c . 2>/dev/null || echo "$RESPONSE")"
     fi
+    
+    # Create a simple pod info object
+    pod_info=$(jq -n --arg id "$pod_id" --arg name "$NAME" --arg host "https://${pod_id}-8000.proxy.runpod.net/" '
+    {
+        "id": $id,
+        "name": $name,
+        "desiredStatus": "RUNNING",
+        "host": $host
+    }')
 fi
 
 # Update the output file with the new pod info
 echo "Updating output file: $OUTPUT_FILE" >&2
-tmp_file=$(mktemp) || { echo "Failed to create temporary file" >&2; exit 1; }
+tmp_file=$(mktemp) || json_response "error" "Failed to create temporary file"
 
-if ! jq --arg name "$NAME" --argjson pod "$pod_info" '.[$name] = $pod' "$OUTPUT_FILE" > "$tmp_file"; then
-    echo "Failed to update JSON file" >&2
-    rm -f "$tmp_file"
-    exit 1
+# Read existing data or initialize empty object
+if [ -f "$OUTPUT_FILE" ]; then
+    current_data=$(cat "$OUTPUT_FILE" 2>/dev/null || echo '{}')
+else
+    current_data='{}'
 fi
 
+# Update the data with new pod info
+updated_data=$(echo "$current_data" | jq --arg name "$NAME" --argjson pod "$pod_info" '.[$name] = $pod' 2>/dev/null || echo '{}')
+
+# Write to temp file first
+echo "$updated_data" > "$tmp_file"
+
+# Move to final location
 if ! mv "$tmp_file" "$OUTPUT_FILE"; then
     echo "Failed to move temporary file to $OUTPUT_FILE" >&2
     rm -f "$tmp_file"
-    exit 1
+    json_response "error" "Failed to update output file"
 fi
 
-# Output the current state of pods
-echo "Pod information:" >&2
-if ! cat "$OUTPUT_FILE" >&2; then
-    echo "Failed to read output file" >&2
-    exit 1
-fi
+# Output the result in a consistent format
+jq -n --arg name "$NAME" --argjson pod_info "$pod_info" '
+{
+    "id": $pod_info.id,
+    "name": $pod_info.name,
+    "host": $pod_info.host,
+    "desiredStatus": "RUNNING"
+}'
 
-# Also output to stdout for Terraform
-cat "$OUTPUT_FILE"
+exit 0

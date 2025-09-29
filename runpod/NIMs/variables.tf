@@ -1,13 +1,13 @@
 variable "runpod_api_key" {
   description = "RunPod API key"
   type        = string
-  sensitive   = true
+  sensitive   = false
 }
 
 variable "ngc_token" {
   description = "NVIDIA NGC API token"
   type        = string
-  sensitive   = true
+  sensitive   = false
 }
 
 variable "ngc_username" {

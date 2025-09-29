@@ -1,44 +1,49 @@
-resource "null_resource" "pods" {
+data "external" "pods" {
   for_each = local.nims
+  
+  program = ["bash", "${path.module}/scripts/manage_pod.sh"]
 
-  triggers = {
-    always_run       = "${timestamp()}"
+  query = {
+    action           = "create"
     name             = each.value.name
     image            = each.value.image
     tag              = each.value.tag
     runpod_api_key   = var.runpod_api_key
     ngc_token        = var.ngc_token
     pod_type         = var.pod_type
+    registry_auth_id = data.external.registry_auth.result.id
+    output_file      = "${path.module}/terraform.tfstate.pods"
   }
+}
 
-  provisioner "local-exec" {
-    command = <<-EOT
-      bash ${path.module}/scripts/manage_pod.sh \
-        --name "${self.triggers.name}" \
-        --image "${self.triggers.image}" \
-        --tag "${self.triggers.tag}" \
-        --runpod-api-key "${self.triggers.runpod_api_key}" \
-        --ngc-token "${self.triggers.ngc_token}" \
-        --pod-type "${self.triggers.pod_type}" \
-        --registry-auth-id "${data.external.registry_auth.result.id}" \
-        --output-file "${path.module}/terraform.tfstate.pods"
-    EOT
+# Clean up pods when destroyed
+resource "null_resource" "pods_cleanup" {
+  for_each = local.nims
+  
+  triggers = {
+    name           = each.value.name
+    runpod_api_key = var.runpod_api_key
+    output_file    = "${path.module}/terraform.tfstate.pods"
   }
 
   provisioner "local-exec" {
     when    = destroy
     command = <<-EOT
       runpodctl remove pods ${self.triggers.name} || true
-      rm ${path.module}/terraform.tfstate.pods || true
+      rm -f ${self.triggers.output_file} || true
     EOT
   }
 
-  depends_on = [data.external.registry_auth]
+  depends_on = [data.external.pods]
 }
 
 output "pods" {
-  value       = fileexists("${path.module}/terraform.tfstate.pods") ? jsondecode(file("${path.module}/terraform.tfstate.pods")) : {}
-  description = "Information about the created pods"
-
-  depends_on = [ null_resource.pods ]
+  description = "Map of created pods with their details"
+  
+  # Return only the state file content if it exists, otherwise use the external data
+  value = fileexists("${path.module}/terraform.tfstate.pods") ? (
+    jsondecode(file("${path.module}/terraform.tfstate.pods"))
+  ) : (
+    { for k, v in data.external.pods : k => v.result }
+  )
 }
