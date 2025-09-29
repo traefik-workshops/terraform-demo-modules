@@ -27,10 +27,6 @@ done
 
 echo "Starting pod management script" >&2
 
-# Debug: Print non-sensitive parameters
-echo "Processing pod: $NAME" >&2
-echo "Output file: $OUTPUT_FILE" >&2
-
 # Verify required parameters
 if [ -z "${REGISTRY_AUTH_ID:-}" ]; then
     jq -n --arg error 'registry_auth_id is required' '{error: $error}'

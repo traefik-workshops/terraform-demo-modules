@@ -2,6 +2,7 @@ resource "null_resource" "pods" {
   for_each = local.nims
 
   triggers = {
+    always_run       = "${timestamp()}"
     name             = each.value.name
     image            = each.value.image
     tag              = each.value.tag

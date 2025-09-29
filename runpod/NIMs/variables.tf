@@ -46,7 +46,7 @@ variable "content_safety_nim" {
     tag     = string
   })
   default = {
-    enabled = false
+    enabled = true
     image   = "nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-content-safety"
     tag     = "latest"
   }
@@ -61,7 +61,7 @@ variable "jailbreak_detection_nim" {
     tag     = string
   })
   default = {
-    enabled = false
+    enabled = true
     image   = "nvcr.io/nim/nvidia/nemoguard-jailbreak-detect"
     tag     = "latest"
   }

@@ -11,12 +11,6 @@ username=$(echo "$input" | jq -r '.username')
 password=$(echo "$input" | jq -r '.password')
 runpod_api_key=$(echo "$input" | jq -r '.runpod_api_key')
 
-# Debug: Print received values
-echo "Action: $action" >&2
-echo "Name: $name" >&2
-echo "Username: $username" >&2
-echo "RunPod API Key: ${runpod_api_key:0:5}..." >&2
-
 # Base URL for RunPod API
 RUNPOD_API="https://rest.runpod.io/v1/containerregistryauth"
 
@@ -36,9 +30,6 @@ runpod_api_request() {
   if [ -n "$data" ]; then
     curl_cmd+=("-d" "$data")
   fi
-  
-  # Add verbose output for debugging
-  echo "API Request: ${curl_cmd[@]}" >&2
   
   # Execute the command and capture response and status
   local response
@@ -73,9 +64,6 @@ case "$action" in
     # First, try to list all registry auths
     AUTH_RESPONSE=$(runpod_api_request "GET" "")
     
-    # Debug: Print API response
-    echo "API Response: $AUTH_RESPONSE" >&2
-    
     # Check if we got a valid response
     if [ -n "$AUTH_RESPONSE" ]; then
       # Check if the response is an array (expected format for list)
@@ -102,12 +90,6 @@ case "$action" in
       echo "Sending create request with data: $create_data" >&2
       RESPONSE=$(runpod_api_request "POST" "" "$create_data")
       
-      # Debug: Print raw response
-      echo "Raw create response: $RESPONSE" >&2
-      
-      # Debug: Print create response
-      echo "Create Response: $RESPONSE" >&2
-      
       # Extract the ID from the response
       AUTH_ID=$(echo "$RESPONSE" | jq -r '.id // empty')
       
@@ -127,9 +109,6 @@ case "$action" in
     
     # First, try to find the auth by name
     AUTH_RESPONSE=$(runpod_api_request "GET" "")
-    
-    # Debug: Print API response
-    echo "API Response: $AUTH_RESPONSE" >&2
     
     # Check if we got a valid response
     if [ -n "$AUTH_RESPONSE" ]; then
