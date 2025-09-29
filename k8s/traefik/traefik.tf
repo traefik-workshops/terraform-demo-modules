@@ -50,7 +50,7 @@ resource "kubernetes_secret" "traefik-hub-license" {
 }
 
 resource "helm_release" "traefik" {
-  name             = "traefik"
+  name             = var.name
   repository       = "https://traefik.github.io/charts"
   chart            = "traefik"
   version          = var.traefik_chart_version

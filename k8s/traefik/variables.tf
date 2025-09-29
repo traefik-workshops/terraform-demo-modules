@@ -1,3 +1,9 @@
+variable "name" {
+  description = "The name of the traefik release"
+  type        = string
+  default     = "traefik"
+}
+
 variable "namespace" {
   description = "Namespace for the Traefik Hub deployment"
   type        = string

@@ -28,7 +28,7 @@ locals {
 }
 
 resource "helm_release" "grafana" {
-  name       = "grafana"
+  name       = var.name
   namespace  = var.namespace
   repository = "https://grafana.github.io/helm-charts"
   chart      = "grafana"

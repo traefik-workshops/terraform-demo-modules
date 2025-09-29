@@ -1,3 +1,9 @@
+variable "name" {
+  type        = string
+  description = "The name of the loki release"
+  default     = "loki"
+}
+
 variable "namespace" {
   type        = string
   description = "Namespace for the Grafana deployment"
