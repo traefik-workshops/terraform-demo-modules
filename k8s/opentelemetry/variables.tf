@@ -1,3 +1,15 @@
+variable "name" {
+  type        = string
+  description = "The name of the opentelemetry release"
+  default     = "opentelemetry"
+}
+
+variable "namespace" {
+  type        = string
+  description = "The namespace of the opentelemetry release"
+  default     = "traefik-observability"
+}
+
 variable "enable_prometheus" {
   type        = bool
   description = "Enable Prometheus observability module"

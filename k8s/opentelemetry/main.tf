@@ -66,8 +66,8 @@ locals {
 }
 
 resource "helm_release" "opentelemetry" {
-  name       = "opentelemetry"
-  namespace  = "traefik-observability"
+  name       = var.name
+  namespace  = var.namespace
   repository = "https://open-telemetry.github.io/opentelemetry-helm-charts"
   chart      = "opentelemetry-collector"
   version    = "0.127.2"
