@@ -50,6 +50,7 @@ variable "dash0_auth_token" {
   type        = string
   description = "Dash0 auth token"
   sensitive   = true
+  default     = ""
 }
 
 variable "dash0_dataset" {
