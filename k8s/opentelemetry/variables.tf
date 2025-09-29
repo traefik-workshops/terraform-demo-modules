@@ -17,9 +17,9 @@ variable "enable_prometheus" {
 }
 
 variable "prometheus_port" {
-  type        = string
+  type        = number
   description = "Prometheus port"
-  default     = "8889"
+  default     = 8889
 }
 
 variable "enable_loki" {
