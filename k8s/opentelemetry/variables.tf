@@ -16,16 +16,34 @@ variable "enable_prometheus" {
   default     = false
 }
 
+variable "prometheus_port" {
+  type        = string
+  description = "Prometheus port"
+  default     = "8889"
+}
+
 variable "enable_loki" {
   type        = bool
   description = "Enable Grafana Loki observability module"
   default     = false
 }
 
+variable "loki_endpoint" {
+  type        = string
+  description = "Loki endpoint"
+  default     = ""
+}
+
 variable "enable_tempo" {
   type        = bool
   description = "Enable Grafana Tempo observability module"
   default     = false
+}
+
+variable "tempo_endpoint" {
+  type        = string
+  description = "Tempo endpoint"
+  default     = ""
 }
 
 variable "enable_new_relic" {

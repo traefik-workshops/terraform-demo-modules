@@ -74,122 +74,92 @@ resource "helm_release" "opentelemetry" {
   timeout    = 900
   atomic     = true
 
-  set = concat(local.service_pipelines, [
-    {
-      name = "mode"
-      value = "deployment"
-    },
-    {
-      name = "image.repository"
-      value = "otel/opentelemetry-collector-contrib"
-    },
-    {
-      name = "image.tag"
-      value = "latest"
-    },
-    {
-      name = "ports.metrics.enabled"
-      value = true
-    },
-    {
-      name = "ports.metrics.containerPort"
-      value = 8889
-    },
-    {
-      name = "ports.metrics.servicePort"
-      value = 8889
-    },
-    {
-      name = "config.receivers.otlp.protocols.http.endpoint"
-      value = "0.0.0.0:4318"
-    },
-    {
-      name = "config.receivers.otlp.protocols.grpc.endpoint"
-      value = "0.0.0.0:4317"
-    },
-    {
-      name = "config.processors.batch.timeout"
-      value = "5s"
-    },
-    {
-      name = "config.connectors.spanmetrics.exemplars.enabled"
-      value = true
-    },
-    {
-      name = "config.connectors.spanmetrics.dimensions[0].name"
-      value = "entry_point"
-    },
-    {
-      name = "config.connectors.spanmetrics.dimensions[1].name"
-      value = "server.address"
-    },
-    {
-      name = "config.connectors.spanmetrics.dimensions[2].name"
-      value = "http.request.method"
-    },
-    {
-      name = "config.connectors.spanmetrics.dimensions[3].name"
-      value = "http.response.status_code"
-    },
-    {
-      name = "config.connectors.spanmetrics.dimensions[4].name"
-      value = "http.response.header.x-cache-status"
-    },
-    {
-      name = "config.connectors.spanmetrics.resource_metrics_key_attributes"
-      value = "service.name"
-    },
-    {
-      name = "config.exporters.otlphttp\\/loki.endpoint"
-      value = "http://loki.traefik-observability:3100/otlp"
-    },
-    {
-      name = "config.exporters.otlphttp\\/loki.tls.insecure"
-      value = true
-    },
-    {
-      name = "config.exporters.otlphttp\\/tempo.endpoint"
-      value = "http://tempo.traefik-observability:4318"
-    },
-    {
-      name = "config.exporters.otlphttp\\/tempo.tls.insecure"
-      value = true
-    },
-    {
-      name = "config.exporters.otlphttp\\/nri.endpoint"
-      value = var.newrelic_endpoint
-    },
-    {
-      name = "config.exporters.otlphttp\\/nri.headers.api-key"
-      value = var.newrelic_license_key
-    },
-    {
-      name = "config.exporters.otlphttp\\/honeycomb.endpoint"
-      value = var.honeycomb_endpoint
-    },
-    {
-      name = "config.exporters.otlphttp\\/honeycomb.headers.x-honeycomb-team"
-      value = var.honeycomb_api_key
-    },
-    {
-      name = "config.exporters.otlphttp\\/honeycomb.headers.x-honeycomb-dataset"
-      value = var.honeycomb_dataset
-    },
-    {
-      name = "config.exporters.otlphttp\\/dash0.endpoint"
-      value = var.dash0_endpoint
-    },
-    {
-      name = "config.exporters.otlphttp\\/dash0.headers.Authorization"
-      value = "Bearer ${var.dash0_auth_token}"
-    },
-    {
-      name = "config.exporters.otlphttp\\/dash0.headers.Dash0-Dataset"
-      value = var.dash0_dataset
-    },
-    {
-      name = "config.exporters.prometheus.endpoint"
-      value = "0.0.0.0:8889"
-    }
-  ])
+  values = [
+    yamlencode({
+      mode = "deployment"
+      image = {
+        repository = "otel/opentelemetry-collector-contrib"
+        tag = "latest"
+      }
+      ports = {
+        metrics = {
+          enabled = true
+          containerPort = var.prometheus_port
+          servicePort = var.prometheus_port
+        }
+      }
+      config = {
+        receivers = {
+          otlp = {
+            protocols = {
+              http = {
+                endpoint = "0.0.0.0:4318"
+              }
+              grpc = {
+                endpoint = "0.0.0.0:4317"
+              }
+            }
+          }
+        }
+        processors = {
+          batch = {
+            timeout = "5s"
+          }
+        }
+        connectors = {
+          spanmetrics = {
+            exemplars = {
+              enabled = true
+            }
+            dimensions = [
+              { name = "entry_point" },
+              { name = "server.address" },
+              { name = "http.request.method" },
+              { name = "http.response.status_code" },
+              { name = "http.response.header.x-cache-status" }
+            ]
+            resource_metrics_key_attributes = "service.name"
+          }
+        }
+        exporters = {
+          otlphttp = {
+            loki = var.enable_loki ? {
+              endpoint = var.loki_endpoint
+              tls = {
+                insecure = true
+              }
+            } : null
+            tempo = var.enable_tempo ? {
+              endpoint = var.tempo_endpoint
+              tls = {
+                insecure = true
+              }
+            } : null
+            nri = var.enable_new_relic ? {
+              endpoint = var.newrelic_endpoint
+              headers = {
+                api-key = var.newrelic_license_key
+              }
+            } : null
+            dash0 = var.enable_dash0 ? {
+              endpoint = var.dash0_endpoint
+              headers = {
+                Authorization = "Bearer ${var.dash0_auth_token}"
+                Dash0-Dataset = var.dash0_dataset
+              }
+            } : null
+            honeycomb = var.enable_honeycomb ? {
+              endpoint = var.honeycomb_endpoint
+              headers = {
+                x-honeycomb-team = var.honeycomb_api_key
+                x-honeycomb-dataset = var.honeycomb_dataset
+              }
+            } : null
+          }
+        }
+      }
+    })
+  ]
+
+  set = local.service_pipelines
 }
