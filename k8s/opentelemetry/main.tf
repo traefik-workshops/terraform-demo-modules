@@ -122,43 +122,49 @@ resource "helm_release" "opentelemetry" {
           }
         }
         exporters = {
-          otlphttp = {
-            loki = var.enable_loki ? {
-              endpoint = var.loki_endpoint
-              tls = {
-                insecure = true
+          otlphttp = merge(
+            var.enable_loki ? {
+              loki = {
+                endpoint = var.loki_endpoint
+                tls = {
+                  insecure = true
+                }
               }
-            } : null
-            tempo = var.enable_tempo ? {
-              endpoint = var.tempo_endpoint
-              tls = {
-                insecure = true
+            } : {}, var.enable_tempo ? {
+              tempo = {
+                endpoint = var.tempo_endpoint
+                tls = {
+                  insecure = true
+                }
+              } 
+            } : {}, var.enable_new_relic ? {
+              nri = {
+                endpoint = var.newrelic_endpoint
+                headers = {
+                  api-key = var.newrelic_license_key
+                }
               }
-            } : null
-            nri = var.enable_new_relic ? {
-              endpoint = var.newrelic_endpoint
-              headers = {
-                api-key = var.newrelic_license_key
+            } : {}, var.enable_dash0 ? {
+              dash0 = {
+                endpoint = var.dash0_endpoint
+                headers = {
+                  Authorization = "Bearer ${var.dash0_auth_token}"
+                  Dash0-Dataset = var.dash0_dataset
+                }
               }
-            } : null
-            dash0 = var.enable_dash0 ? {
-              endpoint = var.dash0_endpoint
-              headers = {
-                Authorization = "Bearer ${var.dash0_auth_token}"
-                Dash0-Dataset = var.dash0_dataset
+            } : {}, var.enable_honeycomb ? {
+              honeycomb = {
+                endpoint = var.honeycomb_endpoint
+                headers = {
+                  x-honeycomb-team = var.honeycomb_api_key
+                  x-honeycomb-dataset = var.honeycomb_dataset
+                }
               }
-            } : null
-            honeycomb = var.enable_honeycomb ? {
-              endpoint = var.honeycomb_endpoint
-              headers = {
-                x-honeycomb-team = var.honeycomb_api_key
-                x-honeycomb-dataset = var.honeycomb_dataset
-              }
-            } : null
+            } : {}, {})
           }
         }
       }
-    })
+    )
   ]
 
   set = local.service_pipelines
