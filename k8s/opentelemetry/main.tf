@@ -124,28 +124,28 @@ resource "helm_release" "opentelemetry" {
         exporters = {
           otlphttp = merge(
             var.enable_loki ? {
-              loki = {
+              "otlphttp/loki" = {
                 endpoint = var.loki_endpoint
                 tls = {
                   insecure = true
                 }
               }
             } : {}, var.enable_tempo ? {
-              tempo = {
+              "otlphttp/tempo" = {
                 endpoint = var.tempo_endpoint
                 tls = {
                   insecure = true
                 }
               } 
             } : {}, var.enable_new_relic ? {
-              nri = {
+              "otlphttp/nri" = {
                 endpoint = var.newrelic_endpoint
                 headers = {
                   api-key = var.newrelic_license_key
                 }
               }
             } : {}, var.enable_dash0 ? {
-              dash0 = {
+              "otlphttp/dash0" = {
                 endpoint = var.dash0_endpoint
                 headers = {
                   Authorization = "Bearer ${var.dash0_auth_token}"
@@ -153,7 +153,7 @@ resource "helm_release" "opentelemetry" {
                 }
               }
             } : {}, var.enable_honeycomb ? {
-              honeycomb = {
+              "otlphttp/honeycomb" = {
                 endpoint = var.honeycomb_endpoint
                 headers = {
                   x-honeycomb-team = var.honeycomb_api_key
