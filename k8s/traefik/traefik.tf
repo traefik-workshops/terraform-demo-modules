@@ -240,3 +240,14 @@ resource "helm_release" "traefik" {
 
   depends_on = [kubernetes_secret.traefik-hub-license, helm_release.traefik-crds]
 }
+
+module "redis" {
+  source = "../tools/redis"
+
+  name         = "traefik-redis"
+  namespace    = var.namespace
+  password     = var.redis_password
+  replicaCount = 1
+
+  count = var.enable_api_management ? 1 : 0
+}
