@@ -9,14 +9,15 @@ variable "namespace" {
   type        = string
 }
 
+
 variable "password" {
   description = "Redis password"
   type        = string
   default     = "topsecretpassword"
 }
 
-variable "replicaCount" {
-  description = "Number of replicas for the Traefik Hub deployment"
-  type        = number
-  default     = 1
+variable "database" {
+  description = "Database name"
+  type        = string
+  default     = "postgres"
 }

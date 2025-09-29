@@ -1,0 +1,23 @@
+resource "helm_release" "postgres" {
+  name       = var.name
+  namespace  = var.namespace
+  repository = "oci://registry-1.docker.io/"
+  chart      = "cloudpirates/postgres"
+  version    = "0.6.1"
+  timeout    = 900
+  atomic     = true
+
+  values = [
+    yamlencode({
+      auth = {
+        database = var.database
+        password = var.password
+      }
+      primary = {
+        persistentVolumeClaimRetentionPolicy = {
+          whenDeleted = "Delete"
+        }
+      }
+    })
+  ]
+}
