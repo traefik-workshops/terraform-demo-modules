@@ -130,7 +130,7 @@ spec:
       secret: keycloak-secret
   db:
     vendor: postgres
-    host: keycloak-postgres-postgresql.traefik-security.svc
+    host: keycloak-postgres
     port: 5432
     database: keycloak-db
     usernameSecret:
