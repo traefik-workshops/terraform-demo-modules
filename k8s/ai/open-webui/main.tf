@@ -7,59 +7,39 @@ resource "helm_release" "open_webui" {
   timeout    = 900
   atomic     = true
 
-  set = [
-    {
-      name = "ollama.enabled"
-      value = "false"
-    },
-    {
-      name = "pipelines.enabled"
-      value = "false"
-    },
-    {
-      name = "ingress.enabled"
-      value = "true"
-    },
-    {
-      name = "extraEnvVars[0].name"
-      value = "DEFAULT_USER_ROLE"
-    },
-    {
-      name = "extraEnvVars[0].value"
-      value = "admin"
-    },
-    {
-      name = "extraEnvVars[1].name"
-      value = "WEBUI_NAME"
-    },
-    {
-      name = "extraEnvVars[1].value"
-      value = "Traefik Chat"
-    },
-    {
-      name = "extraEnvVars[2].name"
-      value = "USE_CUDA_DOCKER"
-    },
-    {
-      name = "extraEnvVars[2].value"
-      type = "string"
-      value = "false"
-    },
-    {
-      name = "extraEnvVars[3].name"
-      value = "OPENAI_API_BASE_URLS"
-    },
-    {
-      name = "extraEnvVars[3].value"
-      value = join(";", var.openai_api_base_urls)
-    },
-    {
-      name = "extraEnvVars[4].name"
-      value = "OPENAI_API_KEYS"
-    },
-    {
-      name = "extraEnvVars[4].value"
-      value = join(";", var.openai_api_keys)
-    }
+  values = [
+    yamlencode({
+      ollama = {
+        enabled = false
+      }
+      pipelines = {
+        enabled = false
+      }
+      extraEnvVars = [
+        {
+          name = "DEFAULT_USER_ROLE"
+          value = "admin"
+        },
+        {
+          name = "WEBUI_NAME"
+          value = "Traefik Chat"
+        },
+        {
+          name = "USE_CUDA_DOCKER"
+          value = "false"
+        },
+        {
+          name = "OPENAI_API_BASE_URLS"
+          value = join(";", var.openai_api_base_urls)
+        },
+        {
+          name = "OPENAI_API_KEYS"
+          value = join(";", var.openai_api_keys)
+        }
+      ]
+    }),
+    yamlencode({
+      extraValues = var.extraValues
+    })
   ]
 }

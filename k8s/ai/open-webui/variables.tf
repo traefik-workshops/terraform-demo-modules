@@ -21,3 +21,9 @@ variable "openai_api_keys" {
   default     = []
   description = "OpenAI API keys"
 }
+
+variable "extraValues" {
+  type = any
+  description = "Extra values to pass to the Grafana deployment."
+  default     = {}
+}
