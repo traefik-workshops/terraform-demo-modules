@@ -33,12 +33,7 @@ locals {
       name = "config.service.pipelines.metrics.processors[0]"
       value = "batch"
     }
-  ], var.enable_prometheus ? [
-    {
-      name = "config.service.pipelines.metrics.receivers[1]"
-      value = "spanmetrics"
-    }
-  ] : [], [ for exporter in local.metric_exporters : {
+  ], [ for exporter in local.metric_exporters : {
     name = "config.service.pipelines.metrics.exporters[${index(local.metric_exporters, exporter)}]"
     value = exporter
   }]) : []
@@ -55,12 +50,7 @@ locals {
   ], [ for exporter in local.trace_exporters : {
     name = "config.service.pipelines.traces.exporters[${index(local.trace_exporters, exporter)}]"
     value = exporter
-  }], var.enable_prometheus ? [
-    {
-      name = "config.service.pipelines.traces.exporters[${length(local.trace_exporters)}]"
-      value = "spanmetrics"
-    }
-  ] : []) : []
+  }]) : []
 
   service_pipelines = concat(local.logs_pipeline, local.metrics_pipeline, local.traces_pipeline)
 }
@@ -104,21 +94,6 @@ resource "helm_release" "opentelemetry" {
         processors = {
           batch = {
             timeout = "5s"
-          }
-        }
-        connectors = {
-          spanmetrics = {
-            exemplars = {
-              enabled = true
-            }
-            dimensions = [
-              { name = "entry_point" },
-              { name = "server.address" },
-              { name = "http.request.method" },
-              { name = "http.response.status_code" },
-              { name = "http.response.header.x-cache-status" }
-            ]
-            resource_metrics_key_attributes = "service.name"
           }
         }
         exporters = merge(
