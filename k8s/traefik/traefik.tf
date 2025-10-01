@@ -14,11 +14,12 @@ locals {
 
   metrics_port = var.enable_prometheus ? {
     metrics = {
+      port = 9101
       expose = {
         default = true
       }
-      port = 9101
       exposePort = 9101
+      protocol = "TCP"
     }
   } : {}
 
