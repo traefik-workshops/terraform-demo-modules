@@ -23,7 +23,7 @@ variable "openai_api_keys" {
 }
 
 variable "extraValues" {
-  type = any
+  type        = any
   description = "Extra values to pass to the Grafana deployment."
   default     = {}
 }

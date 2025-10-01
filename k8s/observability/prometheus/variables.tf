@@ -34,7 +34,7 @@ variable "tolerations" {
 }
 
 variable "extraValues" {
-  type = object({})
+  type        = any
   description = "Extra values to pass to the Grafana deployment."
   default     = {}
 }
