@@ -13,14 +13,13 @@ locals {
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
-    metrics = {
+    prometheus = {
       port = 9101
       expose = {
         default = true
       }
       exposePort = 9101
       protocol = "TCP"
-    }
   } : {}
 
   ports = merge({
