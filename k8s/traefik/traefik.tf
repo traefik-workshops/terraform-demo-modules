@@ -20,6 +20,7 @@ locals {
       }
       exposePort = 9101
       protocol = "TCP"
+    }
   } : {}
 
   ports = merge({
