@@ -16,9 +16,9 @@ locals {
     metrics = {
       expose = {
         default = true
-        port = 9101
-        exposePort = 9101
       }
+      port = 9101
+      exposePort = 9101
     }
   } : {}
 
