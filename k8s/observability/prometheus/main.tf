@@ -29,6 +29,7 @@ resource "helm_release" "prometheus" {
       "prometheus-pushgateway" = {
         enabled = false
       }
-    })
+    }),
+    yamlencode(var.extraValues)
   ]
 }
