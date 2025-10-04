@@ -63,7 +63,6 @@ resource "helm_release" "traefik" {
   wait             = true
 
   values = [
-    # TODO: Consider a values.yaml file in the downstream repo instead of rebuilding it in TF
     yamlencode({
       hub = {
         token = var.enable_api_gateway || var.enable_api_management ? "traefik-hub-license" : ""
@@ -238,7 +237,8 @@ resource "helm_release" "traefik" {
 
       additionalArguments = local.additional_arguments
       extra_objects = local.extra_objects
-    })
+    }),
+    yamlencode(var.extra_values)
   ]
 
   depends_on = [kubernetes_secret.traefik-hub-license, helm_release.traefik-crds]

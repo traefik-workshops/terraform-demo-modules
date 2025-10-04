@@ -226,3 +226,9 @@ variable "custom_envs" {
   description = "Custom environment variables to use for the deployment"
   default     = []
 }
+
+variable "extra_values" {
+  type        = any
+  description = "Extra values to use for the deployment"
+  default     = {}
+}
