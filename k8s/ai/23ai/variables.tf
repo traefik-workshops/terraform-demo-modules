@@ -1,7 +1,7 @@
 variable "name" {
   type        = string
   description = "The name of the oracle-db StatefulSet and Service"
-  default     = "oracle_23ai_db"
+  default     = "oracledb"
 }
 
 variable "namespace" {
