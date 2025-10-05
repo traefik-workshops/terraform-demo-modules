@@ -167,5 +167,4 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
   }
 
   count = var.ingress == true ? 1 : 0
-  depends_on = [kubectl_manifest.keycloak_crd]
 }
