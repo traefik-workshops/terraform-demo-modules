@@ -38,8 +38,18 @@ resource "helm_release" "open_webui" {
         }
       ]
     }),
-    yamlencode({
-      extraValues = var.extraValues
-    })
+    yamlencode(var.extraValues),
+    yamlencode(var.ingress == true ? {
+      ingress = {
+        enabled = true
+        hosts = ["chat.traefik.cloud", "chat.traefik.localhost"]
+        annotations = {
+          "traefik.ingress.kubernetes.io/router.entrypoints" = "web"
+          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+        }
+      }
+    } : {})
   ]
 }

@@ -116,3 +116,56 @@ resource "kubernetes_service" "db" {
     type = "ClusterIP"
   }
 }
+
+resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
+  metadata {
+    name = var.name
+    namespace = var.namespace
+    annotations = {
+      "traefik.ingress.kubernetes.io/router.entrypoints" = "traefik"
+      "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+      "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
+      "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+    }
+  }
+
+  spec {
+    rule {
+      host = "oracle.traefik.cloud"
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = var.name
+              port {
+                number = var.container_port
+              }
+            }
+          }
+        }
+      }
+    }
+    rule {
+      host = "oracle.traefik.localhost"
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = var.name
+              port {
+                number = var.container_port
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  count = var.ingress == true ? 1 : 0
+  depends_on = [kubectl_manifest.keycloak_crd]
+}

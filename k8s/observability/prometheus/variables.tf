@@ -7,7 +7,7 @@ variable "name" {
 
 variable "namespace" {
   type        = string
-  description = "Namespace for the Grafana deployment"
+  description = "Namespace for the Prometheus deployment"
 }
 
 variable "traefik_metrics_job_url" {
@@ -29,12 +29,18 @@ variable "tolerations" {
     value    = string
     effect   = string
   }))
-  description = "Tolerations for the Grafana deployment."
+  description = "Tolerations for the Prometheus deployment."
   default     = []
 }
 
 variable "extraValues" {
   type        = any
-  description = "Extra values to pass to the Grafana deployment."
+  description = "Extra values to pass to the Prometheus deployment."
   default     = {}
+}
+
+variable "ingress" {
+  type        = bool
+  description = "Enable Ingress for the Prometheus deployment."
+  default     = true
 }

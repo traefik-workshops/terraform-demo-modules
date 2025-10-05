@@ -56,6 +56,21 @@ resource "helm_release" "grafana" {
       }
       tolerations = var.tolerations
     }),
-    yamlencode(var.extraValues)
+    yamlencode(var.extraValues),
+    yamlencode(var.ingress == true ? {
+      ingress = {
+        enabled = true
+        hosts = [
+          "grafana.traefik.cloud",
+          "grafana.traefik.localhost"
+        ]
+        annotations = {
+          "traefik.ingress.kubernetes.io/router.entrypoints" = "traefik"
+          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+        }
+      }
+    } : {})
   ]
 }

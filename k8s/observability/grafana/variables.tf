@@ -64,3 +64,9 @@ variable "extraValues" {
   description = "Extra values to pass to the Grafana deployment."
   default     = {}
 }
+
+variable "ingress" {
+  type        = bool
+  description = "Enable Ingress for the Grafana deployment."
+  default     = true
+}

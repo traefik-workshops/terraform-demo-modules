@@ -30,6 +30,20 @@ resource "helm_release" "prometheus" {
         enabled = false
       }
     }),
-    yamlencode(var.extraValues)
+    yamlencode(var.extraValues),
+    yamlencode(var.ingress == true ? {
+      prometheus = {
+        ingress = {
+          enabled = true
+          hosts = ["prometheus.traefik.cloud", "prometheus.traefik.localhost"]
+          annotations = {
+            "traefik.ingress.kubernetes.io/router.entrypoints" = "traefik"
+            "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+            "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
+            "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+          }
+        }
+      }
+    } : {})
   ]
 }

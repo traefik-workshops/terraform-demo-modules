@@ -45,3 +45,9 @@ variable "oracle_characterset" {
   default = "AL32UTF8"
   description = "Oracle database character set."
 }
+
+variable "ingress" {
+  type        = bool
+  default     = true
+  description = "Enable Ingress for the oracle-db service"
+}

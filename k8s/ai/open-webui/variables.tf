@@ -22,6 +22,12 @@ variable "openai_api_keys" {
   description = "OpenAI API keys"
 }
 
+variable "ingress" {
+  type        = bool
+  default     = false
+  description = "Enable ingress for the open-webui release"
+}
+
 variable "extraValues" {
   type        = any
   description = "Extra values to pass to the Grafana deployment."
