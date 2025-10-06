@@ -79,6 +79,7 @@ resource "helm_release" "traefik" {
         } : {}
         platformUrl = var.enable_preview_mode ? "https://api-preview.hub.traefik.io/agent" : ""
         offline = var.enable_offline_mode
+        sendlogs = false
       }
       ingressRoute = {
         dashboard = {
