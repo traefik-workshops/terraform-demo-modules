@@ -1,8 +1,0 @@
-{
-  "gpt-oss-20b": {
-    "id": "q11si1q40okywf",
-    "name": "gpt-oss-20b",
-    "desiredStatus": "RUNNING",
-    "host": "https://q11si1q40okywf-8000.proxy.runpod.net/"
-  }
-}
