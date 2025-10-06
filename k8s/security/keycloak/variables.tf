@@ -19,3 +19,9 @@ variable "users" {
   description = "List of users to create in the security module"
   type        = list(string)
 }
+
+variable "redirect_uris" {
+  type        = list(string)
+  default     = []
+  description = "Allowed callback URL for the authentication flow"
+}
