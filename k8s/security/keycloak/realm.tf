@@ -574,7 +574,7 @@ spec:
         secret: 'NoTgoLZpbrr5QvbNDIRIvmZOhe9wI0r0'
         redirectUris:
           - /*
-${indent(10, join("\n", [for uri in var.redirect_uris : "- ${uri}"]))}
+${join("\n", [for uri in var.redirect_uris : "          - ${uri}"])}
         webOrigins:
           - /*
         notBefore: 0
