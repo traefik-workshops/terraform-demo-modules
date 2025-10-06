@@ -74,7 +74,7 @@ resource "helm_release" "traefik" {
           maxRequestBodySize = 1048576
         }
         redis = var.enable_api_management ? {
-          endpoints = "traefik-redis-master.${var.namespace}.svc:6379"
+          endpoints = "traefik-redis.${var.namespace}.svc:6379"
           password  = var.redis_password
         } : {}
         platformUrl = var.enable_preview_mode ? "https://api-preview.hub.traefik.io/agent" : ""
