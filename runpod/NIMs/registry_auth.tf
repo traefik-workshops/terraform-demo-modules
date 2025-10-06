@@ -2,10 +2,10 @@ data "external" "registry_auth" {
   program = ["bash", "${path.module}/scripts/manage_registry_auth.sh"]
 
   query = {
-    action       = "create"
-    name         = "ngc-nvcr-registry-auth"
-    username     = var.ngc_username
-    password     = var.ngc_token
+    action         = "create"
+    name           = "ngc-nvcr-registry-auth"
+    username       = var.ngc_username
+    password       = var.ngc_token
     runpod_api_key = var.runpod_api_key
   }
 }

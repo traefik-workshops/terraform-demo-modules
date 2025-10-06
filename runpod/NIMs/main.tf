@@ -4,26 +4,42 @@ terraform {
 
 locals {
   nims = merge(
-    var.topic_control_nim.enabled ? {
+    var.enable_topic_control_nim ? {
       topic_control = {
-        name  = "topic-control-nim"
-        image = var.topic_control_nim.image
-        tag   = var.topic_control_nim.tag
+        name     = "topic-control-nim"
+        image    = "nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-topic-control"
+        tag      = "latest"
+        command  = ""
+        pod_type = var.pod_type
       }
     } : {},
-    var.content_safety_nim.enabled ? {
+    var.enable_content_safety_nim ? {
       content_safety = {
-        name  = "content-safety-nim"
-        image = var.content_safety_nim.image
-        tag   = var.content_safety_nim.tag
+        name     = "content-safety-nim"
+        image    = "nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-content-safety"
+        tag      = "latest"
+        command  = ""
+        pod_type = var.pod_type
       }
     } : {},
-    var.jailbreak_detection_nim.enabled ? {
+    var.enable_jailbreak_detection_nim ? {
       jailbreak_detection = {
-        name  = "jailbreak-detection-nim"
-        image = var.jailbreak_detection_nim.image
-        tag   = var.jailbreak_detection_nim.tag
+        name     = "jailbreak-detection-nim"
+        image    = "nvcr.io/nim/nvidia/nemoguard-jailbreak-detect"
+        tag      = "latest"
+        command  = ""
+        pod_type = var.pod_type
       }
     } : {}
   )
+}
+
+module "nims" {
+  # source = "../pod"
+  source = "/Users/zaidalbirawi/dev/terraform-demo-modules/runpod/pod"
+
+  runpod_api_key   = var.runpod_api_key
+  ngc_token        = var.ngc_token
+  pods             = local.nims
+  registry_auth_id = data.external.registry_auth.result.id
 }

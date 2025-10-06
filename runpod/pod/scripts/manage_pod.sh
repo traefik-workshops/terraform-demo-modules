@@ -37,12 +37,14 @@ NGC_TOKEN=$(echo "$input" | jq -r '.ngc_token // empty')
 POD_TYPE=$(echo "$input" | jq -r '.pod_type // empty')
 REGISTRY_AUTH_ID=$(echo "$input" | jq -r '.registry_auth_id // empty')
 OUTPUT_FILE=$(echo "$input" | jq -r '.output_file // empty')
+COMMAND=$(echo "$input" | jq -r '.command // empty')
+HF_TOKEN=$(echo "$input" | jq -r '.hugging_face_api_key // empty')
 
 echo "Starting pod management script" >&2
 
 # Verify required parameters
-if [ -z "$NAME" ] || [ -z "$IMAGE" ] || [ -z "$TAG" ] || [ -z "$RUNPOD_API_KEY" ] || [ -z "$NGC_TOKEN" ] || [ -z "$POD_TYPE" ] || [ -z "$REGISTRY_AUTH_ID" ] || [ -z "$OUTPUT_FILE" ]; then
-    json_response "error" "Missing required parameters. Required: name, image, tag, runpod_api_key, ngc_token, pod_type, registry_auth_id, output_file"
+if [ -z "$NAME" ] || [ -z "$IMAGE" ] || [ -z "$TAG" ] || [ -z "$RUNPOD_API_KEY" ] || [ -z "$POD_TYPE" ] || [ -z "$OUTPUT_FILE" ]; then
+    json_response "error" "Missing required parameters. Required: name, image, tag, runpod_api_key, pod_type, output_file"
 fi
 
 # Initialize output file if it doesn't exist
@@ -96,7 +98,7 @@ else
     # Create new pod
     QUERY=$(cat <<EOF
     {
-      "query": "mutation { podFindAndDeployOnDemand(input: { cloudType: ALL name: \"$NAME\" containerDiskInGb: 40 volumeInGb: 0 gpuCount: 1 gpuTypeId: \"$POD_TYPE\" imageName: \"$IMAGE:$TAG\" ports: \"8000/http\" containerRegistryAuthId: \"$REGISTRY_AUTH_ID\" env: [ { key: \"NGC_API_KEY\", value: \"$NGC_TOKEN\" } ] } ) { id name desiredStatus } }"
+      "query": "mutation { podFindAndDeployOnDemand(input: { cloudType: ALL name: \"$NAME\" containerDiskInGb: 40 volumeInGb: 0 gpuCount: 1 gpuTypeId: \"$POD_TYPE\" imageName: \"$IMAGE:$TAG\" ports: \"8000/http\" containerRegistryAuthId: \"$REGISTRY_AUTH_ID\" env: [ { key: \"NGC_API_KEY\", value: \"$NGC_TOKEN\" }, { key: \"HF_TOKEN\", value: \"$HF_TOKEN\" } ] dockerArgs: \"$COMMAND\" }) { id name desiredStatus } }"
     }
 EOF
     )

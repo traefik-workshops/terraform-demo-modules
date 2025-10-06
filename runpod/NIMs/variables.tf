@@ -23,46 +23,22 @@ variable "pod_type" {
 }
 
 # Topic Control NIM
-variable "topic_control_nim" {
+variable "enable_topic_control_nim" {
   description = "Configuration for Topic Control NIM"
-  type = object({
-    enabled = bool
-    image   = string
-    tag     = string
-  })
-  default = {
-    enabled = true
-    image   = "nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-topic-control"
-    tag     = "latest"
-  }
+  type        = bool
+  default     = false
 }
 
 # Content Safety NIM
-variable "content_safety_nim" {
+variable "enable_content_safety_nim" {
   description = "Configuration for Content Safety NIM"
-  type = object({
-    enabled = bool
-    image   = string
-    tag     = string
-  })
-  default = {
-    enabled = true
-    image   = "nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-content-safety"
-    tag     = "latest"
-  }
+  type        = bool
+  default     = false
 }
 
 # Jailbreak Detection NIM
-variable "jailbreak_detection_nim" {
+variable "enable_jailbreak_detection_nim" {
   description = "Configuration for Jailbreak Detection NIM"
-  type = object({
-    enabled = bool
-    image   = string
-    tag     = string
-  })
-  default = {
-    enabled = true
-    image   = "nvcr.io/nim/nvidia/nemoguard-jailbreak-detect"
-    tag     = "latest"
-  }
+  type        = bool
+  default     = false
 }
