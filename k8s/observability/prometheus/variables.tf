@@ -42,7 +42,7 @@ variable "extra_values" {
 variable "ingress" {
   type        = bool
   description = "Enable Ingress for the Prometheus deployment."
-  default     = true
+  default     = false
 }
 
 variable "ingress_domain" {

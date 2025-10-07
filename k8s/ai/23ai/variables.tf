@@ -48,7 +48,7 @@ variable "oracle_characterset" {
 
 variable "ingress" {
   type        = bool
-  default     = true
+  default     = false
   description = "Enable Ingress for the oracle-db service"
 }
 
