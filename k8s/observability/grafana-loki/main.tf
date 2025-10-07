@@ -3,7 +3,7 @@ resource "helm_release" "loki" {
   namespace  = var.namespace
   repository = "https://grafana.github.io/helm-charts"
   chart      = "loki"
-  version    = "v6.41.1"
+  version    = "v6.42.0"
   timeout    = 900
   atomic     = true
 
@@ -12,12 +12,8 @@ resource "helm_release" "loki" {
       deploymentMode = "SingleBinary"
       singleBinary = {
         replicas = 1
-        extraArgs = [
-          "-config.expand-env=true"
-        ]
       }
       loki = {
-        auth_enabled = false
         commonConfig = {
           replication_factor = 1
         }
@@ -94,5 +90,12 @@ resource "helm_release" "loki" {
       }
     }),
     yamlencode(var.extra_values)
+  ]
+
+  set = [
+    {
+      name = "loki.auth_enabled"
+      value = false
+    }
   ]
 }
