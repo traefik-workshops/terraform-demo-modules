@@ -56,7 +56,7 @@ resource "helm_release" "grafana" {
       }
       tolerations = var.tolerations
     }),
-    yamlencode(var.extraValues),
+    yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true

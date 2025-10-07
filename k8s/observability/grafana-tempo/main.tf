@@ -17,6 +17,6 @@ resource "helm_release" "tempo" {
       }
       tolerations = var.tolerations
     }),
-    yamlencode(var.extraValues)
+    yamlencode(var.extra_values)
   ]
 }

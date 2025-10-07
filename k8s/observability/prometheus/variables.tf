@@ -33,7 +33,7 @@ variable "tolerations" {
   default     = []
 }
 
-variable "extraValues" {
+variable "extra_values" {
   type        = any
   description = "Extra values to pass to the Prometheus deployment."
   default     = {}

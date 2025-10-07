@@ -38,7 +38,7 @@ resource "helm_release" "open_webui" {
         }
       ]
     }),
-    yamlencode(var.extraValues),
+    yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true

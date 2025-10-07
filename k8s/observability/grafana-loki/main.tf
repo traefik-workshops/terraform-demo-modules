@@ -89,6 +89,6 @@ resource "helm_release" "loki" {
         replicas = 0
       }
     }),
-    yamlencode(var.extraValues)
+    yamlencode(var.extra_values)
   ]
 }

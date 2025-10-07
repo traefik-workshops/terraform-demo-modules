@@ -30,7 +30,7 @@ resource "helm_release" "prometheus" {
         enabled = false
       }
     }),
-    yamlencode(var.extraValues),
+    yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
       prometheus = {
         ingress = {
