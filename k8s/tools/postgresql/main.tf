@@ -13,6 +13,10 @@ resource "helm_release" "postgres" {
         database = var.database
         password = var.password
       }
+      persistentVolumeClaimRetentionPolicy = {
+        enabled     = true
+        whenDeleted = Delete
+      }
     })
   ]
 }
