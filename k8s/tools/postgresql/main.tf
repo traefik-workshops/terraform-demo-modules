@@ -15,7 +15,7 @@ resource "helm_release" "postgres" {
       }
       persistentVolumeClaimRetentionPolicy = {
         enabled     = true
-        whenDeleted = Delete
+        whenDeleted = "Delete"
       }
     })
   ]
