@@ -29,6 +29,9 @@ resource "helm_release" "prometheus" {
       "prometheus-pushgateway" = {
         enabled = false
       }
+      grafana = {
+        enabled = false
+      }
     }),
     yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
