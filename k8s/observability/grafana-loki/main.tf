@@ -12,6 +12,9 @@ resource "helm_release" "loki" {
       deploymentMode = "SingleBinary"
       singleBinary = {
         replicas = 1
+        extraArgs = [
+          "-config.expand-env=true"
+        ]
       }
       loki = {
         auth_enabled = {
