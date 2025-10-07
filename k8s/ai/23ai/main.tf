@@ -131,7 +131,7 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
 
   spec {
     rule {
-      host = "oracle.traefik.cloud"
+      host = "oracledb.traefik.cloud"
       http {
         path {
           path = "/"
@@ -148,7 +148,7 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
       }
     }
     rule {
-      host = "oracle.traefik.localhost"
+      host = "oracledb.traefik.localhost"
       http {
         path {
           path = "/"
