@@ -44,3 +44,9 @@ variable "ingress" {
   description = "Enable Ingress for the Prometheus deployment."
   default     = true
 }
+
+variable "ingress_domain" {
+  type        = string
+  default     = "cloud"
+  description = "The domain for the ingress, default is `cloud`"
+}

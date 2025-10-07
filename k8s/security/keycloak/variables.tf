@@ -15,6 +15,12 @@ variable "ingress" {
   description = "Enable ingress for the keycloak service"
 }
 
+variable "ingress_domain" {
+  type        = string
+  default     = "cloud"
+  description = "The domain for the ingress, default is `cloud`"
+}
+
 variable "users" {
   description = "List of users to create in the security module"
   type        = list(string)

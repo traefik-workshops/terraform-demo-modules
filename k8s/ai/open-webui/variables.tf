@@ -33,3 +33,9 @@ variable "extraValues" {
   description = "Extra values to pass to the Grafana deployment."
   default     = {}
 }
+
+variable "ingress_domain" {
+  type        = string
+  default     = "cloud"
+  description = "The domain for the ingress, default is `cloud`"
+}

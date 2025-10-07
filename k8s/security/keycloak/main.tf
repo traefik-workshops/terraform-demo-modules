@@ -163,7 +163,7 @@ resource "kubernetes_ingress_v1" "keycloak-traefik" {
 
   spec {
     rule {
-      host = "keycloak.traefik.cloud"
+      host = "keycloak.traefik.${var.ingress_domain}"
       http {
         path {
           path = "/"

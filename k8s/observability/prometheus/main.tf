@@ -35,7 +35,7 @@ resource "helm_release" "prometheus" {
       prometheus = {
         ingress = {
           enabled = true
-          hosts = ["prometheus.traefik.cloud", "prometheus.traefik.localhost"]
+          hosts = ["prometheus.traefik.${var.ingress_domain}", "prometheus.traefik.localhost"]
           annotations = {
             "traefik.ingress.kubernetes.io/router.entrypoints" = "traefik"
             "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"

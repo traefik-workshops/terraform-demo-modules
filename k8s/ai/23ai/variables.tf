@@ -51,3 +51,9 @@ variable "ingress" {
   default     = true
   description = "Enable Ingress for the oracle-db service"
 }
+
+variable "ingress_domain" {
+  type        = string
+  default     = "cloud"
+  description = "The domain for the ingress, default is `cloud`"
+}

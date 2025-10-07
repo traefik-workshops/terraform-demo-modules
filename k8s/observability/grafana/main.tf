@@ -61,7 +61,7 @@ resource "helm_release" "grafana" {
       ingress = {
         enabled = true
         hosts = [
-          "grafana.traefik.cloud",
+          "grafana.traefik.${var.ingress_domain}",
           "grafana.traefik.localhost"
         ]
         annotations = {
