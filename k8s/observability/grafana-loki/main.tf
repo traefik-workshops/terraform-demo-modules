@@ -14,6 +14,9 @@ resource "helm_release" "loki" {
         replicas = 1
       }
       loki = {
+        auth_enabled = {
+          enabled = false
+        }
         commonConfig = {
           replication_factor = 1
         }
