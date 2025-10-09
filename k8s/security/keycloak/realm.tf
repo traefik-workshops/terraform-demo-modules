@@ -1106,7 +1106,7 @@ ${join("\n", [for uri in var.redirect_uris : "          - '${uri}'"])}
               full.path: 'false'
               userinfo.token.claim: 'false'
               multivalued: 'true'
-              id.token.claim: 'false'
+              id.token.claim: 'true'
               access.token.claim: 'true'
               claim.name: group
     defaultDefaultClientScopes:
