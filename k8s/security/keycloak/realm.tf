@@ -593,7 +593,7 @@ ${join("\n", [for uri in var.redirect_uris : "          - '${uri}'"])}
           client.secret.creation.time: '1699497518'
           backchannel.logout.session.required: 'true'
           backchannel.logout.revoke.offline.tokens: 'false'
-          post.logout.redirect.uris: '${join("##", [for uri in var.redirect_uris : "${uri}"])}',
+          post.logout.redirect.uris: '${join("##", [for uri in var.redirect_uris : "${uri}"])}'
         authenticationFlowBindingOverrides: { }
         fullScopeAllowed: true
         nodeReRegistrationTimeout: -1
