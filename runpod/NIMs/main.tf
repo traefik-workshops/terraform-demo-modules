@@ -35,8 +35,7 @@ locals {
 }
 
 module "nims" {
-  # source = "../pod"
-  source = "/Users/zaidalbirawi/dev/terraform-demo-modules/runpod/pod"
+  source = "../pod"
 
   runpod_api_key   = var.runpod_api_key
   ngc_token        = var.ngc_token

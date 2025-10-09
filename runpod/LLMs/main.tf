@@ -25,8 +25,7 @@ locals {
 }
 
 module "llms" {
-  # source = "../pod"
-  source = "/Users/zaidalbirawi/dev/terraform-demo-modules/runpod/pod"
+  source = "../pod"
 
   runpod_api_key       = var.runpod_api_key
   hugging_face_api_key = var.hugging_face_api_key
