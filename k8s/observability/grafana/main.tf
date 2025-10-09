@@ -27,6 +27,27 @@ locals {
     }] : [])
 
     aigateway_dashboard = "aigateway-dashboards"
+    aigateway_path      = "/dashboards/hub/aigateway"
+
+    dashboardProviders = concat(var.dashboards.aigateway ? [{
+      name = local.aigateway_dashboard
+      orgId = "1"
+      type = "file"
+      disableDeletion = false
+      editable = true
+      updateIntervalSeconds = 10
+      options = {
+        path = local.aigateway_path
+      }
+    }] : [])
+
+    configmapMounts = concat(var.dashboards.aigateway ? [{
+      name      = local.aigateway_dashboard
+      mountPath = "${local.aigateway_path}/dashboard.json"
+      subPath   = "dashboard.json"
+      configMap = local.aigateway_dashboard
+      readOnly  = true
+    }] : [])
 }
 
 resource "helm_release" "grafana" {
@@ -56,6 +77,13 @@ resource "helm_release" "grafana" {
           datasources = local.datasources
         }
       }
+      dashboardProviders = {
+        "dashboardproviders.yaml" = {
+          apiVersion = 1
+          providers = local.dashboardProviders
+        }
+      }
+      extraConfigmapMounts = local.configmapMounts
       tolerations = var.tolerations
     }),
     yamlencode(var.extra_values),
@@ -73,34 +101,7 @@ resource "helm_release" "grafana" {
           "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
         }
       }
-    } : {}),
-    yamlencode(var.dashboards.aigateway ? {
-      dashboardProviders = {
-        "dashboardproviders.yaml" = {
-          apiVersion = 1
-          providers = [{
-              name = local.aigateway_dashboard
-              orgId = "1"
-              type = "file"
-              disableDeletion = false
-              editable = true
-              updateIntervalSeconds = 10
-              options = {
-                path = "/dashboards/hub/aigateway"
-              }
-            }
-          ]
-        }
-      }
-
-      extraConfigmapMounts = [{
-        name      = local.aigateway_dashboard
-        mountPath = "/dashboards/hub/aigateway/dashboard.json"
-        subPath   = "dashboard.json"
-        configMap = local.aigateway_dashboard
-        readOnly  = true
-      }]
-    } : 0)
+    } : {})
   ]
 }
 
