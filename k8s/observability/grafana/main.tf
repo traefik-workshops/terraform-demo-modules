@@ -25,6 +25,8 @@ locals {
       access = "proxy"
       isDefault = ! var.prometheus.enabled && ! var.tempo.enabled
     }] : [])
+
+    aigateway_dashboard = "aigateway-dashboards"
 }
 
 resource "helm_release" "grafana" {
@@ -71,6 +73,42 @@ resource "helm_release" "grafana" {
           "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
         }
       }
-    } : {})
+    } : {}),
+    yamlencode(var.dashboards.aigateway ? {
+      dashboardProviders = {
+        "dashboardproviders.yaml" = {
+          apiVersion = 1
+          providers = [{
+              name = local.aigateway_dashboard
+              orgId = "1"
+              type = "file"
+              disableDeletion = false
+              editable = true
+              updateIntervalSeconds = 10
+              options = {
+                path = "/dashboards/hub/aigateway"
+              }
+            }
+          ]
+        }
+      }
+
+      extraConfigmapMounts = [{
+        name      = local.aigateway_dashboard
+        mountPath = "/dashboards/hub/aigateway/dashboard.json"
+        subPath   = "dashboard.json"
+        configMap = local.aigateway_dashboard
+        readOnly  = true
+      }]
+    } : 0)
   ]
+}
+
+module "aigateway_dashboard" {
+  source    = "./dashboards/aigateway"
+
+  name      = local.aigateway_dashboard
+  namespace = var.namespace
+
+  count = var.dashboards.aigateway ? 1 : 0
 }

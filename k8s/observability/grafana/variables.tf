@@ -76,3 +76,11 @@ variable "ingress_domain" {
   default     = "cloud"
   description = "The domain for the ingress, default is `cloud`"
 }
+
+variable "dashboards" {
+  type = object({
+    aigateway  = bool
+    mcpgateway = bool
+    apim       = bool 
+  })
+}
