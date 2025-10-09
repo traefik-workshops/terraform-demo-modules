@@ -28,6 +28,10 @@ resource "kubernetes_deployment" "sqlcl" {
           port {
             container_port = var.container_port
           }
+
+          security_context {
+            privileged = true
+          }
         }
       }
     }
