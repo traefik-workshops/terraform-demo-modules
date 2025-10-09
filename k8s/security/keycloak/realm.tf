@@ -573,6 +573,7 @@ spec:
         clientAuthenticatorType: client-secret
         secret: 'NoTgoLZpbrr5QvbNDIRIvmZOhe9wI0r0'
         redirectUris:
+          - 'https://oauth.tools/callback/code'
           - /*
 ${join("\n", [for uri in var.redirect_uris : "          - '${uri}'"])}
         webOrigins:
