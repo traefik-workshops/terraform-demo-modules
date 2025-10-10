@@ -1,3 +1,10 @@
+# Validate that required tools are installed and configured
+data "external" "validate_requirements" {
+  program = ["bash", "${path.module}/scripts/validate_requirements.sh"]
+  
+  query = {}
+}
+
 data "external" "pods" {
   for_each = var.pods
   
@@ -16,6 +23,8 @@ data "external" "pods" {
     registry_auth_id     = var.registry_auth_id
     output_file          = "${path.module}/terraform.tfstate.pods"
   }
+  
+  depends_on = [data.external.validate_requirements]
 }
 
 # Clean up pods when destroyed
