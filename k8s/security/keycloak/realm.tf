@@ -1,3 +1,24 @@
+locals {
+  # Transform simple users into advanced format
+  simple_users_transformed = [
+    for username in var.users : {
+      username = username
+      email    = "${username}@traefik.io"
+      password = "topsecretpassword"
+      groups   = ["${username}s"]
+      claims   = {}
+    }
+  ]
+  
+  # Merge simple and advanced users
+  all_users = concat(local.simple_users_transformed, var.advanced_users)
+  
+  # Extract all unique groups from all users
+  all_groups = distinct(flatten([
+    for user in local.all_users : user.groups
+  ]))
+}
+
 resource "kubectl_manifest" "keycloak_realm" {
   depends_on = [kubectl_manifest.keycloak_crd]
   yaml_body = <<YAML
@@ -10,21 +31,23 @@ spec:
   keycloakCRName: keycloak
   realm:
     users: ${jsonencode([
-      for username in var.users : {
+      for user in local.all_users : {
+        id              = uuidv5("dns", user.username)
         enabled         = true
         emailVerified   = true
-        username        = username
-        email          = "${username}@traefik.io"
-        firstName      = title(username)
+        username        = user.username
+        email          = user.email
+        firstName      = title(user.username)
         lastName       = "Example"
         credentials    = [
           {
-            value     = "topsecretpassword"
+            value     = user.password
             type      = "password"
             temporary = false
           }
         ]
-        groups         = ["${username}s"]
+        groups         = user.groups
+        attributes     = user.claims
       }
     ])}
     id: 9e470c18-f69f-4ebd-9006-5d4ed05c1cf2
@@ -345,10 +368,10 @@ spec:
             attributes: { }
         traefik: [ ]
     groups: ${jsonencode([
-      for username in var.users : {
-        id: uuidv5("dns", "${username}s")
-        name: "${username}s"
-        path: "/${username}s"
+      for group in local.all_groups : {
+        id: uuidv5("dns", group)
+        name: group
+        path: "/${group}"
         attributes: {}
         realmRoles: []
         clientRoles: {}
@@ -605,6 +628,7 @@ ${join("\n", [for uri in var.redirect_uris : "          - '${uri}'"])}
           - roles
           - email
           - group
+          - user-attributes
         optionalClientScopes:
           - address
           - phone
@@ -1110,6 +1134,35 @@ ${join("\n", [for uri in var.redirect_uris : "          - '${uri}'"])}
               id.token.claim: 'true'
               access.token.claim: 'true'
               claim.name: group
+      - id: f1a2b3c4-d5e6-7f8g-9h0i-1j2k3l4m5n6o
+        name: user-attributes
+        description: Map custom user attributes to JWT claims
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: 'true'
+          display.on.consent.screen: 'false'
+          gui.order: ''
+          consent.screen.text: ''
+        protocolMappers: ${jsonencode(flatten([
+          for claim_name in distinct(flatten([
+            for user in local.all_users : keys(user.claims)
+          ])) : {
+            id: uuidv5("dns", "mapper-${claim_name}")
+            name: claim_name
+            protocol: "openid-connect"
+            protocolMapper: "oidc-usermodel-attribute-mapper"
+            consentRequired: false
+            config: {
+              "user.attribute": claim_name
+              "claim.name": claim_name
+              "jsonType.label": "String"
+              "id.token.claim": "true"
+              "access.token.claim": "true"
+              "userinfo.token.claim": "true"
+              "multivalued": "true"
+            }
+          }
+        ]))}
     defaultDefaultClientScopes:
       - role_list
       - profile

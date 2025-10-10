@@ -1,6 +1,7 @@
 # PostgreSQL for Keycloak
 module "keycloak_postgres" {
-  source = "../../tools/postgresql"
+  # source = "../../tools/postgresql"
+  source = "/Users/zaidalbirawi/dev/terraform-demo-modules/k8s/tools/postgresql"
 
   name      = "keycloak-postgres"
   namespace = "traefik-security"

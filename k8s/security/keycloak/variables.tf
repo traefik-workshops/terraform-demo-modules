@@ -31,3 +31,15 @@ variable "redirect_uris" {
   default     = []
   description = "Allowed callback URL for the authentication flow"
 }
+
+variable "advanced_users" {
+  description = "List of advanced users with detailed configuration including groups and claims"
+  type = list(object({
+    username = string
+    email    = string
+    password = string
+    groups   = list(string)
+    claims   = map(list(string))
+  }))
+  default = []
+}
