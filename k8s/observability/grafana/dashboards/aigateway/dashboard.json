@@ -429,7 +429,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "(sum by(job) (traces_span_metrics_calls_total{http_response_status_code=\"200\",entry_point=\"web\",http_response_header_x_cache_status=\"[\\\"Hit\\\"]\"})/sum by(job) (traces_span_metrics_calls_total{http_response_status_code=\"200\",entry_point=\"web\"}))\n * (sum by (job)(gen_ai_client_token_usage_sum)) / (sum by(job) (traces_span_metrics_calls_total{http_response_status_code=\"200\",entry_point=\"web\",http_response_header_x_cache_status=\"[\\\"Miss\\\"]\"})/sum by(job) (traces_span_metrics_calls_total{http_response_status_code=\"200\",entry_point=\"web\"})) * 0.0015",
+          "expr": "(sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status=\"Hit\", gen_ai_response_model=\"openai/gpt-oss-20b\"}) / 1000 * 0.10) + (sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status=\"Hit\", gen_ai_response_model=\"openai/gpt-oss-20b\"}) / 1000 * 0.05)",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
