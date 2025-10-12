@@ -1,9 +1,10 @@
 module "observability-prometheus" {
   source = "../prometheus"
 
-  namespace      = var.namespace
-  ingress        = var.ingress
-  ingress_domain = var.ingress_domain
+  namespace          = var.namespace
+  ingress            = var.ingress
+  ingress_domain     = var.ingress_domain
+  ingress_entrypoint = var.ingress_entrypoint
 
   traefik_metrics_job_url = "${var.metrics_host}:${var.metrics_port}"
 }
@@ -23,10 +24,11 @@ module "observability-grafana-tempo" {
 module "grafana" {
   source = "../grafana"
 
-  namespace      = var.namespace
-  ingress        = var.ingress
-  ingress_domain = var.ingress_domain
-  dashboards     = var.dashboards
+  namespace          = var.namespace
+  ingress            = var.ingress
+  ingress_domain     = var.ingress_domain
+  ingress_entrypoint = var.ingress_entrypoint
+  dashboards         = var.dashboards
 
   prometheus = {
     enabled = true

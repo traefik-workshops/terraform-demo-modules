@@ -77,6 +77,12 @@ variable "ingress_domain" {
   description = "The domain for the ingress, default is `cloud`"
 }
 
+variable "ingress_entrypoint" {
+  type        = string
+  default     = "traefik"
+  description = "The entrypoint to use for the ingress, default is `traefik`"
+}
+
 variable "dashboards" {
   type = object({
     aigateway  = bool

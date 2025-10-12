@@ -232,3 +232,15 @@ variable "extra_values" {
   description = "Extra values to use for the deployment"
   default     = {}
 }
+
+variable "is_staging_letsencrypt" {
+  description = "Use Let's Encrypt staging environment"
+  type        = bool
+  default     = false
+}
+
+variable "custom_entrypoints" {
+  type        = any
+  description = "Extra entrypoit definitions"
+  default     = {}
+}

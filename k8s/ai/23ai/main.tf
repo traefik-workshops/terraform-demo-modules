@@ -122,7 +122,7 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
     name = var.name
     namespace = var.namespace
     annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints" = "web"
+      "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
       "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "true"
       "traefik.ingress.kubernetes.io/router.observability.metrics" = "true"
       "traefik.ingress.kubernetes.io/router.observability.tracing" = "true"
@@ -131,7 +131,7 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
 
   spec {
     rule {
-      host = "oracledb.traefik.${var.ingress_domain}"
+      host = "oracledb-traefik.${var.ingress_domain}"
       http {
         path {
           path = "/"
@@ -147,17 +147,20 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
         }
       }
     }
-    rule {
-      host = "oracledb.traefik.localhost"
-      http {
-        path {
-          path = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = var.name
-              port {
-                number = var.container_port
+    dynamic "rule" {
+      for_each = var.ingress_entrypoint == "web" ? [1] : []
+      content {
+        host = "oracledb.traefik.localhost"
+        http {
+          path {
+            path      = "/"
+            path_type = "Prefix"
+            backend {
+              service {
+                name = var.name
+                port {
+                  number = var.container_port
+                }
               }
             }
           }

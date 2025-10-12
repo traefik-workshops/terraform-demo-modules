@@ -107,22 +107,25 @@ resource "helm_release" "traefik" {
       }
 
       gateway = {
-        listeners = {
-          web = {
-            port = 8000
-            protocol = "HTTP"
-            namespacePolicy = {
-              from = "All"
+        listeners = merge(
+          {
+            web = {
+              port = 8000
+              protocol = "HTTP"
+              namespacePolicy = {
+                from = "All"
+              }
             }
-          }
-          traefik = {
-            port = 8080
-            protocol = "HTTP"
-            namespacePolicy = {
-              from = "All"
+            traefik = {
+              port = 8080
+              protocol = "HTTP"
+              namespacePolicy = {
+                from = "All"
+              }
             }
-          }
-        }
+          },
+          var.custom_entrypoints
+        )
       }
 
       deplyment = {
@@ -194,6 +197,19 @@ resource "helm_release" "traefik" {
               entryPoint = "web"
             }
           }
+        }
+        cf = {
+          distributedAcme = {
+            caServer = var.is_staging_letsencrypt ? "https://acme-staging-v02.api.letsencrypt.org/directory" : "https://acme-v02.api.letsencrypt.org/directory"
+            email = "zaid@traefik.io"
+            storage = {
+              kubernetes = true
+            }
+            dnschallenge = {
+              provider = "cloudflare"
+              resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
+              delayBeforeCheck = 20
+            }
         }
       }
 

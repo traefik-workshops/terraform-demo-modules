@@ -50,3 +50,9 @@ variable "ingress_domain" {
   default     = "cloud"
   description = "The domain for the ingress, default is `cloud`"
 }
+
+variable "ingress_entrypoint" {
+  type        = string
+  default     = "traefik"
+  description = "The entrypoint to use for the ingress, default is `traefik`"
+}
