@@ -16,7 +16,7 @@ variable "users" {
 variable "keycloak_url" {
   type        = string
   description = "Keycloak token endpoint URL"
-  default     = "https://keycloak-traefik.ai-world.demo.traefiklabs.tech/realms/traefik/protocol/openid-connect/token"
+  default     = "https://keycloak-traefik.demo.aiworld.traefikhub.dev/realms/traefik/protocol/openid-connect/token"
 }
 
 variable "keycloak_client_id" {
