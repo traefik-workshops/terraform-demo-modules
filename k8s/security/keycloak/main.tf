@@ -221,7 +221,7 @@ resource "kubernetes_ingress_v1" "keycloak-traefik" {
 
 resource "kubernetes_ingress_v1" "keycloak-traefik-websecure" {
   metadata {
-    name = "keycloak"
+    name = "keycloak-websecure"
     namespace = "traefik-security"
     annotations = {
       "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
