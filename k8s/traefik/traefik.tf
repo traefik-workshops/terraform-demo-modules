@@ -128,7 +128,7 @@ resource "helm_release" "traefik" {
         )
       }
 
-      deplyment = {
+      deployment = {
         kind     = var.deploymentType
         replicas = var.replicaCount
       }
