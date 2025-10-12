@@ -195,13 +195,7 @@ variable "custom_plugins" {
 }
 
 variable "custom_ports" {
-  type        = map(object({
-    expose = object({
-      default = bool
-    })
-    port = number
-    exposePort = number
-  }))
+  type        = any
   description = "Custom ports to use for the deployment"
   default     = {}
 }
@@ -237,10 +231,4 @@ variable "is_staging_letsencrypt" {
   description = "Use Let's Encrypt staging environment"
   type        = bool
   default     = false
-}
-
-variable "custom_entrypoints" {
-  type        = any
-  description = "Extra entrypoit definitions"
-  default     = {}
 }
