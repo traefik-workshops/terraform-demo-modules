@@ -210,6 +210,7 @@ resource "helm_release" "traefik" {
               resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
               delayBeforeCheck = 20
             }
+          }
         }
       }
 
