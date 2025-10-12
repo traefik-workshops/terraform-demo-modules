@@ -83,8 +83,9 @@ resource "helm_release" "traefik" {
       }
       ingressRoute = {
         dashboard = {
-          enabled   = true
-          matchRule = var.dashboard_match_rule
+          enabled     = true
+          matchRule   = var.dashboard_match_rule
+          entryPoints = var.dashboard_entry_points
         }
       }
 
