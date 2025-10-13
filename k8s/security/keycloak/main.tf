@@ -142,7 +142,7 @@ spec:
   http:
     httpEnabled: true
   hostname:
-    strict: ${var.ingress_entrypoint == "websecure" ? "true" : "false"}
+    strict: false
     strictBackchannel: ${var.ingress_entrypoint == "websecure" ? "true" : "false"}
   ingress:
     enabled: false
