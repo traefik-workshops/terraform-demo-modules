@@ -140,7 +140,7 @@ spec:
       name: keycloak-db-secret
       key: password
   http:
-    httpEnabled: ${var.ingress_entrypoint == "websecure" ? "false" : "true"}
+    httpEnabled: false
   hostname:
     strict: ${var.ingress_entrypoint == "websecure" ? "true" : "false"}
     strictBackchannel: ${var.ingress_entrypoint == "websecure" ? "true" : "false"}
