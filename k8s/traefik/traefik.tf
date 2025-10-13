@@ -85,7 +85,7 @@ resource "helm_release" "traefik" {
         dashboard = {
           enabled     = true
           matchRule   = var.dashboard_match_rule
-          entryPoints = var.dashboard_entry_points
+          entryPoints = var.dashboard_entrypoints
         }
       }
 

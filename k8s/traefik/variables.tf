@@ -71,7 +71,7 @@ variable "dashboard_match_rule" {
   default     = "Host(`dashboard.traefik.cloud`) || Host(`dashboard.traefik.localhost`)"
 }
 
-variable "dashboard_entry_points" {
+variable "dashboard_entrypoints" {
   description = "Dashboard entry points"
   type        = list(string)
   default     = ["web"]
