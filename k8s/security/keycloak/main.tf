@@ -143,7 +143,6 @@ spec:
     httpEnabled: true
   hostname:
     strict: false
-    backchannelDynamic: true
   proxy:
     headers: xforwarded
   ingress:
