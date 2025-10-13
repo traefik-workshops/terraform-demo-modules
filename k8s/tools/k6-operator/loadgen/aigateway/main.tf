@@ -1,7 +1,7 @@
 locals {
   # Encode the APIs configuration as JSON to pass to the k6 script
   apis_json = jsonencode([for api in var.apis : {
-    host   = api.host
+    url    = api.url
     models = api.models
   }])
   
@@ -32,9 +32,6 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
         const CLIENT_SECRET = '${var.keycloak_client_secret}';
         const MIN_MESSAGES = ${var.min_messages_per_conversation};
         const MAX_MESSAGES = ${var.max_messages_per_conversation};
-        
-        // Traefik service URL
-        const TRAEFIK_URL = 'http://traefik.traefik.svc:80/v1/chat/completions';
         
         // Global variable to store user tokens
         let USER_TOKENS = {};
@@ -215,7 +212,7 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
 
           console.log(`  → Request $${messageNum}/$${totalMessages}: Preparing chat completion`);
           console.log(`    User: $${username}`);
-          console.log(`    API Host: $${api.host}`);
+          console.log(`    API URL: $${api.url}`);
           console.log(`    Model: $${model}`);
           console.log(`    Question: "$${question.substring(0, 50)}..."`);
           console.log(`    Temperature: $${temperature.toFixed(2)}`);
@@ -225,9 +222,8 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
 
           const request = {
             method: 'POST',
-            url: TRAEFIK_URL,
+            url: api.url,
             headers: {
-              'Host': api.host,
               'Authorization': `Bearer $${token}`,
               'Content-Type': 'application/json',
               'X-Request-ID': requestId
@@ -242,7 +238,7 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
             }),
           };
 
-          console.log(`    Sending POST to: $${TRAEFIK_URL}`);
+          console.log(`    Sending POST to: $${request.url}`);
           const startTime = new Date().getTime();
           
           const response = http.request(request.method, request.url, request.body, { headers: request.headers });
@@ -315,7 +311,7 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
           // Select a random API and model for this conversation
           console.log(`VU $${__VU}: Available APIs: $${APIS.length}`);
           const api = randomItem(APIS);
-          console.log(`VU $${__VU}: Selected API: $${api.host}`);
+          console.log(`VU $${__VU}: Selected API: $${api.url}`);
           console.log(`VU $${__VU}: Available models for this API: $${api.models.join(', ')}`);
           
           const model = randomItem(api.models);
@@ -329,7 +325,7 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
           console.log(`\n┌─────────────────────────────────────────────────────────────┐`);
           console.log(`│ VU $${__VU}: Starting conversation`);
           console.log(`│ User: $${username}`);
-          console.log(`│ API: $${api.host}`);
+          console.log(`│ API: $${api.url}`);
           console.log(`│ Model: $${model}`);
           console.log(`│ Messages: $${conversationLength}`);
           console.log(`└─────────────────────────────────────────────────────────────┘\n`);

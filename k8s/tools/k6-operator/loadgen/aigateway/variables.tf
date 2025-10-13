@@ -1,6 +1,6 @@
 variable "apis" {
   type = list(object({
-    host   = string
+    url    = string
     models = list(string)
   }))
 }
