@@ -143,7 +143,9 @@ spec:
     httpEnabled: true
   hostname:
     strict: false
-    strictBackchannel: ${var.ingress_entrypoint == "websecure" ? "true" : "false"}
+    backchannelDynamic: true
+  proxy:
+    headers: xforwarded
   ingress:
     enabled: false
 YAML
