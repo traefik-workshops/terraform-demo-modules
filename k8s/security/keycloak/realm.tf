@@ -26,7 +26,7 @@ apiVersion: k8s.keycloak.org/v2alpha1
 kind: KeycloakRealmImport
 metadata:
   name: traefik
-  namespace: traefik-security
+  namespace: ${var.namespace}
 spec:
   keycloakCRName: keycloak
   realm:

@@ -15,6 +15,12 @@ variable "ingress" {
   description = "Enable ingress for the keycloak service"
 }
 
+variable "ingress_internal" {
+  type        = bool
+  default     = true
+  description = "Enable ingress for the keycloak service"
+}
+
 variable "ingress_domain" {
   type        = string
   default     = "cloud"
