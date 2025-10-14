@@ -225,7 +225,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status=\"Hit\"}) * 1000",
+          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"}) * 1000",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -290,7 +290,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status!=\"Hit\"})*10000",
+          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status!=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})*10000",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -556,7 +556,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model)(gen_ai_client_token_usage_sum{cache_status=\"Hit\"})",
+          "expr": "sum by (gen_ai_request_model)(gen_ai_client_token_usage_sum{cache_status=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -620,7 +620,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model)(gen_ai_client_token_usage_sum{cache_status!=\"Hit\"})",
+          "expr": "sum by (gen_ai_request_model)(gen_ai_client_token_usage_sum{cache_status!=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -684,7 +684,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_request_model)(gen_ai_client_token_usage_sum)",
+          "expr": "sum by (gen_ai_request_model)(gen_ai_client_token_usage_sum{gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -952,7 +952,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by(gen_ai_request_model) (gen_ai_client_token_usage_count{gen_ai_token_type=\"input\"})",
+          "expr": "sum by(gen_ai_request_model) (gen_ai_client_token_usage_count{gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1016,7 +1016,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by(gen_ai_request_model) (gen_ai_client_token_usage_count{gen_ai_token_type=\"output\"})",
+          "expr": "sum by(gen_ai_request_model) (gen_ai_client_token_usage_count{gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1080,7 +1080,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (app_id) (gen_ai_client_token_usage_count)",
+          "expr": "sum by (app_id) (gen_ai_client_token_usage_count{gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1299,7 +1299,74 @@
   "schemaVersion": 41,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "name": "model",
+        "label": "Model",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(gen_ai_client_token_usage_count, gen_ai_request_model)",
+        "query": {
+          "query": "label_values(gen_ai_client_token_usage_count, gen_ai_request_model)",
+          "refId": "modelVarQuery"
+        },
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "hide": 0,
+        "options": [],
+        "current": {},
+        "sort": 1
+      },
+      {
+        "name": "response_model",
+        "label": "Response Model",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(gen_ai_client_token_usage_count, gen_ai_response_model)",
+        "query": {
+          "query": "label_values(gen_ai_client_token_usage_count, gen_ai_response_model)",
+          "refId": "responseModelVarQuery"
+        },
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "hide": 0,
+        "options": [],
+        "current": {},
+        "sort": 1
+      },
+      {
+        "name": "app",
+        "label": "App",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(gen_ai_client_token_usage_count, app_id)",
+        "query": {
+          "query": "label_values(gen_ai_client_token_usage_count, app_id)",
+          "refId": "appVarQuery"
+        },
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "hide": 0,
+        "options": [],
+        "current": {},
+        "sort": 1
+      }
+    ]
   },
   "time": {
     "from": "now-3h",
