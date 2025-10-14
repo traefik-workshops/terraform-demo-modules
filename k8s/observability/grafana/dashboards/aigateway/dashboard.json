@@ -324,19 +324,19 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byRegex", "options": "^2..$" },
+            "matcher": { "id": "byRegexp", "options": "^2..$" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "#2ba2c1" } }
             ]
           },
           {
-            "matcher": { "id": "byRegex", "options": "^4..$" },
+            "matcher": { "id": "byRegexp", "options": "^4..$" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "#be46dd" } }
             ]
           },
           {
-            "matcher": { "id": "byRegex", "options": "^5..$" },
+            "matcher": { "id": "byRegexp", "options": "^5..$" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "#3280e6" } }
             ]
@@ -481,19 +481,19 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byRegex", "options": "^2..$" },
+            "matcher": { "id": "byRegexp", "options": "^2..$" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "#2ba2c1" } }
             ]
           },
           {
-            "matcher": { "id": "byRegex", "options": "^4..$" },
+            "matcher": { "id": "byRegexp", "options": "^4..$" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "#be46dd" } }
             ]
           },
           {
-            "matcher": { "id": "byRegex", "options": "^5..$" },
+            "matcher": { "id": "byRegexp", "options": "^5..$" },
             "properties": [
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "#3280e6" } }
             ]
