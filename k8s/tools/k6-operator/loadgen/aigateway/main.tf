@@ -486,14 +486,8 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
           console.log(`VU $${__VU}: Selected user: $${username}`);
           console.log(`VU $${__VU}: Token preview: $${token.substring(0, 20)}...`);
           
-          // Select a random API and model for this conversation
+          // APIs and Models will be selected randomly per message
           console.log(`VU $${__VU}: Available APIs: $${APIS.length}`);
-          const api = randomItem(APIS);
-          console.log(`VU $${__VU}: Selected API: $${api.url}`);
-          console.log(`VU $${__VU}: Available models for this API: $${api.models.join(', ')}`);
-          
-          const model = randomItem(api.models);
-          console.log(`VU $${__VU}: Selected model: $${model}`);
           
           // Determine conversation length
           const conversationLength = getConversationLength();
@@ -503,8 +497,8 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
           console.log(`\n┌─────────────────────────────────────────────────────────────┐`);
           console.log(`│ VU $${__VU}: Starting conversation`);
           console.log(`│ User: $${username}`);
-          console.log(`│ API: $${api.url}`);
-          console.log(`│ Model: $${model}`);
+          console.log(`│ API: random per message`);
+          console.log(`│ Model: random per message`);
           console.log(`│ Messages: $${conversationLength}`);
           console.log(`└─────────────────────────────────────────────────────────────┘\n`);
           
@@ -519,6 +513,12 @@ resource "kubectl_manifest" "aigateway_traffic_configmap" {
             const question = randomItem(ALL_QUESTIONS);
             console.log(`VU $${__VU}: Question selected: "$${question}"`);
             
+            // Randomly select API and then a model available for that API for this message
+            const api = randomItem(APIS);
+            console.log(`VU $${__VU}: Selected API for this message: $${api.url}`);
+            console.log(`VU $${__VU}: Available models for this API: $${api.models.join(', ')}`);
+            const model = randomItem(api.models);
+            console.log(`VU $${__VU}: Using model for this message: $${model}`);
             // Send the request
             const response = sendRequest(token, api, model, question, i + 1, conversationLength, username);
             
