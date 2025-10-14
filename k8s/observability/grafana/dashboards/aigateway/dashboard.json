@@ -1098,7 +1098,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum (traefik_hub_api_requests_total) by (api_version_name)",
+          "expr": "sum (traefik_hub_api_requests_total{api_name=~\"$api_name\"}) by (api_version_name)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1237,7 +1237,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by(code) (traefik_hub_api_requests_total{code!~\"2..\"})",
+          "expr": "sum by(code) (traefik_hub_api_requests_total{code!~\"2..\", api_name=~\"$api_name\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -1336,7 +1336,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(rate(traefik_hub_api_requests_total{code=~\"2..\"}[$__rate_interval])) by (api_name)",
+          "expr": "sum(rate(traefik_hub_api_requests_total{code=~\"2..\", api_name=~\"$api_name\"}[$__rate_interval])) by (api_name)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1438,7 +1438,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum by (api_name) (rate(traefik_hub_api_requests_bytes_total{}[$__rate_interval]))",
+          "expr": "sum by (api_name) (rate(traefik_hub_api_requests_bytes_total{api_name=~\"$api_name\"}[$__rate_interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1513,7 +1513,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum by(api_version_name) (traefik_hub_api_requests_total{code!~\"2..\"})",
+          "expr": "sum by(api_version_name) (traefik_hub_api_requests_total{code!~\"2..\", api_name=~\"$api_name\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1615,7 +1615,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum(rate(traefik_hub_api_requests_total{code!~\"2..\"}[$__rate_interval])) by (api_name)",
+          "expr": "sum(rate(traefik_hub_api_requests_total{code!~\"2..\", api_name=~\"$api_name\"}[$__rate_interval])) by (api_name)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1717,7 +1717,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum by (api_name) (rate(traefik_hub_api_requests_duration_milliseconds_bucket{code=~\"2..\"}[$__rate_interval])) ",
+          "expr": "sum by (api_name) (rate(traefik_hub_api_requests_duration_milliseconds_bucket{code=~\"2..\", api_name=~\"$api_name\"}[$__rate_interval])) ",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -1819,7 +1819,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum by (api_name) (rate(traefik_hub_api_responses_bytes_total{}[$__rate_interval]))",
+          "expr": "sum by (api_name) (rate(traefik_hub_api_responses_bytes_total{api_name=~\"$api_name\"}[$__rate_interval]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -2146,7 +2146,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "sum by (app_id) (rate(traefik_hub_api_requests_duration_milliseconds_bucket{code=~\"2..\", app_id!=\"\"}[$__rate_interval])) ",
+          "expr": "sum by (app_id) (rate(traefik_hub_api_requests_duration_milliseconds_bucket{code=~\"2..\", app_id!=\"\", api_name=~\"$api_name\"}[$__rate_interval])) ",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "legendFormat": "__auto",
@@ -2223,6 +2223,27 @@
         "query": {
           "query": "label_values(gen_ai_client_token_usage_count, app_id)",
           "refId": "appVarQuery"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "definition": "label_values(traefik_hub_api_requests_total, api_name)",
+        "includeAll": true,
+        "label": "API",
+        "multi": true,
+        "name": "api_name",
+        "options": [],
+        "query": {
+          "query": "label_values(traefik_hub_api_requests_total, api_name)",
+          "refId": "apiNameVarQuery"
         },
         "refresh": 2,
         "sort": 1,
