@@ -21,7 +21,6 @@ data "external" "pods" {
     hugging_face_api_key = var.hugging_face_api_key
     pod_type             = each.value.pod_type
     registry_auth_id     = var.registry_auth_id
-    output_file          = "${path.module}/terraform.tfstate.pods"
   }
   
   depends_on = [data.external.validate_requirements]
@@ -34,14 +33,12 @@ resource "null_resource" "pods_cleanup" {
   triggers = {
     name           = each.value.name
     runpod_api_key = var.runpod_api_key
-    output_file    = "${path.module}/terraform.tfstate.pods"
   }
 
   provisioner "local-exec" {
     when    = destroy
     command = <<-EOT
       runpodctl remove pods ${self.triggers.name} || true
-      rm -f ${self.triggers.output_file} || true
     EOT
   }
 

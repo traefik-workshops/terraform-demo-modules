@@ -36,20 +36,14 @@ RUNPOD_API_KEY=$(echo "$input" | jq -r '.runpod_api_key // empty')
 NGC_TOKEN=$(echo "$input" | jq -r '.ngc_token // empty')
 POD_TYPE=$(echo "$input" | jq -r '.pod_type // empty')
 REGISTRY_AUTH_ID=$(echo "$input" | jq -r '.registry_auth_id // empty')
-OUTPUT_FILE=$(echo "$input" | jq -r '.output_file // empty')
 COMMAND=$(echo "$input" | jq -r '.command // empty')
 HF_TOKEN=$(echo "$input" | jq -r '.hugging_face_api_key // empty')
 
 echo "Starting pod management script" >&2
 
 # Verify required parameters
-if [ -z "$NAME" ] || [ -z "$IMAGE" ] || [ -z "$TAG" ] || [ -z "$RUNPOD_API_KEY" ] || [ -z "$POD_TYPE" ] || [ -z "$OUTPUT_FILE" ]; then
-    json_response "error" "Missing required parameters. Required: name, image, tag, runpod_api_key, pod_type, output_file"
-fi
-
-# Initialize output file if it doesn't exist
-if [ ! -f "$OUTPUT_FILE" ]; then
-    echo '{}' > "$OUTPUT_FILE"
+if [ -z "$NAME" ] || [ -z "$IMAGE" ] || [ -z "$TAG" ] || [ -z "$RUNPOD_API_KEY" ] || [ -z "$POD_TYPE" ]; then
+    json_response "error" "Missing required parameters. Required: name, image, tag, runpod_api_key, pod_type"
 fi
 
 # Function to check if pod exists and get its info
@@ -139,31 +133,7 @@ EOF
     fi
 fi
 
-# Update the output file with the new pod info
-echo "Updating output file: $OUTPUT_FILE" >&2
-tmp_file=$(mktemp) || json_response "error" "Failed to create temporary file"
-
-# Read existing data or initialize empty object
-if [ -f "$OUTPUT_FILE" ]; then
-    current_data=$(cat "$OUTPUT_FILE" 2>/dev/null || echo '{}')
-else
-    current_data='{}'
-fi
-
-# Update the data with new pod info
-updated_data=$(echo "$current_data" | jq --arg name "$NAME" --argjson pod "$pod_info" '.[$name] = $pod' 2>/dev/null || echo '{}')
-
-# Write to temp file first
-echo "$updated_data" > "$tmp_file"
-
-# Move to final location
-if ! mv "$tmp_file" "$OUTPUT_FILE"; then
-    echo "Failed to move temporary file to $OUTPUT_FILE" >&2
-    rm -f "$tmp_file"
-    json_response "error" "Failed to update output file"
-fi
-
-# Output the result in a consistent format
+# Output the pod info directly for Terraform external data source
 jq -n --arg name "$NAME" --argjson pod_info "$pod_info" '
 {
     "id": $pod_info.id,
