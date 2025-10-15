@@ -598,7 +598,7 @@ spec:
         redirectUris:
           - 'https://oauth.tools/callback/code'
           - /*
-${join("\n", [for uri in var.redirect_uris : "          - '${uri}'"])}
+${join("\n", [for uri in var.redirect_uris : "          - '${uri}/callback'"])}
         webOrigins:
           - /*
         notBefore: 0
