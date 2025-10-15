@@ -1637,7 +1637,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#FFOOOO",
+            "fixedColor": "#D6EE48",
             "mode": "fixed"
           },
           "mappings": [],
