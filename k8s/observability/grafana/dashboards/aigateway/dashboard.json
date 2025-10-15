@@ -1181,7 +1181,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#FF0000",
+            "fixedColor": "#97F6FF",
             "mode": "fixed"
           },
           "mappings": [],
@@ -1622,7 +1622,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#97F6FF",
+            "fixedColor": "#FFOOOO",
             "mode": "fixed"
           },
           "mappings": [],
@@ -1686,7 +1686,7 @@
           "useBackend": false
         }
       ],
-      "title": "Total Erorrs",
+      "title": "Total Errors",
       "type": "stat"
     },
     {
