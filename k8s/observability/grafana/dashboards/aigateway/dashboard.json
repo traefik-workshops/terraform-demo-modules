@@ -42,7 +42,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#2ba2c1",
+            "fixedColor": "#24A1C2",
             "mode": "fixed"
           },
           "decimals": 0,
@@ -129,7 +129,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -144,7 +144,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -159,7 +159,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
@@ -239,7 +239,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -254,7 +254,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -269,7 +269,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
@@ -349,7 +349,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -364,7 +364,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -379,7 +379,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
@@ -459,7 +459,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -474,7 +474,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -489,7 +489,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
@@ -569,7 +569,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -584,7 +584,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -599,7 +599,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
@@ -658,7 +658,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#2ba2c1",
+            "fixedColor": "#24A1C2",
             "mode": "fixed"
           },
           "decimals": 0,
@@ -775,7 +775,53 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpt-4.1-nano"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#24A1C2",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpt-4.1-mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#C269F7",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "openai/gpt-oss-20b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#D6EE48",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -877,7 +923,53 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpt-4.1-nano"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#24A1C2",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpt-4.1-mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#C269F7",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "openai/gpt-oss-20b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#D6EE48",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -979,7 +1071,53 @@
           },
           "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpt-4.1-nano"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#24A1C2",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gpt-4.1-mini"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#C269F7",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "openai/gpt-oss-20b"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#D6EE48",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1043,7 +1181,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#2ba2c1",
+            "fixedColor": "#FF0000",
             "mode": "fixed"
           },
           "mappings": [],
@@ -1139,7 +1277,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -1154,7 +1292,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -1169,7 +1307,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
@@ -1305,7 +1443,20 @@
           },
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "gpt-oss-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#D6EE48" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "openai-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#24A1C2" } }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1407,7 +1558,20 @@
           },
           "unit": "decbytes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "gpt-oss-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#D6EE48" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "openai-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#24A1C2" } }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1458,7 +1622,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#2ba2c1",
+            "fixedColor": "#24A1C2",
             "mode": "fixed"
           },
           "mappings": [],
@@ -1584,7 +1748,20 @@
           },
           "unit": "reqps"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "gpt-oss-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#D6EE48" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "openai-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#24A1C2" } }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1686,7 +1863,20 @@
           },
           "unit": "ms"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "gpt-oss-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#D6EE48" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "openai-api" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#24A1C2" } }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1873,7 +2063,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#2ba2c1",
+                  "fixedColor": "#24A1C2",
                   "mode": "fixed"
                 }
               }
@@ -1888,7 +2078,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#be46dd",
+                  "fixedColor": "#C269F7",
                   "mode": "fixed"
                 }
               }
@@ -1903,7 +2093,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "#3280e6",
+                  "fixedColor": "#D6EE48",
                   "mode": "fixed"
                 }
               }
