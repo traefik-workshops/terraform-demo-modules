@@ -77,7 +77,6 @@ check_existing_pod() {
         {
             "id": $id,
             "name": $name,
-            "desiredStatus": "RUNNING",
             "host": $host
         }'
         return 0
@@ -98,7 +97,7 @@ else
     # Create new pod
     QUERY=$(cat <<EOF
     {
-      "query": "mutation { podFindAndDeployOnDemand(input: { cloudType: ALL name: \"$NAME\" containerDiskInGb: 40 volumeInGb: 0 gpuCount: 1 gpuTypeId: \"$POD_TYPE\" imageName: \"$IMAGE:$TAG\" ports: \"8000/http\" containerRegistryAuthId: \"$REGISTRY_AUTH_ID\" env: [ { key: \"NGC_API_KEY\", value: \"$NGC_TOKEN\" }, { key: \"HF_TOKEN\", value: \"$HF_TOKEN\" } ] dockerArgs: \"$COMMAND\" }) { id name desiredStatus } }"
+      "query": "mutation { podFindAndDeployOnDemand(input: { cloudType: ALL name: \"$NAME\" containerDiskInGb: 40 volumeInGb: 0 gpuCount: 1 gpuTypeId: \"$POD_TYPE\" imageName: \"$IMAGE:$TAG\" ports: \"8000/http\" containerRegistryAuthId: \"$REGISTRY_AUTH_ID\" env: [ { key: \"NGC_API_KEY\", value: \"$NGC_TOKEN\" }, { key: \"HF_TOKEN\", value: \"$HF_TOKEN\" } ] dockerArgs: \"$COMMAND\" }) { id name } }"
     }
 EOF
     )
@@ -109,22 +108,35 @@ EOF
       -d "$QUERY" \
       "https://api.runpod.io/graphql?api_key=$RUNPOD_API_KEY")
 
-    # Extract pod info from response and add host key
-    pod_id=$(echo "$RESPONSE" | jq -r '.data.podFindAndDeployOnDemand.id // empty')
+    # Report the API response
+    echo "Pod creation API response: $RESPONSE" >&2
+    echo "Fetching pod info from runpodctl..." >&2
     
-    if [ -z "$pod_id" ] || [ "$pod_id" = "null" ]; then
-        echo "Failed to create pod. Response: $RESPONSE" >&2
-        json_response "error" "Failed to create pod: $(echo "$RESPONSE" | jq -c . 2>/dev/null || echo "$RESPONSE")"
+    # Wait a moment for the pod to be registered
+    sleep 2
+    
+    # Fetch the actual pod info from runpodctl
+    max_retries=5
+    retry_count=0
+    pod_info=""
+    
+    while [ $retry_count -lt $max_retries ]; do
+        if pod_info=$(check_existing_pod "$NAME"); then
+            echo "Successfully fetched pod info from runpodctl" >&2
+            break
+        fi
+        
+        retry_count=$((retry_count + 1))
+        if [ $retry_count -lt $max_retries ]; then
+            echo "Pod not yet visible in runpodctl, retrying in 2 seconds... (attempt $retry_count/$max_retries)" >&2
+            sleep 2
+        fi
+    done
+    
+    if [ -z "$pod_info" ]; then
+        echo "Failed to fetch pod info from runpodctl after $max_retries attempts" >&2
+        json_response "error" "Pod created but failed to fetch info from runpodctl"
     fi
-    
-    # Create a simple pod info object
-    pod_info=$(jq -n --arg id "$pod_id" --arg name "$NAME" --arg host "https://${pod_id}-8000.proxy.runpod.net/" '
-    {
-        "id": $id,
-        "name": $name,
-        "desiredStatus": "RUNNING",
-        "host": $host
-    }')
 fi
 
 # Update the output file with the new pod info
@@ -156,8 +168,7 @@ jq -n --arg name "$NAME" --argjson pod_info "$pod_info" '
 {
     "id": $pod_info.id,
     "name": $pod_info.name,
-    "host": $pod_info.host,
-    "desiredStatus": "RUNNING"
+    "host": $pod_info.host
 }'
 
 exit 0
