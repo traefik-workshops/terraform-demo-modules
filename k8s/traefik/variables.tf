@@ -74,7 +74,7 @@ variable "dashboard_match_rule" {
 variable "dashboard_entrypoints" {
   description = "Dashboard entry points"
   type        = list(string)
-  default     = ["web"]
+  default     = ["traefik"]
 }
 
 variable "deploymentType" {
