@@ -1,6 +1,6 @@
 # PostgreSQL for Keycloak
 module "keycloak_postgres" {
-  source = "../../tools/postgresql"
+  source = "../../../tools/postgresql/k8s"
 
   name      = "keycloak-postgres"
   namespace = var.namespace
