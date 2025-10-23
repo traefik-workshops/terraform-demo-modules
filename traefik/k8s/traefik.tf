@@ -261,7 +261,7 @@ resource "helm_release" "traefik" {
 }
 
 module "redis" {
-  source = "../tools/redis"
+  source = "../../tools/redis/k8s"
 
   name         = "traefik-redis"
   namespace    = var.namespace
