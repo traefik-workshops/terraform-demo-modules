@@ -34,11 +34,19 @@ locals {
   )
 }
 
+module "auth" {
+  source = "../../../compute/runpod/auth"
+
+  runpod_api_key   = var.runpod_api_key
+  ngc_token        = var.ngc_token
+  ngc_username     = var.ngc_username
+}
+
 module "nims" {
-  source = "../pod"
+  source = "../../../compute/runpod/pod"
 
   runpod_api_key   = var.runpod_api_key
   ngc_token        = var.ngc_token
   pods             = local.nims
-  registry_auth_id = data.external.registry_auth.result.id
+  registry_auth_id = module.auth.registry_auth_id
 }

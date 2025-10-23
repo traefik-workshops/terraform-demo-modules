@@ -25,7 +25,7 @@ locals {
 }
 
 module "llms" {
-  source = "../pod"
+  source = "../../../compute/runpod/pod"
 
   runpod_api_key       = var.runpod_api_key
   hugging_face_api_key = var.hugging_face_api_key
