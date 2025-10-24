@@ -1,21 +1,16 @@
-data "aws_availability_zones" "traefik_demo" {}
-
-data "aws_eks_cluster_auth" "eks" {
-  name = var.cluster_name
+locals {
+  create_vpc = var.vpc_id == "" || length(var.public_subnet_ids) == 0 || length(var.private_subnet_ids) == 0
 }
 
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
+  source  = "../vpc"
 
-  name                 = "${var.cluster_name}-vpc"
-  cidr                 = "10.0.0.0/16"
-  azs                  = data.aws_availability_zones.traefik_demo.names
-  private_subnets      = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
-  enable_dns_hostnames = true
+  name            = "${var.cluster_name}-vpc"
+  cidr            = "10.0.0.0/16"
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+
+  count = local.create_vpc ? 1 : 0
 }
 
 module "eks" {
@@ -25,8 +20,8 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.eks_version
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
+  vpc_id     = local.create_vpc ? module.vpc[0].vpc_id : var.vpc_id
+  subnet_ids = local.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
 
   create_cloudwatch_log_group = false
 
@@ -46,7 +41,7 @@ module "eks_node_groups" {
   cluster_name    = module.eks.cluster_name
   cluster_version = module.eks.cluster_version
 
-  subnet_ids                        = module.vpc.private_subnets
+  subnet_ids                        = local.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
   vpc_security_group_ids            = [module.eks.node_security_group_id]
   cluster_service_cidr              = module.eks.cluster_service_cidr

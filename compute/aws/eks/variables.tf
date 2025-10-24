@@ -38,3 +38,21 @@ variable "update_kubeconfig" {
   default     = true
   description = "Update kubeconfig after cluster creation"
 }
+
+variable "vpc_id" {
+  type        = string
+  default     = ""
+  description = "VPC ID for the cluster."
+}
+
+variable "private_subnet_ids" {
+  type        = list(string)
+  default     = []
+  description = "Private subnets for the cluster."
+}
+
+variable "public_subnet_ids" {
+  type        = list(string)
+  default     = []
+  description = "Public subnets for the cluster."
+}
