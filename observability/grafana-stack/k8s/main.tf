@@ -1,5 +1,5 @@
 module "observability-prometheus" {
-  source = "../prometheus"
+  source = "../../prometheus/k8s"
 
   namespace          = var.namespace
   ingress            = var.ingress
@@ -10,19 +10,19 @@ module "observability-prometheus" {
 }
 
 module "observability-grafana-loki" {
-  source = "../grafana-loki"
+  source = "../../grafana-loki/k8s"
 
   namespace = var.namespace
 }
 
 module "observability-grafana-tempo" {
-  source = "../grafana-tempo"
+  source = "../../grafana-tempo/k8s"
 
   namespace = var.namespace
 }
 
 module "grafana" {
-  source = "../grafana"
+  source = "../../grafana/k8s"
 
   namespace          = var.namespace
   ingress            = var.ingress
