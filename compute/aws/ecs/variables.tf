@@ -11,22 +11,6 @@ variable "clusters" {
       security_group_ids = optional(list(string), [])
     }))
   }))
-
-  default = {
-    cluster = {
-      apps = {
-        whoami = {
-          replicas           = 1
-          subnet_ids         = []
-          port               = 80
-          docker_image       = "traefik/whoami:latest"
-          docker_command     = ""
-          labels             = {}
-          security_group_ids = []
-        }
-      }
-    }
-  }
 }
 
 variable "vpc_id" {
