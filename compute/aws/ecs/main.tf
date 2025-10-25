@@ -1,7 +1,5 @@
 # Flatten clusters and apps into individual services
 locals {
-  create_vpc = var.vpc_id == "" || length(var.subnet_ids) == 0 || length(var.security_group_ids) == 0
-
   # Create a flat list of services: [{cluster_name, app_name, config}, ...]
   services = flatten([
     for cluster_name, cluster_config in var.clusters : [
@@ -32,7 +30,7 @@ locals {
 }
 
 module "vpc" {
-  count  = local.create_vpc ? 1 : 0
+  count  = var.create_vpc ? 1 : 0
   source = "../vpc"
 
   name           = "ecs-vpc"
@@ -118,8 +116,8 @@ resource "aws_ecs_service" "service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = local.create_vpc ? module.vpc[0].public_subnet_ids : each.value.subnet_ids
-    security_groups = local.create_vpc ? module.vpc[0].security_group_ids : each.value.security_group_ids
+    subnets         = var.create_vpc ? module.vpc[0].public_subnet_ids : each.value.subnet_ids
+    security_groups = var.create_vpc ? module.vpc[0].security_group_ids : each.value.security_group_ids
   }
 }
 

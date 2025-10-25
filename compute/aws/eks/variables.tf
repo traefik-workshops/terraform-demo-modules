@@ -39,20 +39,42 @@ variable "update_kubeconfig" {
   description = "Update kubeconfig after cluster creation"
 }
 
+variable "create_vpc" {
+  description = "Create VPC if vpc_id is not provided"
+  type        = bool
+  default     = true
+}
+
 variable "vpc_id" {
   type        = string
   default     = ""
   description = "VPC ID for the cluster."
+
+  validation {
+    condition     = var.create_vpc || var.vpc_id != ""
+    error_message = "vpc_id must be provided if create_vpc is false"
+  }
 }
 
 variable "private_subnet_ids" {
   type        = list(string)
   default     = []
   description = "Private subnets for the cluster."
+
+  validation {
+    condition     = var.create_vpc || var.private_subnet_ids != []
+    error_message = "private_subnet_ids must be provided if create_vpc is false"
+  }
 }
 
 variable "public_subnet_ids" {
   type        = list(string)
   default     = []
   description = "Public subnets for the cluster."
+
+  validation {
+    condition     = var.create_vpc || var.public_subnet_ids != []
+    error_message = "public_subnet_ids must be provided if create_vpc is false"
+  }
 }
+

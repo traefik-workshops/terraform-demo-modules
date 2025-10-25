@@ -1,9 +1,5 @@
-locals {
-  create_vpc = var.vpc_id == "" || length(var.public_subnet_ids) == 0 || length(var.private_subnet_ids) == 0
-}
-
 module "vpc" {
-  count  = local.create_vpc ? 1 : 0
+  count  = var.create_vpc ? 1 : 0
   source = "../vpc"
 
   name            = "${var.cluster_name}-vpc"
@@ -19,8 +15,8 @@ module "eks" {
   cluster_name    = var.cluster_name
   cluster_version = var.eks_version
 
-  vpc_id     = local.create_vpc ? module.vpc[0].vpc_id : var.vpc_id
-  subnet_ids = local.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
+  vpc_id     = var.create_vpc ? module.vpc[0].vpc_id : var.vpc_id
+  subnet_ids = var.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
 
   create_cloudwatch_log_group = false
 
@@ -40,7 +36,7 @@ module "eks_node_groups" {
   cluster_name    = module.eks.cluster_name
   cluster_version = module.eks.cluster_version
 
-  subnet_ids                        = local.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
+  subnet_ids                        = var.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
   vpc_security_group_ids            = [module.eks.node_security_group_id]
   cluster_service_cidr              = module.eks.cluster_service_cidr

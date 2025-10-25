@@ -15,8 +15,6 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 locals {
-  create_vpc = var.vpc_id == "" || length(var.subnet_ids) == 0 || length(var.security_group_ids) == 0
-
   instances = flatten([
     for app_name, app_config in var.apps : [
       for replica_idx in range(app_config.replicas) : {
@@ -41,7 +39,7 @@ locals {
 }
 
 module "vpc" {
-  count  = local.create_vpc ? 1 : 0
+  count  = var.create_vpc ? 1 : 0
   source = "../vpc"
 
   name           = "ec2-vpc"
@@ -55,8 +53,8 @@ resource "aws_instance" "ec2" {
   
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = var.instance_type
-  subnet_id              = local.create_vpc ? module.vpc[0].public_subnet_ids[each.value.idx % length(module.vpc[0].public_subnet_ids)] : each.value.subnet_ids[each.value.idx % length(each.value.subnet_ids)]
-  vpc_security_group_ids = local.create_vpc ? module.vpc[0].security_group_ids : var.security_group_ids
+  subnet_id              = var.create_vpc ? module.vpc[0].public_subnet_ids[each.value.idx % length(module.vpc[0].public_subnet_ids)] : each.value.subnet_ids[each.value.idx % length(each.value.subnet_ids)]
+  vpc_security_group_ids = var.create_vpc ? module.vpc[0].security_group_ids : var.security_group_ids
   
   # Generate user data with app-specific Docker settings
   user_data = <<-EOF
