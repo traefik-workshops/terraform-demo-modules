@@ -1,21 +1,7 @@
 variable "apps" {
   description = "Map of applications to deploy to EC2. Each app can have multiple replicas."
   type        = any
-  # default     = {}
-
-    default = {
-      apps = {
-        whoami = {
-          replicas           = 1
-          subnet_ids         = []
-          port               = 80
-          docker_image       = "traefik/whoami:latest"
-          docker_command     = ""
-          labels             = {}
-          security_group_ids = []
-        }
-      }
-    }
+  default     = {}
 }
 
 variable "instance_type" {
