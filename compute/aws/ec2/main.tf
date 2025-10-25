@@ -22,7 +22,7 @@ locals {
       for replica_idx in range(app_config.replicas) : {
         app_name       = app_name
         replica_number = replica_idx + 1
-        subnet_ids     = app_config.subnet_ids
+        subnet_ids     = length(app_config.subnet_ids) > 0 ? app_config.subnet_ids : var.subnet_ids
         instance_key   = "${app_name}-${replica_idx + 1}"
         port           = app_config.port
         docker_image   = app_config.docker_image
