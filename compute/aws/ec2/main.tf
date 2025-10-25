@@ -41,13 +41,12 @@ locals {
 }
 
 module "vpc" {
-  source  = "../vpc"
+  count  = local.create_vpc ? 1 : 0
+  source = "../vpc"
 
   name           = "ec2-vpc"
   cidr           = "10.0.0.0/16"
   public_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
-
-  count = local.create_vpc ? 1 : 0
 }
 
 # Create EC2 instances for each app replica
