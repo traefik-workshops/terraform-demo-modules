@@ -10,6 +10,12 @@ variable "common_labels" {
   default     = {}
 }
 
+variable "create_vpc" {
+  description = "Create VPC if vpc_id is not provided"
+  type        = bool
+  default     = true
+}
+
 variable "vpc_id" {
   description = "VPC ID for ECS resources"
   type        = string

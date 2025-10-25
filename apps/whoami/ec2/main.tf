@@ -17,6 +17,7 @@ module "echo_instances" {
   apps                   = local.apps
   instance_type          = var.instance_type
   common_tags            = var.common_tags
+  create_vpc             = var.create_vpc
   vpc_id                 = var.vpc_id
   subnet_ids             = var.subnet_ids
   security_group_ids     = var.security_group_ids

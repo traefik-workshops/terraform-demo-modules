@@ -20,6 +20,7 @@ module "echo_services" {
   source = "../../../compute/aws/ecs"
 
   clusters      = local.clusters
+  create_vpc    = var.create_vpc
   vpc_id        = var.vpc_id
   subnet_ids    = var.subnet_ids
   common_labels = var.common_labels
