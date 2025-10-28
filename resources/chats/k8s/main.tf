@@ -270,26 +270,7 @@ data "kustomization_overlay" "chats" {
 
 # Apply resources in priority order
 # Priority 0: Namespaces and CRDs
-resource "kustomization_resource" "p0" {
-  for_each = data.kustomization_overlay.chats.ids_prio[0]
-  
+resource "kustomization_resource" "p0" {  
+  for_each = data.kustomization_overlay.chats.ids
   manifest = data.kustomization_overlay.chats.manifests[each.value]
-}
-
-# Priority 1: Main resources
-resource "kustomization_resource" "p1" {
-  for_each = data.kustomization_overlay.chats.ids_prio[1]
-  
-  manifest = data.kustomization_overlay.chats.manifests[each.value]
-  
-  depends_on = [kustomization_resource.p0]
-}
-
-# Priority 2: Webhooks
-resource "kustomization_resource" "p2" {
-  for_each = data.kustomization_overlay.chats.ids_prio[2]
-  
-  manifest = data.kustomization_overlay.chats.manifests[each.value]
-  
-  depends_on = [kustomization_resource.p1]
 }
