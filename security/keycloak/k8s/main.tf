@@ -155,33 +155,16 @@ resource "kubernetes_ingress_v1" "keycloak-traefik" {
     name = "keycloak"
     namespace = var.namespace
     annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
+      "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
       "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+      "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+      "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
     }
   }
 
   spec {
     rule {
-      host = "keycloak-traefik.${var.ingress_domain}"
-      http {
-        path {
-          path = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "keycloak-service"
-              port {
-                number = 8080
-              }
-            }
-          }
-        }
-      }
-    }
-    rule {
-      host = "keycloak.traefik.localhost"
+      host = "keycloak.${var.ingress_domain}"
       http {
         path {
           path = "/"

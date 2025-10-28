@@ -90,12 +90,12 @@ resource "helm_release" "grafana" {
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true
-        hosts = [var.ingress_domain, "grafana.traefik.localhost"]
+        hosts = [var.ingress_domain]
         annotations = {
-          "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
+          "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
           "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-          "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
-          "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
         }
       }
     } : {})

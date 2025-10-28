@@ -63,16 +63,16 @@ resource "kubernetes_ingress_v1" "sqlcl-traefik" {
     name = var.name
     namespace = var.namespace
     annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
+      "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
       "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "true"
-      "traefik.ingress.kubernetes.io/router.observability.metrics" = "true"
-      "traefik.ingress.kubernetes.io/router.observability.tracing" = "true"
+      "traefik.ingress.kubernetes.io/router.observability.metrics"    = "true"
+      "traefik.ingress.kubernetes.io/router.observability.tracing"    = "true"
     }
   }
 
   spec {
     rule {
-      host = "sqlcl-traefik.${var.ingress_domain}"
+      host = "sqlcl.${var.ingress_domain}"
       http {
         path {
           path = "/"
@@ -82,26 +82,6 @@ resource "kubernetes_ingress_v1" "sqlcl-traefik" {
               name = var.name
               port {
                 number = var.service_port
-              }
-            }
-          }
-        }
-      }
-    }
-    dynamic "rule" {
-      for_each = var.ingress_entrypoint == "web" ? [1] : []
-      content {
-        host = "sqlcl.traefik.localhost"
-        http {
-          path {
-            path      = "/"
-            path_type = "Prefix"
-            backend {
-              service {
-                name = var.name
-                port {
-                  number = var.container_port
-                }
               }
             }
           }

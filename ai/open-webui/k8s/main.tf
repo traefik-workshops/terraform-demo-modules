@@ -42,8 +42,8 @@ resource "helm_release" "open_webui" {
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true
-        host = "chat-traefik.${var.ingress_domain}"
-        additionalHosts = var.ingress_entrypoint == "web" ? ["chat.traefik.localhost"] : []
+        host = "chat.${var.ingress_domain}"
+        additionalHosts = []
         annotations = {
           "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
           "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
