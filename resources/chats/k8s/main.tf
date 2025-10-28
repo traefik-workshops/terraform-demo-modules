@@ -268,9 +268,27 @@ data "kustomization_overlay" "chats" {
   }
 }
 
-# Apply resources in priority order
-# Priority 0: Namespaces and CRDs
-resource "kustomization_resource" "p0" {  
-  for_each = data.kustomization_overlay.chats.ids
-  manifest = data.kustomization_overlay.chats.manifests[each.value]
+# Apply all resources as a single blob
+resource "null_resource" "chats" {
+  triggers = {
+    manifests_hash = md5(jsonencode(data.kustomization_overlay.chats.manifests))
+  }
+  
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo '${jsonencode([for id in data.kustomization_overlay.chats.ids : yamldecode(data.kustomization_overlay.chats.manifests[id])])}' | \
+      jq -r '.[]' | \
+      kubectl apply -f -
+    EOT
+  }
+  
+  provisioner "local-exec" {
+    when = destroy
+    command = <<-EOT
+      echo '${jsonencode([for id in data.kustomization_overlay.chats.ids : yamldecode(data.kustomization_overlay.chats.manifests[id])])}' | \
+      jq -r '.[]' | \
+      kubectl delete -f -
+    EOT
+    on_failure = continue
+  }
 }
