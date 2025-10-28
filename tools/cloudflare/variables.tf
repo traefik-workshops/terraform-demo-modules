@@ -1,16 +1,14 @@
-variable "name" {
-  description = "The name of the ArgoCD release"
-  type        = string
-  default     = "argocd"
-}
-
-variable "namespace" {
-  description = "Namespace for the ArgoCD deployment"
+variable "zone_id" {
+  description = "The zone ID of the Cloudflare DNS record"
   type        = string
 }
 
-variable "admin_password" {
-  description = "Admin password for ArgoCD"
+variable "domain" {
+  description = "Domain for the Cloudflare DNS record"
   type        = string
-  sensitive   = true
+}
+
+variable "ip" {
+  description = "IP address for the Cloudflare DNS record"
+  type        = string
 }
