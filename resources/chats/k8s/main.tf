@@ -42,218 +42,230 @@ data "kustomization_overlay" "chats" {
     }
   }
   
-  replacements = [
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.KEYCLOAK_JWKS_URL"
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.KEYCLOAK_JWKS_URL"
+    }
+    target {
+      select {
+        kind = "APIAuth"
+        name = "jwt-auth"
       }
-      targets = [{
-        select = {
-          kind = "APIAuth"
-          name = "jwt-auth"
-        }
-        field_paths = ["spec.jwt.jwksUrl"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.KEYCLOAK_ISSUER_URL"
+      field_paths = ["spec.jwt.jwksUrl"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.KEYCLOAK_ISSUER_URL"
+    }
+    target {
+      select {
+        kind = "APIPortalAuth"
+        name = "oidc-portal-auth"
       }
-      targets = [{
-        select = {
-          kind = "APIPortalAuth"
-          name = "oidc-portal-auth"
-        }
-        field_paths = ["spec.oidc.issuerUrl"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.OIDC_CLIENT_ID"
+      field_paths = ["spec.oidc.issuerUrl"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.OIDC_CLIENT_ID"
+    }
+    target {
+      select {
+        kind = "Secret"
+        name = "oidc-credentials"
       }
-      targets = [{
-        select = {
-          kind = "Secret"
-          name = "oidc-credentials"
-        }
-        field_paths = ["stringData.clientId"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.OIDC_CLIENT_SECRET"
+      field_paths = ["stringData.clientId"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.OIDC_CLIENT_SECRET"
+    }
+    target {
+      select {
+        kind = "Secret"
+        name = "oidc-credentials"
       }
-      targets = [{
-        select = {
-          kind = "Secret"
-          name = "oidc-credentials"
-        }
-        field_paths = ["stringData.clientSecret"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.KEYCLOAK_ADMIN_ID"
+      field_paths = ["stringData.clientSecret"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.KEYCLOAK_ADMIN_ID"
+    }
+    target {
+      select {
+        kind = "ManagedApplication"
+        name = "admin-application"
       }
-      targets = [{
-        select = {
-          kind = "ManagedApplication"
-          name = "admin-application"
-        }
-        field_paths = ["spec.owner"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.KEYCLOAK_DEVELOPER_ID"
+      field_paths = ["spec.owner"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.KEYCLOAK_DEVELOPER_ID"
+    }
+    target {
+      select {
+        kind = "ManagedApplication"
+        name = "developer-application"
       }
-      targets = [{
-        select = {
-          kind = "ManagedApplication"
-          name = "developer-application"
-        }
-        field_paths = ["spec.owner"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.KEYCLOAK_AGENT_ID"
+      field_paths = ["spec.owner"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.KEYCLOAK_AGENT_ID"
+    }
+    target {
+      select {
+        kind = "ManagedApplication"
+        name = "agent-application"
       }
-      targets = [{
-        select = {
-          kind = "ManagedApplication"
-          name = "agent-application"
-        }
-        field_paths = ["spec.owner"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.NIM_TC_ENDPOINT"
+      field_paths = ["spec.owner"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.NIM_TC_ENDPOINT"
+    }
+    target {
+      select {
+        kind = "Middleware"
+        name = "cc-topic-control-guard"
       }
-      targets = [{
-        select = {
-          kind = "Middleware"
-          name = "cc-topic-control-guard"
-        }
-        field_paths = ["spec.plugin.chat-completion-llm-guard.endpoint"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.NIM_CS_ENDPOINT"
+      field_paths = ["spec.plugin.chat-completion-llm-guard.endpoint"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.NIM_CS_ENDPOINT"
+    }
+    target {
+      select {
+        kind = "Middleware"
+        name = "cc-content-safety-guard"
       }
-      targets = [{
-        select = {
-          kind = "Middleware"
-          name = "cc-content-safety-guard"
-        }
-        field_paths = ["spec.plugin.chat-completion-llm-guard.endpoint"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.NIM_JB_ENDPOINT"
+      field_paths = ["spec.plugin.chat-completion-llm-guard.endpoint"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.NIM_JB_ENDPOINT"
+    }
+    target {
+      select {
+        kind = "Middleware"
+        name = "cc-jailbreak-detection-guard"
       }
-      targets = [{
-        select = {
-          kind = "Middleware"
-          name = "cc-jailbreak-detection-guard"
-        }
-        field_paths = ["spec.plugin.chat-completion-llm-guard-custom.endpoint"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.PORTAL_URL"
+      field_paths = ["spec.plugin.chat-completion-llm-guard-custom.endpoint"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.PORTAL_URL"
+    }
+    target {
+      select {
+        kind = "APIPortal"
+        name = "chats-portal"
       }
-      targets = [{
-        select = {
-          kind = "APIPortal"
-          name = "chats-portal"
-        }
-        field_paths = ["spec.trustedUrls.0"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.PORTAL_HOST_MATCH"
+      field_paths = ["spec.trustedUrls.0"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.PORTAL_HOST_MATCH"
+    }
+    target {
+      select {
+        kind = "IngressRoute"
+        name = "chats-portal"
       }
-      targets = [{
-        select = {
-          kind = "IngressRoute"
-          name = "chats-portal"
-        }
-        field_paths = ["spec.routes.0.match"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.PRESIDIO_HOST"
+      field_paths = ["spec.routes.0.match"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.PRESIDIO_HOST"
+    }
+    target {
+      select {
+        kind = "Middleware"
+        name = "cc-content-guard"
       }
-      targets = [{
-        select = {
-          kind = "Middleware"
-          name = "cc-content-guard"
-        }
-        field_paths = ["spec.plugin.chat-completion-content-guard.engine.presidio.host"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.OLLAMA_BASE_URL"
+      field_paths = ["spec.plugin.chat-completion-content-guard.engine.presidio.host"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.OLLAMA_BASE_URL"
+    }
+    target {
+      select {
+        kind = "Middleware"
+        name = "cc-semantic-cache"
       }
-      targets = [{
-        select = {
-          kind = "Middleware"
-          name = "cc-semantic-cache"
-        }
-        field_paths = ["spec.plugin.chat-completion-semantic-cache.vectorizer.ollama.baseUrl"]
-      }]
-    },
-    {
-      source = {
-        kind       = "ConfigMap"
-        name       = "env-config"
-        field_path = "data.MILVUS_ADDRESS"
+      field_paths = ["spec.plugin.chat-completion-semantic-cache.vectorizer.ollama.baseUrl"]
+    }
+  }
+  
+  replacements {
+    source {
+      kind       = "ConfigMap"
+      name       = "env-config"
+      field_path = "data.MILVUS_ADDRESS"
+    }
+    target {
+      select {
+        kind = "Middleware"
+        name = "cc-semantic-cache"
       }
-      targets = [{
-        select = {
-          kind = "Middleware"
-          name = "cc-semantic-cache"
-        }
-        field_paths = ["spec.plugin.chat-completion-semantic-cache.vectorDB.milvus.clientConfig.address"]
-      }]
-    },
-  ]
+      field_paths = ["spec.plugin.chat-completion-semantic-cache.vectorDB.milvus.clientConfig.address"]
+    }
+  }
 }
 
 # Apply all resources
