@@ -24,3 +24,12 @@ resource "cloudflare_dns_record" "wildcard_traefik" {
   ttl     = 1
   proxied = false
 }
+
+resource "cloudflare_dns_record" "wildcard_portal" {
+  zone_id = var.zone_id
+  name    = "*.portal.${var.domain}"
+  content = var.ip
+  type    = "A"
+  ttl     = 1
+  proxied = false
+}
