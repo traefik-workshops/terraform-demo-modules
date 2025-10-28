@@ -268,27 +268,23 @@ data "kustomization_overlay" "chats" {
   }
 }
 
-# Write manifests to temp files and apply
+# Write all manifests to a single file
 resource "local_file" "chats_manifests" {
-  for_each = data.kustomization_overlay.chats.manifests
-  
-  filename = "${path.module}/.terraform/chats-manifests/${replace(each.key, "/", "_")}.yaml"
-  content  = each.value
+  filename = "${path.module}/.terraform/chats-manifests.yaml"
+  content  = join("\n---\n", [for id in data.kustomization_overlay.chats.ids : data.kustomization_overlay.chats.manifests[id]])
 }
 
 resource "null_resource" "chats" {
   triggers = {
-    manifests_hash = md5(jsonencode(data.kustomization_overlay.chats.manifests))
+    manifests = local_file.chats_manifests.content
   }
   
   provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/.terraform/chats-manifests/"
+    command = "kubectl apply -f ${local_file.chats_manifests.filename}"
   }
   
   provisioner "local-exec" {
     when = destroy
-    command = "kubectl delete -f ${path.module}/.terraform/chats-manifests/ || true"
+    command = "kubectl delete -f ${local_file.chats_manifests.filename} || true"
   }
-  
-  depends_on = [local_file.chats_manifests]
 }
