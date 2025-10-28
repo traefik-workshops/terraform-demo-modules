@@ -277,14 +277,15 @@ resource "local_file" "chats_manifests" {
 resource "null_resource" "chats" {
   triggers = {
     manifests = local_file.chats_manifests.content
+    filename  = local_file.chats_manifests.filename
   }
   
   provisioner "local-exec" {
-    command = "kubectl apply -f ${local_file.chats_manifests.filename}"
+    command = "kubectl apply -f ${self.triggers.filename}"
   }
   
   provisioner "local-exec" {
     when = destroy
-    command = "kubectl delete -f ${local_file.chats_manifests.filename} || true"
+    command = "kubectl delete -f ${self.triggers.filename} || true"
   }
 }
