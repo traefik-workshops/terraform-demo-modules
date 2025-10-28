@@ -1,4 +1,4 @@
-data "kustomization_build" "chats" {
+data "kustomization_overlay" "chats" {
   resources = [
     "github.com/traefik-workshops/traefik-demo-resources//chats/base/common?ref=${var.git_ref}"
   ]
@@ -268,9 +268,28 @@ data "kustomization_build" "chats" {
   }
 }
 
-# Apply all resources
-resource "kustomization_resource" "chats" {
-  for_each = data.kustomization_build.chats.ids
+# Apply resources in priority order
+# Priority 0: Namespaces and CRDs
+resource "kustomization_resource" "p0" {
+  for_each = data.kustomization_overlay.chats.ids_prio[0]
   
-  manifest = data.kustomization_build.chats.manifests[each.value]
+  manifest = data.kustomization_overlay.chats.manifests[each.value]
+}
+
+# Priority 1: Main resources
+resource "kustomization_resource" "p1" {
+  for_each = data.kustomization_overlay.chats.ids_prio[1]
+  
+  manifest = data.kustomization_overlay.chats.manifests[each.value]
+  
+  depends_on = [kustomization_resource.p0]
+}
+
+# Priority 2: Webhooks
+resource "kustomization_resource" "p2" {
+  for_each = data.kustomization_overlay.chats.ids_prio[2]
+  
+  manifest = data.kustomization_overlay.chats.manifests[each.value]
+  
+  depends_on = [kustomization_resource.p1]
 }
