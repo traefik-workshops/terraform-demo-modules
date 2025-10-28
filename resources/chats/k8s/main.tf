@@ -268,28 +268,27 @@ data "kustomization_overlay" "chats" {
   }
 }
 
-# Apply all resources as a single blob
+# Write manifests to temp files and apply
+resource "local_file" "chats_manifests" {
+  for_each = data.kustomization_overlay.chats.manifests
+  
+  filename = "${path.module}/.terraform/chats-manifests/${replace(each.key, "/", "_")}.yaml"
+  content  = each.value
+}
+
 resource "null_resource" "chats" {
   triggers = {
-    manifests = jsonencode(data.kustomization_overlay.chats.manifests)
-    ids = jsonencode(data.kustomization_overlay.chats.ids)
+    manifests_hash = md5(jsonencode(data.kustomization_overlay.chats.manifests))
   }
   
   provisioner "local-exec" {
-    command = <<-EOT
-      echo '${jsonencode([for id in data.kustomization_overlay.chats.ids : yamldecode(data.kustomization_overlay.chats.manifests[id])])}' | \
-      jq -r '.[]' | \
-      kubectl apply -f -
-    EOT
+    command = "kubectl apply -f ${path.module}/.terraform/chats-manifests/"
   }
   
   provisioner "local-exec" {
     when = destroy
-    command = <<-EOT
-      echo '${self.triggers.manifests}' | \
-      jq -r 'to_entries | map(.value) | .[]' | \
-      kubectl delete -f -
-    EOT
-    on_failure = continue
+    command = "kubectl delete -f ${path.module}/.terraform/chats-manifests/ || true"
   }
+  
+  depends_on = [local_file.chats_manifests]
 }
