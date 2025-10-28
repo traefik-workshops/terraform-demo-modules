@@ -1,10 +1,5 @@
-# Cloudflare Zone Data Source
-data "cloudflare_zone" "traefikhub" {
-  zone_id = var.zone_id
-}
-
 resource "cloudflare_dns_record" "root" {
-  zone_id = data.cloudflare_zone.traefikhub.id
+  zone_id = var.zone_id
   name    = var.domain
   content = var.ip
   type    = "A"
@@ -13,7 +8,7 @@ resource "cloudflare_dns_record" "root" {
 }
 
 resource "cloudflare_dns_record" "wildcard" {
-  zone_id = data.cloudflare_zone.traefikhub.id
+  zone_id = var.zone_id
   name    = "*.${var.domain}"
   content = var.ip
   type    = "A"
@@ -22,7 +17,7 @@ resource "cloudflare_dns_record" "wildcard" {
 }
 
 resource "cloudflare_dns_record" "wildcard_traefik" {
-  zone_id = data.cloudflare_zone.traefikhub.id
+  zone_id = var.zone_id
   name    = "*.traefik.${var.domain}"
   content = var.ip
   type    = "A"
