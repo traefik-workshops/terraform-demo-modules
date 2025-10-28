@@ -88,6 +88,9 @@ resource "helm_release" "loki" {
       backend = {
         replicas = 0
       }
+      chunksCache = {
+        enabled = false
+      }
     }),
     yamlencode(var.extra_values)
   ]
