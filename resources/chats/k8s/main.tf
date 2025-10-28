@@ -1,4 +1,4 @@
-data "kustomization_overlay" "chats" {
+data "kustomization_build" "chats" {
   resources = [
     "github.com/traefik-workshops/traefik-demo-resources//chats/base/common?ref=${var.git_ref}"
   ]
@@ -270,7 +270,7 @@ data "kustomization_overlay" "chats" {
 
 # Apply all resources
 resource "kustomization_resource" "chats" {
-  for_each = data.kustomization_overlay.chats.ids
+  for_each = data.kustomization_build.chats.ids
   
-  manifest = data.kustomization_overlay.chats.manifests[each.value]
+  manifest = data.kustomization_build.chats.manifests[each.value]
 }
