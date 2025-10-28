@@ -90,10 +90,7 @@ resource "helm_release" "grafana" {
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true
-        hosts = concat(
-          ["grafana-traefik.${var.ingress_domain}"],
-          var.ingress_entrypoint == "traefik" ? ["grafana.traefik.localhost"] : []
-        )
+        hosts = [var.ingress_domain, "grafana.traefik.localhost"]
         annotations = {
           "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
           "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
