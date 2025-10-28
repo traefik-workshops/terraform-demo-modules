@@ -271,7 +271,8 @@ data "kustomization_overlay" "chats" {
 # Apply all resources as a single blob
 resource "null_resource" "chats" {
   triggers = {
-    manifests_hash = md5(jsonencode(data.kustomization_overlay.chats.manifests))
+    manifests = jsonencode(data.kustomization_overlay.chats.manifests)
+    ids = jsonencode(data.kustomization_overlay.chats.ids)
   }
   
   provisioner "local-exec" {
@@ -285,8 +286,8 @@ resource "null_resource" "chats" {
   provisioner "local-exec" {
     when = destroy
     command = <<-EOT
-      echo '${jsonencode([for id in data.kustomization_overlay.chats.ids : yamldecode(data.kustomization_overlay.chats.manifests[id])])}' | \
-      jq -r '.[]' | \
+      echo '${self.triggers.manifests}' | \
+      jq -r 'to_entries | map(.value) | .[]' | \
       kubectl delete -f -
     EOT
     on_failure = continue
