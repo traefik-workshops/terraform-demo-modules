@@ -35,7 +35,11 @@ resource "helm_release" "open_webui" {
         {
           name = "OPENAI_API_KEYS"
           value = join(";", var.openai_api_keys)
-        }
+        },
+        {
+          name = "TOOL_SERVER_CONNECTIONS"
+          value = replace(jsonencode(var.mcp_connections), "/\\s+/", "")
+        },
       ]
     }),
     yamlencode(var.extra_values),

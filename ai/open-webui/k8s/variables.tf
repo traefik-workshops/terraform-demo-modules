@@ -45,3 +45,13 @@ variable "ingress_entrypoint" {
   default     = "web"
   description = "The entrypoint to use for the ingress, default is `web`"
 }
+
+variable "mcp_connections" {
+  type = list(object({
+    name    = string
+    url     = string
+    api_key = optional(string, "")
+  }))
+  default     = []
+  description = "MCP connections"
+} 
