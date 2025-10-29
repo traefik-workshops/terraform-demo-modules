@@ -55,7 +55,7 @@ resource "argocd_application" "chats" {
           }
           
           openai = {
-            authHeader = var.openai_auth_header
+            authHeader = "Bearer ${var.openai_auth_header}"
           }
           
           gptOss = {
