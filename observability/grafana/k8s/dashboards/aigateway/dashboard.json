@@ -116,7 +116,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"}) * 1000",
+          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -732,7 +732,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status!=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})*10000",
+          "expr": "sum by (gen_ai_operation_name) (gen_ai_client_token_usage_sum{cache_status!=\"Hit\", gen_ai_request_model=~\"$model\", gen_ai_response_model=~\"$response_model\", app_id=~\"$app\"})",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
