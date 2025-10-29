@@ -37,6 +37,10 @@ resource "helm_release" "open_webui" {
           value = join(";", var.openai_api_keys)
         },
         {
+          name = "ENABLE_DIRECT_CONNECTIONS"
+          value = "true"
+        },
+        {
           name = "TOOL_SERVER_CONNECTIONS"
           value = replace(jsonencode(var.mcp_connections), "/\\s+/", "")
         },
