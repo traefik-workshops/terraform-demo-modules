@@ -53,10 +53,10 @@ resource "helm_release" "open_webui" {
         host = "chat.${var.ingress_domain}"
         additionalHosts = []
         annotations = {
-          "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint
+          "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
           "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-          "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
-          "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
         }
       }
     } : {})
