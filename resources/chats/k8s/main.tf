@@ -67,7 +67,7 @@ resource "argocd_application" "chats" {
 
     destination {
       server    = "https://kubernetes.default.svc"
-      namespace = "chats"
+      namespace = "default"
     }
 
     sync_policy {
