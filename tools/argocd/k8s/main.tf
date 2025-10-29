@@ -1,13 +1,5 @@
-resource "random_password" "argocd_bcrypt" {
-  length  = 60
-  special = false
-  keepers = {
-    password = var.admin_password
-  }
-  
-  lifecycle {
-    ignore_changes = [result]
-  }
+locals {
+  argocd_password_hash = bcrypt(var.admin_password)
 }
 
 resource "helm_release" "argocd" {
@@ -37,9 +29,13 @@ resource "helm_release" "argocd" {
   set_sensitive = [
     {
       name  = "configs.secret.argocdServerAdminPassword"
-      value = bcrypt(var.admin_password, random_password.argocd_bcrypt.result)
+      value = local.argocd_password_hash
     }
   ]
+  
+  lifecycle {
+    ignore_changes = [set_sensitive]
+  }
 }
 
 resource "kubernetes_ingress_v1" "argocd-traefik" {
