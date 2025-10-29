@@ -61,6 +61,21 @@ resource "argocd_application" "chats" {
           gptOss = {
             podId = var.gpt_oss_pod_id
           }
+
+          middlewares = {
+            # LLM Guards (topic control, content safety, jailbreak detection)
+            llmGuards = {
+              enabled = var.llm_guards_enabled
+            }
+            # Semantic cache for response caching
+            semanticCache = {
+              enabled = var.semantic_cache_enabled
+            }
+            # Content guard (PII detection with Presidio)
+            contentGuard = {
+              enabled = var.content_guard_enabled
+            }
+          }
         })
       }
     }

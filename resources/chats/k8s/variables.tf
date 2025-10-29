@@ -97,3 +97,22 @@ variable "gpt_oss_pod_id" {
   description = "GPT-OSS RunPod pod ID"
   type        = string
 }
+
+variable "llm_guards_enabled" {
+  description = "Enable LLM Guards"
+  type        = bool
+  default     = false
+}
+
+variable "semantic_cache_enabled" {
+  description = "Enable Semantic Cache"
+  type        = bool
+  default     = false
+}
+
+variable "content_guard_enabled" {
+  description = "Enable Content Guard"
+  type        = bool
+  default     = false
+}
+
