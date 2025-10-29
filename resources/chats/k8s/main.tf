@@ -1,291 +1,82 @@
-data "kustomization_overlay" "chats" {
-  resources = [
-    "github.com/traefik-workshops/traefik-demo-resources//chats/base/common?ref=${var.git_ref}"
-  ]
-  
-  components = [
-    for component in var.components : 
-      "github.com/traefik-workshops/traefik-demo-resources//chats/components/${component}?ref=${var.git_ref}"
-  ]
-  
-  config_map_generator {
-    name = "env-config"
-    
-    literals = [
-      "KEYCLOAK_JWKS_URL=https://keycloak.traefik.${var.domain}/realms/traefik/protocol/openid-connect/certs",
-      "KEYCLOAK_ISSUER_URL=https://keycloak.traefik.${var.domain}/realms/traefik",
-      "OIDC_CLIENT_ID=${var.oidc_client_id}",
-      "OIDC_CLIENT_SECRET=${var.oidc_client_secret}",
-      "KEYCLOAK_ADMIN_ID=${var.keycloak_admin_id}",
-      "KEYCLOAK_DEVELOPER_ID=${var.keycloak_developer_id}",
-      "KEYCLOAK_AGENT_ID=${var.keycloak_agent_id}",
-      "NIM_TC_ENDPOINT=https://${var.nim_tc_pod_id}-8000.proxy.runpod.net/v1/chat/completions",
-      "NIM_CS_ENDPOINT=https://${var.nim_cs_pod_id}-8000.proxy.runpod.net/v1/chat/completions",
-      "NIM_JB_ENDPOINT=https://${var.nim_jb_pod_id}-8000.proxy.runpod.net/v1/classify",
-      "PORTAL_URL=https://chats.portal.${var.domain}",
-      "PORTAL_HOST_MATCH=Host(`chats.portal.${var.domain}`)",
-      "PRESIDIO_HOST=${var.presidio_host}",
-      "OLLAMA_BASE_URL=${var.ollama_base_url}",
-      "MILVUS_ADDRESS=${var.milvus_address}",
-      "OPENAI_API_URL=https://openai.${var.domain}",
-      "OPENAI_HOST_MATCH=Host(`openai.${var.domain}`)",
-      "OPENAI_HOST_MATCH_COMPLETIONS=Host(`openai.${var.domain}`) && PathPrefix(`/v1/chat/completions`)",
-      "OPENAI_AUTH_HEADER=${var.openai_auth_header}",
-      "GPT_OSS_EXTERNAL_NAME=${var.gpt_oss_pod_id}-8000.proxy.runpod.net",
-      "GPT_OSS_API_URL=https://gpt.${var.domain}",
-      "GPT_OSS_HOST_MATCH=Host(`gpt.${var.domain}`)",
-      "GPT_OSS_HOST_MATCH_COMPLETIONS=Host(`gpt.${var.domain}`) && PathPrefix(`/v1/chat/completions`)",
-    ]
-    
-    options {
-      disable_name_suffix_hash = true
-    }
+# Create ArgoCD Application for chats resources using Helm
+resource "argocd_application" "chats" {
+  metadata {
+    name      = "chats"
+    namespace = "argocd"
   }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.KEYCLOAK_JWKS_URL"
-    }
-    target {
-      select {
-        kind = "APIAuth"
-        name = "jwt-auth"
-      }
-      field_paths = ["spec.jwt.jwksUrl"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.KEYCLOAK_ISSUER_URL"
-    }
-    target {
-      select {
-        kind = "APIPortalAuth"
-        name = "oidc-portal-auth"
-      }
-      field_paths = ["spec.oidc.issuerUrl"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.OIDC_CLIENT_ID"
-    }
-    target {
-      select {
-        kind = "Secret"
-        name = "oidc-credentials"
-      }
-      field_paths = ["stringData.clientId"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.OIDC_CLIENT_SECRET"
-    }
-    target {
-      select {
-        kind = "Secret"
-        name = "oidc-credentials"
-      }
-      field_paths = ["stringData.clientSecret"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.KEYCLOAK_ADMIN_ID"
-    }
-    target {
-      select {
-        kind = "ManagedApplication"
-        name = "admin-application"
-      }
-      field_paths = ["spec.owner"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.KEYCLOAK_DEVELOPER_ID"
-    }
-    target {
-      select {
-        kind = "ManagedApplication"
-        name = "developer-application"
-      }
-      field_paths = ["spec.owner"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.KEYCLOAK_AGENT_ID"
-    }
-    target {
-      select {
-        kind = "ManagedApplication"
-        name = "agent-application"
-      }
-      field_paths = ["spec.owner"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.NIM_TC_ENDPOINT"
-    }
-    target {
-      select {
-        kind = "Middleware"
-        name = "cc-topic-control-guard"
-      }
-      field_paths = ["spec.plugin.chat-completion-llm-guard.endpoint"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.NIM_CS_ENDPOINT"
-    }
-    target {
-      select {
-        kind = "Middleware"
-        name = "cc-content-safety-guard"
-      }
-      field_paths = ["spec.plugin.chat-completion-llm-guard.endpoint"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.NIM_JB_ENDPOINT"
-    }
-    target {
-      select {
-        kind = "Middleware"
-        name = "cc-jailbreak-detection-guard"
-      }
-      field_paths = ["spec.plugin.chat-completion-llm-guard-custom.endpoint"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.PORTAL_URL"
-    }
-    target {
-      select {
-        kind = "APIPortal"
-        name = "chats-portal"
-      }
-      field_paths = ["spec.trustedUrls.0"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.PORTAL_HOST_MATCH"
-    }
-    target {
-      select {
-        kind = "IngressRoute"
-        name = "chats-portal"
-      }
-      field_paths = ["spec.routes.0.match"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.PRESIDIO_HOST"
-    }
-    target {
-      select {
-        kind = "Middleware"
-        name = "cc-content-guard"
-      }
-      field_paths = ["spec.plugin.chat-completion-content-guard.engine.presidio.host"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.OLLAMA_BASE_URL"
-    }
-    target {
-      select {
-        kind = "Middleware"
-        name = "cc-semantic-cache"
-      }
-      field_paths = ["spec.plugin.chat-completion-semantic-cache.vectorizer.ollama.baseUrl"]
-    }
-  }
-  
-  replacements {
-    source {
-      kind       = "ConfigMap"
-      name       = "env-config"
-      field_path = "data.MILVUS_ADDRESS"
-    }
-    target {
-      select {
-        kind = "Middleware"
-        name = "cc-semantic-cache"
-      }
-      field_paths = ["spec.plugin.chat-completion-semantic-cache.vectorDB.milvus.clientConfig.address"]
-    }
-  }
-}
 
-# Write all manifests to a single file
-resource "local_file" "chats_manifests" {
-  filename = "${path.module}/.terraform/chats-manifests.yaml"
-  content  = join("\n---\n", [for id in data.kustomization_overlay.chats.ids : data.kustomization_overlay.chats.manifests[id]])
-}
+  spec {
+    project = "default"
 
-resource "null_resource" "chats" {
-  triggers = {
-    manifests = local_file.chats_manifests.content
-    filename  = local_file.chats_manifests.filename
-  }
-  
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${self.triggers.filename}"
-  }
-  
-  provisioner "local-exec" {
-    when = destroy
-    command = "kubectl delete -f ${self.triggers.filename} || true"
+    source {
+      repo_url        = "https://github.com/traefik-workshops/traefik-demo-resources"
+      target_revision = var.git_ref
+      path            = "chats/helm"
+      
+      helm {
+        values = yamlencode({
+          domain = var.domain
+          
+          components = var.components
+          
+          keycloak = {
+            adminId     = var.keycloak_admin_id
+            developerId = var.keycloak_developer_id
+            agentId     = var.keycloak_agent_id
+          }
+          
+          oidc = {
+            clientId     = var.oidc_client_id
+            clientSecret = var.oidc_client_secret
+          }
+          
+          nim = {
+            topicControl = {
+              podId = var.nim_tc_pod_id
+            }
+            contentSafety = {
+              podId = var.nim_cs_pod_id
+            }
+            jailbreakDetection = {
+              podId = var.nim_jb_pod_id
+            }
+          }
+          
+          presidio = {
+            host = var.presidio_host
+          }
+          
+          ollama = {
+            baseUrl = var.ollama_base_url
+          }
+          
+          milvus = {
+            address = var.milvus_address
+          }
+          
+          openai = {
+            authHeader = var.openai_auth_header
+          }
+          
+          gptOss = {
+            podId = var.gpt_oss_pod_id
+          }
+        })
+      }
+    }
+
+    destination {
+      server    = "https://kubernetes.default.svc"
+      namespace = "chats"
+    }
+
+    sync_policy {
+      automated {
+        prune       = true
+        self_heal   = true
+      }
+      
+      sync_options = ["CreateNamespace=true"]
+    }
   }
 }

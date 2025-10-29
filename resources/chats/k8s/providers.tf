@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    kustomization = {
-      source  = "kbst/kustomization"
-      version = "~> 0.9"
+    argocd = {
+      source  = "argoproj-labs/argocd"
+      version = "7.11.2"
     }
   }
 }
