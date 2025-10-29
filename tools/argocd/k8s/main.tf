@@ -35,42 +35,28 @@ resource "kubernetes_ingress_v1" "argocd-traefik" {
     name = "argocd"
     namespace = "traefik-tools"
     annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints" = "traefik"
+      "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
       "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+      "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+      "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
     }
   }
 
-  spec {
-    rule {
-      host = "argocd.traefik.cloud"
-      http {
-        path {
-          path = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "argocd-server"
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-      }
-    }
-    rule {
-      host = "argocd.traefik.localhost"
-      http {
-        path {
-          path = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "argocd-server"
-              port {
-                number = 80
+  dynamic "spec" {
+    for_each = var.ingress ? ["argocd"] : []
+    content {
+      rule {
+        host = "argocd.traefik.${var.ingress_domain}"
+        http {
+          path {
+            path = "/"
+            path_type = "Prefix"
+            backend {
+              service {
+                name = "argocd-server"
+                port {
+                  number = 80
+                }
               }
             }
           }
