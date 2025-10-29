@@ -1,8 +1,8 @@
 # Create ArgoCD Application for chats resources using Helm
 resource "argocd_application" "chats" {
   metadata {
-    name      = "chats"
-    namespace = "argocd"
+    name      = var.name
+    namespace = var.namespace
   }
 
   spec {

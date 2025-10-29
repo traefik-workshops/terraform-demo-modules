@@ -1,3 +1,14 @@
+variable "name" {
+  type        = string
+  description = "The name of the chats release"
+  default     = "chats"
+}
+
+variable "namespace" {
+  type        = string
+  description = "Namespace for the chats deployment"
+}
+
 variable "domain" {
   description = "Base domain for all services"
   type        = string
