@@ -46,7 +46,7 @@ resource "kubernetes_ingress_v1" "argocd-traefik" {
     for_each = var.ingress ? ["argocd"] : []
     content {
       rule {
-        host = "argocd.traefik.${var.ingress_domain}"
+        host = "argocd.${var.ingress_domain}"
         http {
           path {
             path = "/"
