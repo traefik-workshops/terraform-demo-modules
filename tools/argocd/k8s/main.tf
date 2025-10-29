@@ -1,3 +1,15 @@
+resource "random_password" "argocd_bcrypt" {
+  length  = 60
+  special = false
+  keepers = {
+    password = var.admin_password
+  }
+  
+  lifecycle {
+    ignore_changes = [result]
+  }
+}
+
 resource "helm_release" "argocd" {
   name       = var.name
   namespace  = var.namespace
@@ -25,7 +37,7 @@ resource "helm_release" "argocd" {
   set_sensitive = [
     {
       name  = "configs.secret.argocdServerAdminPassword"
-      value = bcrypt(var.admin_password)
+      value = bcrypt(var.admin_password, random_password.argocd_bcrypt.result)
     }
   ]
 }
