@@ -63,25 +63,25 @@ resource "null_resource" "validate_keycloak_deployment" {
         
         echo "Keycloak pod: $KC_POD | Status: $KC_STATUS | Created: $KC_TIME (epoch: $KC_EPOCH)"
         
-        # State 1: Pod exists but is older than realm import - waiting for restart
+        # Pod exists but is older than realm import - waiting for restart
         if [ $KC_EPOCH -le $REALM_EPOCH ]; then
-          echo "  → State 1: Pod is older than realm import, waiting for operator to restart it... ($ELAPSED/$TIMEOUT)"
+          echo "  → Pod is older than realm import, waiting for operator to restart it... ($ELAPSED/$TIMEOUT)"
           sleep 5
           ELAPSED=$((ELAPSED + 5))
           continue
         fi
         
-        # State 2: Pod is restarting - wait for Running
+        # Pod is restarting - wait for Running
         if [ "$KC_STATUS" != "Running" ]; then
-          echo "  → State 2: Pod is restarting (status: $KC_STATUS), waiting... ($ELAPSED/$TIMEOUT)"
+          echo "  → Pod is restarting (status: $KC_STATUS), waiting... ($ELAPSED/$TIMEOUT)"
           sleep 5
           ELAPSED=$((ELAPSED + 5))
           continue
         fi
         
-        # State 3: Pod is Running AND newer than realm import - SUCCESS
+        # Pod is Running AND newer than realm import - SUCCESS
         AGE_DIFF=$((KC_EPOCH - REALM_EPOCH))
-        echo "  → State 3: Pod is Running and $AGE_DIFF seconds newer than realm import ✓"
+        echo "  → Pod is Running and $AGE_DIFF seconds newer than realm import ✓"
         echo ""
         echo "✓ All validation checks passed!"
         exit 0
@@ -91,6 +91,4 @@ resource "null_resource" "validate_keycloak_deployment" {
       exit 1
     EOT
   }
-
-  depends_on = [null_resource.wait_for_realm_import]
 }
