@@ -23,3 +23,11 @@ resource "helm_release" "traefik-crds" {
     }
   ]
 }
+
+resource "null_resource" "gateway_api_experimental" {
+  provisioner "local-exec" {
+    command = "kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml"
+  }
+
+  depends_on = [helm_release.traefik-crds]
+}
