@@ -6,4 +6,10 @@ resource "helm_release" "weaviate" {
   version    = "17.6.1"
   timeout    = 900
   atomic     = true
+
+  values = [yamlencode({
+    service = {
+      type = "ClusterIP"
+    }
+  })]
 }
