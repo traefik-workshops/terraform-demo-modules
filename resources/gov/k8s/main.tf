@@ -1,9 +1,8 @@
 # Create ArgoCD Application for gov resources using Helm
 resource "argocd_application" "gov" {
   metadata {
-    name       = var.name
-    namespace  = var.namespace
-    finalizers = ["resources-finalizer.argocd.argoproj.io"]
+    name      = var.name
+    namespace = var.namespace
   }
 
   spec {

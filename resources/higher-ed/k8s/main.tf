@@ -3,7 +3,6 @@ resource "argocd_application" "higher-ed" {
   metadata {
     name      = var.name
     namespace = var.namespace
-    finalizers = ["resources-finalizer.argocd.argoproj.io"]
   }
 
   spec {
