@@ -289,3 +289,16 @@ module "redis" {
 
   count = var.enable_api_management ? 1 : 0
 }
+
+resource "null_resource" "knative_provider_rbac" {
+  provisioner "local-exec" {
+    command = <<EOF
+    kubectl apply --server-side \
+      -f https://raw.githubusercontent.com/traefik/traefik/v3.6/docs/content/reference/dynamic-configuration/kubernetes-knative-rbac.yml \
+      --force-conflicts
+EOF
+  }
+
+  count = var.enable_knative_provider ? 1 : 0
+  depends_on = [helm_release.traefik]
+}
