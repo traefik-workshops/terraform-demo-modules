@@ -5,11 +5,17 @@ locals {
     "--experimental.otlpLogs=true",
     "--accesslog.otlp.http.tls.insecureSkipVerify=true",
     "--accesslog.otlp.http.endpoint=${local.otlp_address}/v1/logs"
-    ] : [],
-    var.enable_otlp_application_logs ? [
-      "--experimental.otlpLogs=true",
-      "--log.otlp.http.tls.insecureSkipVerify=true",
-      "--log.otlp.http.endpoint=${local.otlp_address}/v1/logs"
+  ] : [],
+  var.enable_otlp_application_logs ? [
+    "--experimental.otlpLogs=true",
+    "--log.otlp.http.tls.insecureSkipVerify=true",
+    "--log.otlp.http.endpoint=${local.otlp_address}/v1/logs"
+  ] : [], var.enable_mcp_gateway ? [
+    "--hub.mcpgateway",
+    "--hub.mcpgateway.maxRequestBodySize=2097152"
+  ] : [], var.enable_knative_provider ? [
+    "--experimental.knative=true",
+    "--providers.knative=true"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -24,12 +30,24 @@ locals {
   } : {}
 
   ports = merge({
-    traefik = {
-      expose = {
-        default = true
+      traefik = {
+        expose = {
+          default = true
+        }
       }
-    }
-    },
+    }, var.cloudflare_dns.enabled ? {
+      websecure = {
+        tls = {
+          certResolver = "cf"
+          domains = [
+            {
+              main = "${var.cloudflare_dns.domain}"
+              sans = ["*.${var.cloudflare_dns.domain}", "*.traefik.${var.cloudflare_dns.domain}", "*.portal.${var.cloudflare_dns.domain}"]
+            }
+          ]
+        }
+      }
+    }: {},
     local.metrics_port,
     var.custom_ports
   )
@@ -137,6 +155,7 @@ resource "helm_release" "traefik" {
 
       env = concat(
         [{ name = "USER", value = "traefiker" }],
+        var.cloudflare_dns.enabled ? [{ name = "CF_DNS_API_TOKEN", value = var.cloudflare_dns.api_token }] : [],
         var.custom_envs
       )
 

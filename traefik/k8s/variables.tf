@@ -238,3 +238,29 @@ variable "is_staging_letsencrypt" {
   type        = bool
   default     = false
 }
+
+variable "enable_mcp_gateway" {
+  description = "Enable MCP Gateway"
+  type        = bool
+  default     = false
+}
+
+variable "enable_knative_provider" {
+  description = "Enable Knative provider"
+  type        = bool
+  default     = false
+}
+
+variable "cloudflare_dns" {
+  description = "Cloudflare DNS configuration"
+  type = object({
+    enabled   = optional(bool, false)
+    domain    = optional(string, "")
+    api_token = optional(string, "")
+  })
+  default = {
+    enabled   = false
+    domain    = ""
+    api_token = ""
+  }
+}
