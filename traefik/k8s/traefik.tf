@@ -290,62 +290,56 @@ module "redis" {
   count = var.enable_api_management ? 1 : 0
 }
 
-resource "kubernetes_manifest" "knative_networking_role" {
-  manifest = {
-    apiVersion = "rbac.authorization.k8s.io/v1"
-    kind       = "ClusterRole"
-    metadata = {
-      name = "knative-networking-role"
-    }
-    rules = [
-      {
-        apiGroups = [""]
-        resources = ["services"]
-        verbs     = ["get", "list", "watch"]
-      },
-      {
-        apiGroups = [""]
-        resources = ["secrets"]
-        verbs     = ["get", "list", "watch"]
-      },
-      {
-        apiGroups = ["networking.internal.knative.dev"]
-        resources = ["ingresses"]
-        verbs     = ["get", "list", "watch"]
-      },
-      {
-        apiGroups = ["networking.internal.knative.dev"]
-        resources = ["ingresses/status"]
-        verbs     = ["update"]
-      }
-    ]
+resource "kubernetes_cluster_role" "knative_networking_role" {
+  metadata {
+    name = "knative-networking-role"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["services"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["secrets"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = ["networking.internal.knative.dev"]
+    resources  = ["ingresses"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = ["networking.internal.knative.dev"]
+    resources  = ["ingresses/status"]
+    verbs      = ["update"]
   }
 
   count = var.enable_knative_provider ? 1 : 0
   depends_on = [helm_release.traefik]
 }
 
-resource "kubernetes_manifest" "gateway_controller_binding" {
-  manifest = {
-    apiVersion = "rbac.authorization.k8s.io/v1"
-    kind       = "ClusterRoleBinding"
-    metadata = {
-      name = "gateway-controller"
-    }
-    roleRef = {
-      apiGroup = "rbac.authorization.k8s.io"
-      kind     = "ClusterRole"
-      name     = "knative-networking-role"
-    }
-    subjects = [
-      {
-        kind      = "ServiceAccount"
-        name      = "traefik"
-        namespace = var.namespace
-      }
-    ]
+resource "kubernetes_cluster_role_binding" "gateway_controller_binding" {
+  metadata {
+    name = "gateway-controller"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "knative-networking-role"
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "traefik"
+    namespace = var.namespace
   }
 
   count = var.enable_knative_provider ? 1 : 0
-  depends_on = [kubernetes_manifest.knative_networking_role]
+  depends_on = [kubernetes_cluster_role.knative_networking_role]
 }
