@@ -4,7 +4,7 @@ resource "helm_release" "traefik-crds" {
   namespace  = var.namespace
   repository = "https://traefik.github.io/charts"
   chart      = "traefik-crds"
-  version    = "1.10.0"
+  version    = "1.11.1"
   timeout    = 900
   atomic     = true
   
