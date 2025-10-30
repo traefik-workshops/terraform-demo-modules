@@ -11,8 +11,9 @@ terraform {
 data "http" "keycloak_token" {
   for_each = { for idx, user in var.users : idx => user }
 
-  url    = "${var.keycloak_url}/realms/${var.realm}/protocol/openid-connect/token"
-  method = "POST"
+  url      = "${var.keycloak_url}/realms/${var.realm}/protocol/openid-connect/token"
+  method   = "POST"
+  insecure = true
 
   request_headers = {
     Content-Type = "application/x-www-form-urlencoded"
