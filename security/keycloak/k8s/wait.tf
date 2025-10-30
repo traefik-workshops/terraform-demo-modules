@@ -13,7 +13,7 @@ resource "null_resource" "wait_for_realm_import" {
       while [ $ELAPSED -lt $TIMEOUT ]; do
         JOB_COUNT=$(kubectl get jobs -n ${var.namespace} \
           -l app.kubernetes.io/instance=traefik,app.kubernetes.io/managed-by=keycloak-operator \
-          --no-headers 2>/dev/null | wc -l)
+          --no-headers 2>/dev/null | wc -l | tr -d ' ')
         
         if [ "$JOB_COUNT" -gt 0 ]; then
           echo "✓ Realm import job found"
