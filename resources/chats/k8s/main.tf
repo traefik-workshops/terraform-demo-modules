@@ -50,8 +50,8 @@ resource "argocd_application" "chats" {
             baseUrl = var.ollama_base_url
           }
           
-          milvus = {
-            address = var.milvus_address
+          weaviate = {
+            address = var.weaviate_address
           }
           
           openai = {

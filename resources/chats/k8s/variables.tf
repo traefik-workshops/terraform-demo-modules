@@ -81,8 +81,8 @@ variable "ollama_base_url" {
   type        = string
 }
 
-variable "milvus_address" {
-  description = "Milvus vector database address"
+variable "weaviate_address" {
+  description = "Weaviate vector database address"
   type        = string
 }
 
