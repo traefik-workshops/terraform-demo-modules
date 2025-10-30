@@ -290,15 +290,62 @@ module "redis" {
   count = var.enable_api_management ? 1 : 0
 }
 
-resource "null_resource" "knative_provider_rbac" {
-  provisioner "local-exec" {
-    command = <<EOF
-    kubectl apply --server-side \
-      -f https://raw.githubusercontent.com/traefik/traefik/v3.6/docs/content/reference/dynamic-configuration/kubernetes-knative-rbac.yml \
-      --force-conflicts
-EOF
+resource "kubernetes_manifest" "knative_networking_role" {
+  manifest = {
+    apiVersion = "rbac.authorization.k8s.io/v1"
+    kind       = "ClusterRole"
+    metadata = {
+      name = "knative-networking-role"
+    }
+    rules = [
+      {
+        apiGroups = [""]
+        resources = ["services"]
+        verbs     = ["get", "list", "watch"]
+      },
+      {
+        apiGroups = [""]
+        resources = ["secrets"]
+        verbs     = ["get", "list", "watch"]
+      },
+      {
+        apiGroups = ["networking.internal.knative.dev"]
+        resources = ["ingresses"]
+        verbs     = ["get", "list", "watch"]
+      },
+      {
+        apiGroups = ["networking.internal.knative.dev"]
+        resources = ["ingresses/status"]
+        verbs     = ["update"]
+      }
+    ]
   }
 
   count = var.enable_knative_provider ? 1 : 0
   depends_on = [helm_release.traefik]
+}
+
+resource "kubernetes_manifest" "gateway_controller_binding" {
+  manifest = {
+    apiVersion = "rbac.authorization.k8s.io/v1"
+    kind       = "ClusterRoleBinding"
+    metadata = {
+      name = "gateway-controller"
+    }
+    roleRef = {
+      apiGroup = "rbac.authorization.k8s.io"
+      kind     = "ClusterRole"
+      name     = "knative-networking-role"
+    }
+    subjects = [
+      {
+        kind      = "ServiceAccount"
+        name      = "traefik"
+        namespace = var.namespace
+      }
+    ]
+  }
+
+  count = var.enable_knative_provider ? 1 : 0
+  depends_on = [kubernetes_manifest.knative_networking_role]
 }
