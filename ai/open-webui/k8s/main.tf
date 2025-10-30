@@ -3,7 +3,7 @@ resource "helm_release" "open_webui" {
   namespace  = var.namespace
   repository = "https://helm.openwebui.com/"
   chart      = "open-webui"
-  version    = "6.28.0"
+  version    = "8.12.2"
   timeout    = 900
   atomic     = true
 
