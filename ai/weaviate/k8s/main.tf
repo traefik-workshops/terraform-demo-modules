@@ -11,5 +11,8 @@ resource "helm_release" "weaviate" {
     service = {
       type = "ClusterIP"
     }
+    grpcService = {
+      enabled = false
+    }
   })]
 }
