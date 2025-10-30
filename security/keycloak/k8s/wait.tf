@@ -58,10 +58,11 @@ resource "null_resource" "validate_keycloak_deployment" {
         fi
         
         KC_STATUS=$(kubectl get pod -n ${var.namespace} $KC_POD -o jsonpath='{.status.phase}')
+        KC_READY=$(kubectl get pod -n ${var.namespace} $KC_POD -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
         KC_TIME=$(kubectl get pod -n ${var.namespace} $KC_POD -o jsonpath='{.metadata.creationTimestamp}')
         KC_EPOCH=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$KC_TIME" +%s 2>/dev/null || date -d "$KC_TIME" +%s)
         
-        echo "Keycloak pod: $KC_POD | Status: $KC_STATUS | Created: $KC_TIME (epoch: $KC_EPOCH)"
+        echo "Keycloak pod: $KC_POD | Status: $KC_STATUS | Ready: $KC_READY | Created: $KC_TIME (epoch: $KC_EPOCH)"
         
         # Pod exists but is older than realm import - waiting for restart
         if [ $KC_EPOCH -le $REALM_EPOCH ]; then
@@ -79,9 +80,17 @@ resource "null_resource" "validate_keycloak_deployment" {
           continue
         fi
         
-        # Pod is Running AND newer than realm import - SUCCESS
+        # Pod is Running but not Ready yet
+        if [ "$KC_READY" != "True" ]; then
+          echo "  → Pod is Running but not Ready yet, waiting... ($ELAPSED/$TIMEOUT)"
+          sleep 5
+          ELAPSED=$((ELAPSED + 5))
+          continue
+        fi
+        
+        # Pod is Running, Ready, AND newer than realm import - SUCCESS
         AGE_DIFF=$((KC_EPOCH - REALM_EPOCH))
-        echo "  → Pod is Running and $AGE_DIFF seconds newer than realm import ✓"
+        echo "  → Pod is Running, Ready, and $AGE_DIFF seconds newer than realm import ✓"
         echo ""
         echo "✓ All validation checks passed!"
         exit 0
