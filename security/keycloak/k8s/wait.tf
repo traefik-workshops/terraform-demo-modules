@@ -12,7 +12,7 @@ resource "null_resource" "wait_for_realm_import" {
       ELAPSED=0
       while [ $ELAPSED -lt $TIMEOUT ]; do
         JOB_COUNT=$(kubectl get jobs -n ${var.namespace} \
-          -l app=keycloak-realm-import,job-name=traefik \
+          -l app.kubernetes.io/instance=traefik,app.kubernetes.io/managed-by=keycloak-operator \
           --no-headers 2>/dev/null | wc -l)
         
         if [ "$JOB_COUNT" -gt 0 ]; then
@@ -35,7 +35,7 @@ resource "null_resource" "wait_for_realm_import" {
       kubectl wait --for=condition=complete \
         --timeout=300s \
         -n ${var.namespace} \
-        job -l app=keycloak-realm-import,job-name=traefik || exit 1
+        job -l app.kubernetes.io/instance=traefik,app.kubernetes.io/managed-by=keycloak-operator || exit 1
       
       echo "✓ Realm import job completed successfully"
     EOT
@@ -55,7 +55,7 @@ resource "null_resource" "validate_keycloak_deployment" {
       
       # Check if realm import job pod exists and is completed
       REALM_IMPORT_POD=$(kubectl get pods -n ${var.namespace} \
-        -l app=keycloak-realm-import,batch.kubernetes.io/job-name=traefik \
+        -l batch.kubernetes.io/job-name=traefik \
         -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
       
       if [ -z "$REALM_IMPORT_POD" ]; then
