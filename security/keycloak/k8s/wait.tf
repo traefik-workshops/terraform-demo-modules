@@ -76,21 +76,37 @@ resource "null_resource" "validate_keycloak_deployment" {
       
       echo "✓ Realm import job completed: $REALM_IMPORT_POD (created at $REALM_IMPORT_TIME)"
       
-      # Check if Keycloak pod exists and is running
-      KEYCLOAK_POD=$(kubectl get pods -n ${var.namespace} \
-        -l app=keycloak,statefulset.kubernetes.io/pod-name=keycloak-0 \
-        -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+      # Wait for Keycloak pod to be running (it restarts after realm import)
+      echo "Waiting for Keycloak pod to be running..."
+      TIMEOUT=300
+      ELAPSED=0
+      while [ $ELAPSED -lt $TIMEOUT ]; do
+        KEYCLOAK_POD=$(kubectl get pods -n ${var.namespace} \
+          -l app=keycloak,statefulset.kubernetes.io/pod-name=keycloak-0 \
+          -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || echo "")
+        
+        if [ -z "$KEYCLOAK_POD" ]; then
+          echo "Waiting for Keycloak pod to exist... ($ELAPSED/$TIMEOUT seconds)"
+          sleep 5
+          ELAPSED=$((ELAPSED + 5))
+          continue
+        fi
+        
+        KEYCLOAK_STATUS=$(kubectl get pod -n ${var.namespace} $KEYCLOAK_POD \
+          -o jsonpath='{.status.phase}')
+        
+        if [ "$KEYCLOAK_STATUS" = "Running" ]; then
+          echo "✓ Keycloak pod is running: $KEYCLOAK_POD"
+          break
+        fi
+        
+        echo "Keycloak pod status: $KEYCLOAK_STATUS, waiting for Running... ($ELAPSED/$TIMEOUT seconds)"
+        sleep 5
+        ELAPSED=$((ELAPSED + 5))
+      done
       
-      if [ -z "$KEYCLOAK_POD" ]; then
-        echo "ERROR: Keycloak pod not found"
-        exit 1
-      fi
-      
-      KEYCLOAK_STATUS=$(kubectl get pod -n ${var.namespace} $KEYCLOAK_POD \
-        -o jsonpath='{.status.phase}')
-      
-      if [ "$KEYCLOAK_STATUS" != "Running" ]; then
-        echo "ERROR: Keycloak pod status is $KEYCLOAK_STATUS, expected Running"
+      if [ $ELAPSED -ge $TIMEOUT ]; then
+        echo "ERROR: Timeout waiting for Keycloak pod to be running"
         exit 1
       fi
       
