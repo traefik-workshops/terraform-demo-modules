@@ -1,8 +1,9 @@
 # Create ArgoCD Application for gov resources using Helm
 resource "argocd_application" "gov" {
   metadata {
-    name      = var.name
-    namespace = var.namespace
+    name       = var.name
+    namespace  = var.namespace
+    finalizers = ["resources-finalizer.argocd.argoproj.io"]
   }
 
   spec {
@@ -46,7 +47,10 @@ resource "argocd_application" "gov" {
         self_heal   = true
       }
       
-      sync_options = ["CreateNamespace=true"]
+      sync_options = [
+        "CreateNamespace=true",
+        "PruneLast=true"
+      ]
     }
   }
 }

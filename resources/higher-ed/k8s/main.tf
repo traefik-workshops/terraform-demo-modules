@@ -3,6 +3,7 @@ resource "argocd_application" "higher-ed" {
   metadata {
     name      = var.name
     namespace = var.namespace
+    finalizers = ["resources-finalizer.argocd.argoproj.io"]
   }
 
   spec {
@@ -42,7 +43,10 @@ resource "argocd_application" "higher-ed" {
         self_heal   = true
       }
       
-      sync_options = ["CreateNamespace=true"]
+      sync_options = [
+        "CreateNamespace=true",
+        "PruneLast=true"
+      ]
     }
   }
 }

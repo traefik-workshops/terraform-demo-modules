@@ -1,8 +1,9 @@
 # Create ArgoCD Application for chats resources using Helm
 resource "argocd_application" "chats" {
   metadata {
-    name      = var.name
-    namespace = var.namespace
+    name       = var.name
+    namespace  = var.namespace
+    finalizers = ["resources-finalizer.argocd.argoproj.io"]
   }
 
   spec {
@@ -91,7 +92,10 @@ resource "argocd_application" "chats" {
         self_heal   = true
       }
       
-      sync_options = ["CreateNamespace=true"]
+      sync_options = [
+        "CreateNamespace=true",
+        "PruneLast=true"
+      ]
     }
   }
 }
