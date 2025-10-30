@@ -1,7 +1,7 @@
-module "ai_milvus" {
-  source = "../../milvus/k8s"
+module "ai_weaviate" {
+  source = "../../weaviate/k8s"
 
-  name      = "milvus"
+  name      = "weaviate"
   namespace = var.namespace
 }
 
