@@ -4,8 +4,8 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.0"
     }
-    local = {
-      source  = "hashicorp/local"
+    external = {
+      source  = "hashicorp/external"
       version = "~> 2.0"
     }
   }
@@ -60,27 +60,20 @@ resource "null_resource" "keycloak_token" {
   }
 }
 
-# Read token files after provisioner completes using terraform_data
-resource "terraform_data" "token_reader" {
+# Read token files after provisioner completes
+data "external" "token_reader" {
   for_each = { for idx, user in var.users : idx => user }
   
-  # Read file content - this runs AFTER null_resource due to depends_on
-  input = jsondecode(file("${path.module}/.token_${each.key}.json"))
+  program = ["cat", "${path.module}/.token_${each.key}.json"]
   
   depends_on = [null_resource.keycloak_token]
 }
 
-# Parse token data from terraform_data outputs
+# Parse token data from external data source
 locals {
-  # Load token data for each user from terraform_data output
-  token_data = {
-    for idx, user in var.users : idx => 
-      terraform_data.token_reader[idx].output
-  }
-  
   # Output tokens (stable across applies unless expired)
   tokens = {
     for idx, user in var.users :
-    user.username => local.token_data[idx].token
+    user.username => data.external.token_reader[idx].result.token
   }
 }
