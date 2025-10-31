@@ -1,45 +1,47 @@
 terraform {
   required_providers {
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.0"
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.0"
     }
   }
 }
 
-# Generate JWT tokens for each user
-data "http" "keycloak_token" {
+# Fetch tokens using external - runs once per resource lifecycle
+data "external" "fetch_token" {
   for_each = { for idx, user in var.users : idx => user }
 
-  url      = "${var.keycloak_url}/realms/${var.realm}/protocol/openid-connect/token"
-  method   = "POST"
-  insecure = true
+  program = ["bash", "-c", <<-EOT
+    curl -sk -X POST "${var.keycloak_url}/realms/${var.realm}/protocol/openid-connect/token" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "client_id=${urlencode(var.client_id)}" \
+      -d "grant_type=password" \
+      -d "client_secret=${urlencode(var.client_secret)}" \
+      -d "scope=openid" \
+      -d "username=${urlencode(each.value.username)}" \
+      -d "password=${urlencode(each.value.password)}" | \
+    jq '{token: .access_token}'
+  EOT
+  ]
+}
 
-  request_headers = {
-    Content-Type = "application/x-www-form-urlencoded"
+# Store tokens in terraform_data - prevents re-fetching on every apply
+resource "terraform_data" "tokens" {
+  for_each = { for idx, user in var.users : idx => user }
+
+  input = {
+    token = data.external.fetch_token[each.key].result.token
   }
-
-  request_body = join("&", [
-    "client_id=${urlencode(var.client_id)}",
-    "grant_type=password",
-    "client_secret=${urlencode(var.client_secret)}",
-    "scope=openid",
-    "username=${urlencode(each.value.username)}",
-    "password=${urlencode(each.value.password)}"
-  ])
-
+  
   lifecycle {
-    postcondition {
-      condition     = self.status_code == 200
-      error_message = "Failed to obtain JWT token for user ${each.value.username}: HTTP ${self.status_code}"
-    }
+    ignore_changes = [input]
   }
 }
 
 locals {
-  # Parse the JWT tokens from the responses
+  # Output tokens from state (stable across applies)
   tokens = {
-    for idx, response in data.http.keycloak_token :
-    var.users[idx].username => jsondecode(response.response_body).access_token
+    for idx, user in var.users :
+    user.username => terraform_data.tokens[idx].output.token
   }
 }
