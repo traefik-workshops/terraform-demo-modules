@@ -19,6 +19,8 @@ resource "null_resource" "keycloak_token" {
   triggers = {
     username = each.value.username
     password = each.value.password
+    # Force recreation if token file is missing
+    file_exists = fileexists("${path.module}/.token_${each.key}.json") ? "exists" : "missing"
   }
 
   provisioner "local-exec" {
@@ -58,21 +60,22 @@ resource "null_resource" "keycloak_token" {
   }
 }
 
-# Read token files after provisioner completes
-data "local_file" "token_files" {
+# Read token files after provisioner completes using terraform_data
+resource "terraform_data" "token_reader" {
   for_each = { for idx, user in var.users : idx => user }
   
-  filename = "${path.module}/.token_${each.key}.json"
+  # Read file content - this runs AFTER null_resource due to depends_on
+  input = jsondecode(file("${path.module}/.token_${each.key}.json"))
   
   depends_on = [null_resource.keycloak_token]
 }
 
-# Parse token data from files
+# Parse token data from terraform_data outputs
 locals {
-  # Load token data for each user
+  # Load token data for each user from terraform_data output
   token_data = {
     for idx, user in var.users : idx => 
-      jsondecode(data.local_file.token_files[idx].content)
+      terraform_data.token_reader[idx].output
   }
   
   # Output tokens (stable across applies unless expired)
