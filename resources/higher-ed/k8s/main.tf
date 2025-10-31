@@ -40,6 +40,7 @@ resource "argocd_application" "higher-ed" {
       automated {
         prune       = true
         self_heal   = true
+        allow_empty = true
       }
       
       sync_options = [
@@ -47,5 +48,8 @@ resource "argocd_application" "higher-ed" {
         "PruneLast=true"
       ]
     }
+
+    cascade = true
+    wait    = true
   }
 }

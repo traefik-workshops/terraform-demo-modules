@@ -44,6 +44,7 @@ resource "argocd_application" "gov" {
       automated {
         prune       = true
         self_heal   = true
+        allow_empty = true
       }
       
       sync_options = [
@@ -51,5 +52,8 @@ resource "argocd_application" "gov" {
         "PruneLast=true"
       ]
     }
+
+    cascade = true
+    wait    = true
   }
 }

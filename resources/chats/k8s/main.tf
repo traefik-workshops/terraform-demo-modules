@@ -89,6 +89,7 @@ resource "argocd_application" "chats" {
       automated {
         prune       = true
         self_heal   = true
+        allow_empty = true
       }
       
       sync_options = [
@@ -96,5 +97,8 @@ resource "argocd_application" "chats" {
         "PruneLast=true"
       ]
     }
+
+    cascade = true
+    wait    = true
   }
 }
