@@ -54,8 +54,8 @@ resource "null_resource" "keycloak_token" {
       done
       EXP=$(echo "$PAYLOAD" | base64 -d 2>/dev/null | jq -r '.exp // 0' 2>/dev/null || echo "0")
       
-      # Store token and expiration
-      jq -n --arg token "$TOKEN" --arg exp "$EXP" '{token: $token, exp: ($exp | tonumber)}' > "${path.module}/.token_${each.key}.json"
+      # Store token and expiration (both as strings for external data source)
+      jq -n --arg token "$TOKEN" --arg exp "$EXP" '{token: $token, exp: $exp}' > "${path.module}/.token_${each.key}.json"
     EOT
   }
 }
