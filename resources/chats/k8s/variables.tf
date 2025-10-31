@@ -116,3 +116,27 @@ variable "content_guard_enabled" {
   default     = false
 }
 
+variable "llm_guards_use_hub_chain" {
+  description = "Use Hub Chain for LLM Guards"
+  type        = bool
+  default     = false
+}
+
+variable "llm_guards_topic_guard" {
+  description = "Enable Topic Guard for LLM Guards"
+  type        = bool
+  default     = false
+}
+
+variable "llm_guards_safety_guard" {
+  description = "Enable Safety Guard for LLM Guards"
+  type        = bool
+  default     = false
+}
+
+variable "llm_guards_jailbreak_guard" {
+  description = "Enable Jailbreak Guard for LLM Guards"
+  type        = bool
+  default     = true
+}
+  
