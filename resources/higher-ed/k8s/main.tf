@@ -5,6 +5,9 @@ resource "argocd_application" "higher-ed" {
     namespace = var.namespace
   }
 
+  cascade = true
+  wait    = true
+
   spec {
     project = "default"
 
@@ -48,8 +51,5 @@ resource "argocd_application" "higher-ed" {
         "PruneLast=true"
       ]
     }
-
-    cascade = true
-    wait    = true
   }
 }

@@ -5,6 +5,9 @@ resource "argocd_application" "chats" {
     namespace = var.namespace
   }
 
+  cascade = true
+  wait    = true
+
   spec {
     project = "default"
 
@@ -97,8 +100,5 @@ resource "argocd_application" "chats" {
         "PruneLast=true"
       ]
     }
-
-    cascade = true
-    wait    = true
   }
 }

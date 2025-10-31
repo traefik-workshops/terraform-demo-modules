@@ -5,6 +5,9 @@ resource "argocd_application" "gov" {
     namespace = var.namespace
   }
 
+  cascade = true
+  wait    = true
+
   spec {
     project = "default"
 
@@ -52,8 +55,5 @@ resource "argocd_application" "gov" {
         "PruneLast=true"
       ]
     }
-
-    cascade = true
-    wait    = true
   }
 }
