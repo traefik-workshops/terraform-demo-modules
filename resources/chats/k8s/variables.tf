@@ -122,20 +122,20 @@ variable "llm_guards_use_hub_chain" {
   default     = false
 }
 
-variable "llm_guards_topic_guard" {
-  description = "Enable Topic Guard for LLM Guards"
+variable "llm_guards_topic_control_guard" {
+  description = "Enable Topic Control Guard for LLM Guards"
   type        = bool
   default     = false
 }
 
-variable "llm_guards_safety_guard" {
-  description = "Enable Safety Guard for LLM Guards"
+variable "llm_guards_content_safety_guard" {
+  description = "Enable Content Safety Guard for LLM Guards"
   type        = bool
   default     = false
 }
 
-variable "llm_guards_jailbreak_guard" {
-  description = "Enable Jailbreak Guard for LLM Guards"
+variable "llm_guards_jailbreak_detection_guard" {
+  description = "Enable Jailbreak Detection Guard for LLM Guards"
   type        = bool
   default     = true
 }

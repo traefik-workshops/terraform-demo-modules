@@ -68,16 +68,17 @@ resource "argocd_application" "chats" {
           middlewares = {
             # LLM Guards (topic control, content safety, jailbreak detection)
             llmGuards = {
-              enabled        = var.llm_guards_enabled
-              useHubChain    = var.llm_guards_use_hub_chain
-              topicGuard     = {
-                enabled = var.llm_guards_topic_guard
+              enabled     = var.llm_guards_enabled
+              useHubChain = var.llm_guards_use_hub_chain
+
+              topicControlGuard = {
+                enabled = var.llm_guards_topic_control_guard
               }
-              safetyGuard    = {
-                enabled = var.llm_guards_safety_guard
+              contentSafetyGuard = {
+                enabled = var.llm_guards_content_safety_guard
               }
-              jailbreakGuard = {
-                enabled = var.llm_guards_jailbreak_guard
+              jailbreakDetectionGuard = {
+                enabled = var.llm_guards_jailbreak_detection_guard
               }
             }
             # Semantic cache for response caching
