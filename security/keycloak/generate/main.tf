@@ -22,11 +22,12 @@ resource "null_resource" "keycloak_token" {
   }
 
   provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
     command = <<-EOT
       set -e
       
       # Fetch token from Keycloak
-      RESPONSE=$$(curl -sk -X POST "${var.keycloak_url}/realms/${var.realm}/protocol/openid-connect/token" \
+      RESPONSE=$(curl -sk -X POST "${var.keycloak_url}/realms/${var.realm}/protocol/openid-connect/token" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "client_id=${urlencode(var.client_id)}" \
         -d "grant_type=password" \
@@ -36,23 +37,23 @@ resource "null_resource" "keycloak_token" {
         -d "password=${urlencode(each.value.password)}")
       
       # Extract access token
-      TOKEN=$$(echo "$$RESPONSE" | jq -r '.access_token // empty')
+      TOKEN=$(echo "$RESPONSE" | jq -r '.access_token // empty')
       
-      if [ -z "$$TOKEN" ]; then
+      if [ -z "$TOKEN" ]; then
         echo "Failed to fetch token for ${each.value.username}" >&2
-        echo "Response: $$RESPONSE" >&2
+        echo "Response: $RESPONSE" >&2
         exit 1
       fi
       
       # Decode JWT to get expiration
-      PAYLOAD=$$(echo "$$TOKEN" | cut -d'.' -f2 | sed 's/-/+/g;s/_/\//g')
-      while [ $$(($${#PAYLOAD} % 4)) -ne 0 ]; do
+      PAYLOAD=$(echo "$TOKEN" | cut -d'.' -f2 | sed 's/-/+/g;s/_/\//g')
+      while [ $((($${#PAYLOAD}) % 4)) -ne 0 ]; do
         PAYLOAD="$${PAYLOAD}="
       done
-      EXP=$$(echo "$$PAYLOAD" | base64 -d 2>/dev/null | jq -r '.exp // 0' 2>/dev/null || echo "0")
+      EXP=$(echo "$PAYLOAD" | base64 -d 2>/dev/null | jq -r '.exp // 0' 2>/dev/null || echo "0")
       
       # Store token and expiration
-      jq -n --arg token "$$TOKEN" --arg exp "$$EXP" '{token: $$token, exp: ($$exp | tonumber)}' > "${path.module}/.token_${each.key}.json"
+      jq -n --arg token "$TOKEN" --arg exp "$EXP" '{token: $token, exp: ($exp | tonumber)}' > "${path.module}/.token_${each.key}.json"
     EOT
   }
 }
