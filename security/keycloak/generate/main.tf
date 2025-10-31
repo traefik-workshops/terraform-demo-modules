@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/null"
       version = "~> 3.0"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -53,15 +57,21 @@ resource "null_resource" "keycloak_token" {
   }
 }
 
-# Read token data from stored JSON files
+# Read token files after provisioner completes
+data "local_file" "token_files" {
+  for_each = { for idx, user in var.users : idx => user }
+  
+  filename = "${path.module}/.token_${each.key}.json"
+  
+  depends_on = [null_resource.keycloak_token]
+}
+
+# Parse token data from files
 locals {
   # Load token data for each user
   token_data = {
-    for idx, user in var.users : idx => (
-      fileexists("${path.module}/.token_${idx}.json") ?
-        jsondecode(file("${path.module}/.token_${idx}.json")) :
-        { token = "", exp = 0 }
-    )
+    for idx, user in var.users : idx => 
+      jsondecode(data.local_file.token_files[idx].content)
   }
   
   # Output tokens (stable across applies unless expired)
