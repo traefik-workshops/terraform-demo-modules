@@ -9,6 +9,10 @@ resource "helm_release" "open_webui" {
 
   values = [
     yamlencode({
+      image = {
+        repository = "zalbiraw/open-webui"
+        tag        = "latest"
+      }
       ollama = {
         enabled = false
       }
@@ -43,6 +47,10 @@ resource "helm_release" "open_webui" {
         {
           name = "TOOL_SERVER_CONNECTIONS"
           value = replace(jsonencode(var.mcp_connections), "/\\s+/", "")
+        },
+        {
+          name = "DEFAULT_CHAT_STREAM_RESPONSE"
+          value = "False"
         },
       ]
     }),
