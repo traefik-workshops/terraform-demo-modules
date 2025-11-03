@@ -25,16 +25,17 @@ data "external" "fetch_token" {
   ]
 }
 
-# Store tokens in terraform_data - prevents re-fetching on every apply
+# Store tokens in terraform_data - rotates based on time window
 resource "terraform_data" "tokens" {
   for_each = { for idx, user in var.users : idx => user }
 
   input = {
-    token = data.external.fetch_token[each.key].result.token
+    token           = data.external.fetch_token[each.key].result.token
+    rotation_window = floor(timestamp() / (var.token_rotation_hours * 3600))
   }
   
   lifecycle {
-    ignore_changes = [input]
+    ignore_changes = [input.token]
   }
 }
 

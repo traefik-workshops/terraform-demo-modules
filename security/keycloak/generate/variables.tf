@@ -28,3 +28,9 @@ variable "users" {
     password = string
   }))
 }
+
+variable "token_rotation_hours" {
+  description = "Number of hours after which tokens should rotate (only when terraform apply is run)"
+  type        = number
+  default     = 4
+}
