@@ -25,13 +25,23 @@ data "external" "fetch_token" {
   ]
 }
 
+# Calculate rotation window based on current time and rotation hours
+locals {
+  current_timestamp = timestamp()
+  current_hour      = formatdate("hh", local.current_timestamp)
+  current_date      = formatdate("YYYY-MM-DD", local.current_timestamp)
+  
+  # Calculate which rotation window we're in (e.g., if rotation_hours=4: 0-3, 4-7, 8-11, etc.)
+  rotation_window = "${local.current_date}-${floor(parseint(local.current_hour, 10) / var.token_rotation_hours)}"
+}
+
 # Store tokens in terraform_data - rotates based on time window
 resource "terraform_data" "tokens" {
   for_each = { for idx, user in var.users : idx => user }
 
   input = {
     token           = data.external.fetch_token[each.key].result.token
-    rotation_window = floor(plantimestamp() / (var.token_rotation_hours * 3600))
+    rotation_window = local.rotation_window
   }
   
   lifecycle {
