@@ -31,7 +31,7 @@ resource "terraform_data" "tokens" {
 
   input = {
     token           = data.external.fetch_token[each.key].result.token
-    rotation_window = floor(timestamp() / (var.token_rotation_hours * 3600))
+    rotation_window = floor(plantimestamp() / (var.token_rotation_hours * 3600))
   }
   
   lifecycle {
