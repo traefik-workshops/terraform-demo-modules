@@ -56,7 +56,7 @@ variable "mcp_connections" {
     path      = optional(string, "/")
     auth_type = optional(string, "bearer")
     key       = optional(string, "")
-    info      = map({
+    info      = object({
       id          = string
       name        = string
       description = string
