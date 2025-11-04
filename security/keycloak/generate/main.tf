@@ -39,20 +39,17 @@ locals {
 resource "terraform_data" "tokens" {
   for_each = { for idx, user in var.users : idx => user }
 
-  input = {
-    token           = data.external.fetch_token[each.key].result.token
+  triggers_replace = {
     rotation_window = local.rotation_window
   }
-  
-  lifecycle {
-    ignore_changes = [input.token]
-  }
+
+  input = data.external.fetch_token[each.key].result.token
 }
 
 locals {
   # Output tokens from state (stable across applies)
   tokens = {
     for idx, user in var.users :
-    user.username => terraform_data.tokens[idx].output.token
+    user.username => terraform_data.tokens[idx].output
   }
 }
