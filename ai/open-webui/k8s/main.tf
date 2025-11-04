@@ -12,6 +12,7 @@ resource "helm_release" "open_webui" {
       image = {
         repository = "zalbiraw/open-webui"
         tag        = "latest"
+        pullPolicy = "Always"
       }
       ollama = {
         enabled = false
