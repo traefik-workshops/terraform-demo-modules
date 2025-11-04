@@ -49,13 +49,19 @@ variable "ingress_entrypoint" {
 variable "mcp_connections" {
   type = list(object({
     name      = string
+    type      = optional(string, "mcp")
     url       = string
-    api_key   = optional(string, "")
+    spec_type = optional(string, "url")
+    spec      = optional(string, "")
     path      = optional(string, "/")
     auth_type = optional(string, "bearer")
     key       = optional(string, "")
-    config    = optional(map(string), {})
+    info      = map({
+      id          = string
+      name        = string
+      description = string
+    })
   }))
   default     = []
   description = "MCP connections with required Open WebUI fields"
-} 
+}
