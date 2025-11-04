@@ -52,6 +52,10 @@ resource "helm_release" "open_webui" {
           name = "DEFAULT_CHAT_STREAM_RESPONSE"
           value = "False"
         },
+        {
+          name = "DEFAULT_FUNCTION_CALLING_MODE"
+          value = "native"
+        }
       ]
     }),
     yamlencode(var.extra_values),
