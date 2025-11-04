@@ -48,14 +48,12 @@ variable "ingress_entrypoint" {
 
 variable "mcp_connections" {
   type = list(object({
-    name      = string
     type      = optional(string, "mcp")
     url       = string
-    spec_type = optional(string, "url")
-    spec      = optional(string, "")
     path      = optional(string, "/")
     auth_type = optional(string, "bearer")
     key       = optional(string, "")
+    config    = optional(map(string), {})
     info      = object({
       id          = string
       name        = string
