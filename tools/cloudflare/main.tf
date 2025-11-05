@@ -1,8 +1,8 @@
 resource "cloudflare_dns_record" "root" {
   zone_id = var.zone_id
   name    = var.domain
-  content = var.ip
-  type    = "A"
+  content = var.record_type == "A" ? var.ip : var.hostname
+  type    = var.record_type
   ttl     = 1
   proxied = false
 }
@@ -10,8 +10,8 @@ resource "cloudflare_dns_record" "root" {
 resource "cloudflare_dns_record" "wildcard" {
   zone_id = var.zone_id
   name    = "*.${var.domain}"
-  content = var.ip
-  type    = "A"
+  content = var.record_type == "A" ? var.ip : var.hostname
+  type    = var.record_type
   ttl     = 1
   proxied = false
 }
@@ -19,8 +19,8 @@ resource "cloudflare_dns_record" "wildcard" {
 resource "cloudflare_dns_record" "wildcard_traefik" {
   zone_id = var.zone_id
   name    = "*.traefik.${var.domain}"
-  content = var.ip
-  type    = "A"
+  content = var.record_type == "A" ? var.ip : var.hostname
+  type    = var.record_type
   ttl     = 1
   proxied = false
 }
@@ -28,8 +28,8 @@ resource "cloudflare_dns_record" "wildcard_traefik" {
 resource "cloudflare_dns_record" "wildcard_portal" {
   zone_id = var.zone_id
   name    = "*.portal.${var.domain}"
-  content = var.ip
-  type    = "A"
+  content = var.record_type == "A" ? var.ip : var.hostname
+  type    = var.record_type
   ttl     = 1
   proxied = false
 }
