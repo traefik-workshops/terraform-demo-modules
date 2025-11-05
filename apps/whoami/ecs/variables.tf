@@ -27,3 +27,9 @@ variable "subnet_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "security_group_ids" {
+  description = "List of security group IDs for ECS resources"
+  type        = list(string)
+  default     = []
+}
