@@ -11,6 +11,6 @@ variable "namespace" {
 
 variable "ingress_domain" {
   type        = string
-  description = "The external domain where knative will publish services. Eg. knative.kubeata.traefikhub.dev will result in <service>.<namespace>.knative.kubeata.traefikhub.dev ingresses"
-  default     = "knative.kubeata.traefikhub.dev"
+  description = "The external domain where knative will publish services. Eg. traefik.kubeata.traefikhub.dev will result in <service>.<namespace>.traefik.kubeata.traefikhub.dev ingresses"
+  default     = "traefik.kubeata.traefikhub.dev"
 }
