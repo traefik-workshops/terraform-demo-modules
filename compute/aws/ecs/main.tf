@@ -116,8 +116,9 @@ resource "aws_ecs_service" "service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = var.create_vpc ? module.vpc[0].public_subnet_ids : each.value.subnet_ids
-    security_groups = var.create_vpc ? module.vpc[0].security_group_ids : each.value.security_group_ids
+    subnets          = var.create_vpc ? module.vpc[0].public_subnet_ids : each.value.subnet_ids
+    security_groups  = var.create_vpc ? module.vpc[0].security_group_ids : each.value.security_group_ids
+    assign_public_ip = false
   }
 }
 

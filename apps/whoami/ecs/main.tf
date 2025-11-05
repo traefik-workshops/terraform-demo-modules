@@ -7,8 +7,9 @@ locals {
           for app_name, app_config in cluster_config.apps : app_name => merge(
             app_config,
             {
-              docker_image = "traefik/whoami:latest"
-              subnet_ids   = cluster_config.subnet_ids
+              docker_image       = "traefik/whoami:latest"
+              subnet_ids         = cluster_config.subnet_ids
+              security_group_ids = cluster_config.security_group_ids
             }
           )
         }
