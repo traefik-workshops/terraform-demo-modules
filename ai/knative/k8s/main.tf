@@ -22,7 +22,7 @@ apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving
-  namespace: ${var.namespace}
+  namespace: knative-serving
 spec:
   config:
     network:
@@ -38,7 +38,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: config-domain
-  namespace: ${var.namespace}
+  namespace: knative-serving
 data:
   ${var.ingress_domain}: |
 
