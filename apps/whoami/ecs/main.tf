@@ -8,6 +8,7 @@ locals {
             app_config,
             {
               docker_image = "traefik/whoami:latest"
+              subnet_ids   = cluster_config.subnet_ids
             }
           )
         }
