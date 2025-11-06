@@ -19,7 +19,7 @@ variable "enable_offline_mode" {
 variable "traefik_tag" {
   description = "Traefik tag"
   type        = string
-  default     = "v3.5.2"
+  default     = "v3.5.3"
 }
 
 variable "traefik_hub_tag" {

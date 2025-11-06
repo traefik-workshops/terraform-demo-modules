@@ -44,7 +44,7 @@ variable "traefik_chart_version" {
 variable "traefik_tag" {
   description = "Traefik tag"
   type        = string
-  default     = "v3.5.2"
+  default     = "v3.5.3"
 }
 
 variable "traefik_hub_tag" {
