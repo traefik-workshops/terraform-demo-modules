@@ -52,6 +52,19 @@ locals {
     var.custom_ports
   )
 
+  acme = {
+    caServer = var.is_staging_letsencrypt ? "https://acme-staging-v02.api.letsencrypt.org/directory" : "https://acme-v02.api.letsencrypt.org/directory"
+    email    = "zaid@traefik.io"
+    storage = {
+      kubernetes = true
+    }
+    dnschallenge = {
+      provider         = "cloudflare"
+      resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
+      delayBeforeCheck = 20
+    }
+  }
+
   plugins       = var.custom_plugins
   extra_objects = var.custom_objects
 }
@@ -212,19 +225,10 @@ resource "helm_release" "traefik" {
             }
           }
         }
-        cf = {
-          distributedAcme = {
-            caServer = var.is_staging_letsencrypt ? "https://acme-staging-v02.api.letsencrypt.org/directory" : "https://acme-v02.api.letsencrypt.org/directory"
-            email    = "zaid@traefik.io"
-            storage = {
-              kubernetes = true
-            }
-            dnschallenge = {
-              provider         = "cloudflare"
-              resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
-              delayBeforeCheck = 20
-            }
-          }
+        cf = var.enable_api_gateway || var.enable_api_management ? {
+          distributedAcme = local.acme
+        } : {
+          acme = local.acme
         }
       }
 
