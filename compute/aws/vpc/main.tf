@@ -14,12 +14,6 @@ module "vpc" {
   enable_dns_hostnames = true
 }
 
-# # VPC Module
-# module "vpc" {
-#   azs                  = slice(data.aws_availability_zones.available.names, 0, 3)
-#   enable_dns_support   = true
-# }
-
 resource "aws_security_group" "demo_sg" {
   name        = "${var.name}-sg"
   description = "Security group for ${var.name} demo"

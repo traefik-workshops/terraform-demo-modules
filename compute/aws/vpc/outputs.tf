@@ -17,3 +17,13 @@ output "security_group_ids" {
   description = "Security group ID"
   value = [ aws_security_group.demo_sg.id ]
 }
+
+output "private_route_table_ids" {
+  description = "Private route table IDs"
+  value = module.vpc.private_route_table_ids
+}
+
+output "public_route_table_ids" {
+  description = "Public route table IDs"
+  value = module.vpc.public_route_table_ids
+}
