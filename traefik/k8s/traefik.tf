@@ -110,9 +110,6 @@ resource "helm_release" "traefik" {
       ports = local.ports
 
       experimental = {
-        kubernetesGateway = {
-          enabled = true
-        }
         plugins = local.plugins
       }
 

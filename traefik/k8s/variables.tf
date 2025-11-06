@@ -38,7 +38,7 @@ variable "enable_offline_mode" {
 variable "traefik_chart_version" {
   description = "Traefik chart version"
   type        = string
-  default     = "v37.1.1"
+  default     = "v37.2.0"
 }
 
 variable "traefik_tag" {
