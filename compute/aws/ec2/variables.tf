@@ -1,12 +1,13 @@
 variable "apps" {
   description = "Map of applications to deploy with multiple replicas"
   type = map(object({
-    replicas       = optional(number, 1)
-    subnet_ids     = optional(list(string), [])
-    port           = optional(number, 80)
-    docker_image   = optional(string, "traefik/whoami:latest")
-    docker_command = optional(string, "")
-    tags           = optional(map(string), {})
+    replicas            = optional(number, 1)
+    subnet_ids          = optional(list(string), [])
+    port                = optional(number, 80)
+    docker_image        = optional(string, "traefik/whoami:latest")
+    docker_options      = optional(string, "")  # Docker run flags: -e, -p, -v, etc.
+    container_arguments = optional(string, "")  # Container CMD/ARGS: --flag=value, etc.
+    tags                = optional(map(string), {})
   }))
 }
 
@@ -59,4 +60,10 @@ variable "security_group_ids" {
     condition     = var.create_vpc || var.security_group_ids != []
     error_message = "security_group_ids must be provided if create_vpc is false"
   }
+}
+
+variable "iam_instance_profile" {
+  description = "IAM instance profile name to attach to EC2 instances"
+  type        = string
+  default     = ""
 }
