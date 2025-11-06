@@ -73,6 +73,7 @@ locals {
     caServer     = local.caServer
     email        = local.email
     dnschallenge = local.dnschallenge
+    storage      = "/data/acme.json"
   }
 
   plugins       = var.custom_plugins
