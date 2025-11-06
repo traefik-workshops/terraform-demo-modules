@@ -236,10 +236,11 @@ resource "helm_release" "traefik" {
             }
           }
         }
-        cf = var.enable_api_gateway || var.enable_api_management ? {
-          distributedAcme = local.distributedAcme
-        } : {
-          acme = local.acme
+        cf = {
+          for k, v in {
+            distributedAcme = var.enable_api_gateway || var.enable_api_management ? local.distributedAcme : null
+            acme            = var.enable_api_gateway || var.enable_api_management ? null : local.acme
+          } : k => v if v != null
         }
       }
 
