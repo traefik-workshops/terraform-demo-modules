@@ -180,7 +180,7 @@ resource "helm_release" "traefik" {
         tag = var.traefik_tag
       } : {}
 
-      providers = {
+      providers = merge({
         kubernetesCRD = {
           allowCrossNamespace       = true
           allowExternalNameServices = true
@@ -192,7 +192,7 @@ resource "helm_release" "traefik" {
           enabled             = true
           experimentalChannel = false
         }
-      }
+      }, var.custom_providers)
 
       certificatesResolvers = {
         treafik-airlines = {

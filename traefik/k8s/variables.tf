@@ -264,3 +264,8 @@ variable "cloudflare_dns" {
     api_token = ""
   }
 }
+variable "custom_providers" {
+  type        = any
+  description = "Custom providers to use for the deployment"
+  default     = {}
+}
