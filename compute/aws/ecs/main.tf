@@ -10,6 +10,7 @@ locals {
         replicas           = app_config.replicas
         port               = app_config.port
         docker_image       = app_config.docker_image
+        docker_command     = app_config.docker_command
         app_labels         = app_config.labels
         subnet_ids         = app_config.subnet_ids
         security_group_ids = app_config.security_group_ids
@@ -81,27 +82,32 @@ resource "aws_ecs_task_definition" "service" {
   memory                   = "512"
 
   container_definitions = jsonencode([
-    {
-      name      = each.value.app_name
-      image     = each.value.docker_image
-      essential = true
+    merge(
+      {
+        name      = each.value.app_name
+        image     = each.value.docker_image
+        essential = true
 
-      portMappings = [
-        {
-          containerPort = each.value.port
-          protocol      = "tcp"
-        }
-      ]
+        portMappings = [
+          {
+            containerPort = each.value.port
+            protocol      = "tcp"
+          }
+        ]
 
-      dockerLabels = merge(
-        var.common_labels,
-        each.value.app_labels,
-        {
-          "app.name"    = each.value.app_name
-          "app.cluster" = each.value.cluster_name
-        }
-      )
-    }
+        dockerLabels = merge(
+          var.common_labels,
+          each.value.app_labels,
+          {
+            "app.name"    = each.value.app_name
+            "app.cluster" = each.value.cluster_name
+          }
+        )
+      },
+      each.value.docker_command != "" ? {
+        command = split(" ", each.value.docker_command)
+      } : {}
+    )
   ])
 }
 
