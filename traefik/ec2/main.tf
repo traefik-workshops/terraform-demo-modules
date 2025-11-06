@@ -86,10 +86,10 @@ locals {
   ))
   
   # Build container arguments (Traefik flags that come after the image)
-  # Escape backticks and backslashes for bash shell
+  # Wrap each argument in single quotes and escape any single quotes within
   container_arguments = join(" ", [
     for arg in local.traefik_arguments : 
-    replace(replace(arg, "\\", "\\\\"), "`", "\\`")
+    "'${replace(arg, "'", "'\\''")}'"
   ])
 }
 
