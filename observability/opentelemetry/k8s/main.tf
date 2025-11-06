@@ -1,55 +1,55 @@
 locals {
-  loki_exporter = var.enable_loki ? ["otlphttp/loki"] : []
-  tempo_exporter = var.enable_tempo ? ["otlphttp/tempo"] : []
-  newrelic_exporter = var.enable_new_relic ? ["otlphttp/nri"] : []
-  dash0_exporter = var.enable_dash0 ? ["otlphttp/dash0"] : []
-  honeycomb_exporter = var.enable_honeycomb ? ["otlphttp/honeycomb"] : []
+  loki_exporter       = var.enable_loki ? ["otlphttp/loki"] : []
+  tempo_exporter      = var.enable_tempo ? ["otlphttp/tempo"] : []
+  newrelic_exporter   = var.enable_new_relic ? ["otlphttp/nri"] : []
+  dash0_exporter      = var.enable_dash0 ? ["otlphttp/dash0"] : []
+  honeycomb_exporter  = var.enable_honeycomb ? ["otlphttp/honeycomb"] : []
   prometheus_exporter = var.enable_prometheus ? ["prometheus"] : []
-  
-  log_exporters = concat(local.loki_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter)
-  trace_exporters = concat(local.tempo_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter)
+
+  log_exporters    = concat(local.loki_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter)
+  trace_exporters  = concat(local.tempo_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter)
   metric_exporters = concat(local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter, local.prometheus_exporter)
 
-  logs_pipeline = length(local.log_exporters) > 0 ?concat([
+  logs_pipeline = length(local.log_exporters) > 0 ? concat([
     {
-      name = "config.service.pipelines.logs.receivers[0]"
+      name  = "config.service.pipelines.logs.receivers[0]"
       value = "otlp"
     },
     {
-      name = "config.service.pipelines.logs.processors[0]"
+      name  = "config.service.pipelines.logs.processors[0]"
       value = "batch"
     }
-  ], [ for exporter in local.log_exporters : {
-    name = "config.service.pipelines.logs.exporters[${index(local.log_exporters, exporter)}]"
-    value = exporter
+    ], [for exporter in local.log_exporters : {
+      name  = "config.service.pipelines.logs.exporters[${index(local.log_exporters, exporter)}]"
+      value = exporter
   }]) : []
 
-  metrics_pipeline = length(local.metric_exporters) > 0 ?concat([
+  metrics_pipeline = length(local.metric_exporters) > 0 ? concat([
     {
-      name = "config.service.pipelines.metrics.receivers[0]"
+      name  = "config.service.pipelines.metrics.receivers[0]"
       value = "otlp"
     },
     {
-      name = "config.service.pipelines.metrics.processors[0]"
+      name  = "config.service.pipelines.metrics.processors[0]"
       value = "batch"
     }
-  ], [ for exporter in local.metric_exporters : {
-    name = "config.service.pipelines.metrics.exporters[${index(local.metric_exporters, exporter)}]"
-    value = exporter
+    ], [for exporter in local.metric_exporters : {
+      name  = "config.service.pipelines.metrics.exporters[${index(local.metric_exporters, exporter)}]"
+      value = exporter
   }]) : []
 
-  traces_pipeline = length(local.trace_exporters) > 0 ?concat([
+  traces_pipeline = length(local.trace_exporters) > 0 ? concat([
     {
-      name = "config.service.pipelines.traces.receivers[0]"
+      name  = "config.service.pipelines.traces.receivers[0]"
       value = "otlp"
     },
     {
-      name = "config.service.pipelines.traces.processors[0]"
+      name  = "config.service.pipelines.traces.processors[0]"
       value = "batch"
     }
-  ], [ for exporter in local.trace_exporters : {
-    name = "config.service.pipelines.traces.exporters[${index(local.trace_exporters, exporter)}]"
-    value = exporter
+    ], [for exporter in local.trace_exporters : {
+      name  = "config.service.pipelines.traces.exporters[${index(local.trace_exporters, exporter)}]"
+      value = exporter
   }]) : []
 
   service_pipelines = concat(local.logs_pipeline, local.metrics_pipeline, local.traces_pipeline)
@@ -69,13 +69,13 @@ resource "helm_release" "opentelemetry" {
       mode = "deployment"
       image = {
         repository = "otel/opentelemetry-collector-contrib"
-        tag = "latest"
+        tag        = "latest"
       }
       ports = {
         metrics = {
-          enabled = true
+          enabled       = true
           containerPort = var.prometheus_port
-          servicePort = var.prometheus_port
+          servicePort   = var.prometheus_port
         }
       }
       config = {
@@ -104,21 +104,21 @@ resource "helm_release" "opentelemetry" {
                 insecure = true
               }
             }
-          } : {}, var.enable_tempo ? {
+            } : {}, var.enable_tempo ? {
             "otlphttp/tempo" = {
               endpoint = var.tempo_endpoint
               tls = {
                 insecure = true
               }
-            } 
-          } : {}, var.enable_new_relic ? {
+            }
+            } : {}, var.enable_new_relic ? {
             "otlphttp/nri" = {
               endpoint = var.newrelic_endpoint
               headers = {
                 api-key = var.newrelic_license_key
               }
             }
-          } : {}, var.enable_dash0 ? {
+            } : {}, var.enable_dash0 ? {
             "otlphttp/dash0" = {
               endpoint = var.dash0_endpoint
               headers = {
@@ -126,22 +126,34 @@ resource "helm_release" "opentelemetry" {
                 Dash0-Dataset = var.dash0_dataset
               }
             }
-          } : {}, var.enable_honeycomb ? {
+            } : {}, var.enable_honeycomb ? {
             "otlphttp/honeycomb" = {
               endpoint = var.honeycomb_endpoint
               headers = {
-                x-honeycomb-team = var.honeycomb_api_key
+                x-honeycomb-team    = var.honeycomb_api_key
                 x-honeycomb-dataset = var.honeycomb_dataset
               }
             }
-          } : {}, var.enable_prometheus ? {
+            } : {}, var.enable_prometheus ? {
             "prometheus" = {
               endpoint = "0.0.0.0:${var.prometheus_port}"
             }
-          } : {}, {})
+        } : {}, {})
+      }
+      }
+    ),
+    yamlencode(var.ingress == true ? {
+      ingress = {
+        enabled = true
+        hosts   = ["collector.${var.ingress_domain}"]
+        annotations = {
+          "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
+          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
         }
       }
-    )
+    } : {})
   ]
 
   set = local.service_pipelines

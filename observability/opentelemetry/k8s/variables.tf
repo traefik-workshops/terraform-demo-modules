@@ -113,3 +113,21 @@ variable "honeycomb_dataset" {
   description = "Honeycomb dataset"
   default     = ""
 }
+
+variable "ingress" {
+  type        = bool
+  description = "Enable Ingress for the OpenTelemetry deployment."
+  default     = false
+}
+
+variable "ingress_domain" {
+  type        = string
+  default     = "cloud"
+  description = "The domain for the ingress, default is `cloud`"
+}
+
+variable "ingress_entrypoint" {
+  type        = string
+  default     = "traefik"
+  description = "The entrypoint to use for the ingress, default is `traefik`"
+}
