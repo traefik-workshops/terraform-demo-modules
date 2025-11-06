@@ -21,6 +21,7 @@ locals {
 module "echo_services" {
   source = "../../../compute/aws/ecs"
 
+  name               = var.name
   clusters           = local.clusters
   create_vpc         = var.create_vpc
   vpc_id             = var.vpc_id

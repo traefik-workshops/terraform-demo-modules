@@ -4,6 +4,11 @@ variable "clusters" {
   default     = {}
 }
 
+variable "name" {
+  description = "Name of the ECS Deployment"
+  type        = string
+}
+
 variable "common_labels" {
   description = "Common labels to apply to all resources"
   type        = map(string)

@@ -1,3 +1,8 @@
+variable "name" {
+  description = "Name of the ECS Deployment"
+  type        = string
+}
+
 variable "clusters" {
   description = "Map of ECS clusters with their applications"
   type = map(object({
