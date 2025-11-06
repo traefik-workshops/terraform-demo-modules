@@ -145,7 +145,14 @@ resource "helm_release" "opentelemetry" {
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true
-        hosts   = ["collector.${var.ingress_domain}"]
+        hosts = [{
+          host = "collector.${var.ingress_domain}"
+          paths = [{
+            path     = "/"
+            pathType = "Prefix"
+            port     = 4318
+          }]
+        }]
         annotations = {
           "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
           "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
