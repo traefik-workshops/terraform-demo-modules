@@ -52,17 +52,26 @@ locals {
     var.custom_ports
   )
 
-  acme = {
-    caServer = var.is_staging_letsencrypt ? "https://acme-staging-v02.api.letsencrypt.org/directory" : "https://acme-v02.api.letsencrypt.org/directory"
-    email    = "zaid@traefik.io"
+  caServer = var.is_staging_letsencrypt ? "https://acme-staging-v02.api.letsencrypt.org/directory" : "https://acme-v02.api.letsencrypt.org/directory"
+  email    = "zaid@traefik.io"
+
+  dnschallenge = {
+    provider         = "cloudflare"
+    resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
+    delayBeforeCheck = 20
+  }
+
+  acme = var.enable_api_gateway || var.enable_api_management ? {
+    caServer     = local.caServer
+    email        = local.email
+    dnschallenge = local.dnschallenge
     storage = {
       kubernetes = true
     }
-    dnschallenge = {
-      provider         = "cloudflare"
-      resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
-      delayBeforeCheck = 20
-    }
+  } : {
+    caServer     = local.caServer
+    email        = local.email
+    dnschallenge = local.dnschallenge
   }
 
   plugins       = var.custom_plugins
