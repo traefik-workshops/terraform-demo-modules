@@ -87,6 +87,9 @@ resource "aws_instance" "ec2" {
   
   tags = merge(
     var.common_tags,
-    each.value.app_tags
+    each.value.app_tags,
+    {
+      Name = each.key  # Format: "app-name-replica-number" (e.g., "whoami-1")
+    }
   )
 }
