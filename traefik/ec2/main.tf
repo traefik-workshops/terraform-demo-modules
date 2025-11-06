@@ -86,7 +86,11 @@ locals {
   ))
   
   # Build container arguments (Traefik flags that come after the image)
-  container_arguments = join(" ", local.traefik_arguments)
+  # Escape backticks and backslashes for bash shell
+  container_arguments = join(" ", [
+    for arg in local.traefik_arguments : 
+    replace(replace(arg, "\\", "\\\\"), "`", "\\`")
+  ])
 }
 
 module "ec2" {

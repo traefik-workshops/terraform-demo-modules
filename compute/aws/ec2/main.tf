@@ -72,16 +72,13 @@ resource "aws_instance" "ec2" {
     # Pull the Docker image
     docker pull ${each.value.docker_image}
     
-    # Set container arguments
-    CONTAINER_ARGS='${each.value.container_arguments}'
-    
     # Run the Docker container
     docker run -d \
       --name ${each.value.app_name}-${each.value.replica_number} \
       --restart always \
       ${each.value.docker_options} \
       ${each.value.docker_image} \
-      $CONTAINER_ARGS
+      ${each.value.container_arguments}
     
     # Log container status
     echo "Container ${each.value.app_name}-${each.value.replica_number} started successfully"
