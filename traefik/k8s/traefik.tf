@@ -61,14 +61,15 @@ locals {
     delayBeforeCheck = 20
   }
 
-  acme = var.enable_api_gateway || var.enable_api_management ? {
+  distributedAcme = {
     caServer     = local.caServer
     email        = local.email
     dnschallenge = local.dnschallenge
     storage = {
       kubernetes = true
     }
-  } : {
+  }
+  acme = {
     caServer     = local.caServer
     email        = local.email
     dnschallenge = local.dnschallenge
@@ -235,7 +236,7 @@ resource "helm_release" "traefik" {
           }
         }
         cf = var.enable_api_gateway || var.enable_api_management ? {
-          distributedAcme = local.acme
+          distributedAcme = local.distributedAcme
         } : {
           acme = local.acme
         }
