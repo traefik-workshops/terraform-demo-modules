@@ -97,11 +97,7 @@ resource "aws_ecs_task_definition" "service" {
 
         dockerLabels = merge(
           var.common_labels,
-          each.value.app_labels,
-          {
-            "app.name"    = each.value.app_name
-            "app.cluster" = each.value.cluster_name
-          }
+          each.value.app_labels
         )
       },
       each.value.docker_command != "" ? {

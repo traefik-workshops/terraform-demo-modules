@@ -114,7 +114,7 @@ module "ec2" {
   iam_instance_profile = var.iam_instance_profile
   
   common_tags = {
-    "app.name"                                                 = "traefik"
+    "Name"                                                     = "traefik"
     "traefik.enable"                                           = "true"
     "traefik.http.routers.dashboard.rule"                      = var.dashboard_match_rule
     "traefik.http.routers.dashboard.entrypoints"               = var.dashboard_entrypoints[0]
