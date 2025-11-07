@@ -71,18 +71,16 @@ locals {
   ) : "traefik:${var.traefik_tag}"
 
   # Build Docker labels from custom ports
-  docker_labels = merge(
-    {
-      for port_name, port_config in var.custom_ports : 
-        "traefik.http.routers.${port_name}.entrypoints" => port_name
-    },
-    {
-      "traefik.enable"                                           = "true"
-      "traefik.http.routers.dashboard.rule"                      = var.dashboard_match_rule
-      "traefik.http.routers.dashboard.entrypoints"               = var.dashboard_entrypoints[0]
-      "traefik.http.services.dashboard.loadbalancer.server.port" = "8080"
-    }
-  )
+  docker_labels = merge(var.extra_labels, {
+    for port_name, port_config in var.custom_ports : 
+      "traefik.http.routers.${port_name}.entrypoints" => port_name
+  },
+  {
+    "traefik.enable"                                           = "true"
+    "traefik.http.routers.dashboard.rule"                      = var.dashboard_match_rule
+    "traefik.http.routers.dashboard.entrypoints"               = var.dashboard_entrypoints[0]
+    "traefik.http.services.dashboard.loadbalancer.server.port" = "8080"
+  })
 }
 
 module "ecs" {

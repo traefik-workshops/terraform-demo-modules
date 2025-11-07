@@ -113,11 +113,11 @@ module "ec2" {
   security_group_ids   = var.security_group_ids
   iam_instance_profile = var.iam_instance_profile
   
-  common_tags = {
+  common_tags = merge(var.extra_tags, {
     "Name"                                                     = "traefik"
     "traefik.enable"                                           = "true"
     "traefik.http.routers.dashboard.rule"                      = var.dashboard_match_rule
     "traefik.http.routers.dashboard.entrypoints"               = var.dashboard_entrypoints[0]
     "traefik.http.services.dashboard.loadbalancer.server.port" = "8080"
-  }
+  })
 }

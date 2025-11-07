@@ -205,3 +205,9 @@ variable "security_group_ids" {
     error_message = "security_group_ids must be provided if create_vpc is false"
   }
 }
+
+variable "extra_labels" {
+  description = "Extra labels to apply to the ECS task"
+  type        = map(string)
+  default     = {}
+}
