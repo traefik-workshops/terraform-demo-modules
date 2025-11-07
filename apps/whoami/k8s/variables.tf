@@ -1,7 +1,12 @@
 variable "apps" {
   description = "Map of applications to deploy to Kubernetes. Each app can have multiple replicas."
-  type        = any
   default     = {}
+  type        = map(object({
+    replicas     = optional(number, 1)
+    port         = optional(number, 80)
+    docker_image = optional(string, "traefik/whoami:latest")
+    labels       = optional(map(string), {})
+  }))
 }
 
 variable "namespace" {
