@@ -17,7 +17,7 @@ locals {
     "--experimental.knative=true",
     "--providers.knative=true"
   ] : [], var.file_provider_config != "" ? [
-    "--providers.file.filename=/dynamic-config/dynamic.yaml"
+    "--providers.file.filename=/etc/traefik/dynamic/dynamic.yaml"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -85,7 +85,7 @@ locals {
   volumes = var.file_provider_config != "" ? [
     {
       name      = "traefik-dynamic-config"
-      mountPath = "/dynamic-config"
+      mountPath = "/etc/traefik/dynamic"
       type      = "configMap"
     }
   ] : []
@@ -93,7 +93,7 @@ locals {
   volume_mounts = var.file_provider_config != "" ? [
     {
       name      = "traefik-dynamic-config"
-      mountPath = "/dynamic-config"
+      mountPath = "/etc/traefik/dynamic"
       readOnly  = true
     }
   ] : []
