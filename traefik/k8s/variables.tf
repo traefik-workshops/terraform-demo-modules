@@ -269,3 +269,9 @@ variable "custom_providers" {
   description = "Custom providers to use for the deployment"
   default     = {}
 }
+
+variable "file_provider_config" {
+  type        = string
+  description = "YAML configuration for Traefik file provider. This will be mounted as a ConfigMap and used for dynamic configuration."
+  default     = ""
+}

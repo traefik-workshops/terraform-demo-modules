@@ -16,6 +16,8 @@ locals {
   ] : [], var.enable_knative_provider ? [
     "--experimental.knative=true",
     "--providers.knative=true"
+  ] : [], var.file_provider_config != "" ? [
+    "--providers.file.filename=/config/dynamic.yaml"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -78,6 +80,23 @@ locals {
 
   plugins       = var.custom_plugins
   extra_objects = var.custom_objects
+
+  # Volumes configuration for file provider
+  volumes = var.file_provider_config != "" ? [
+    {
+      name      = "traefik-dynamic-config"
+      mountPath = "/config"
+      type      = "configMap"
+    }
+  ] : []
+
+  volume_mounts = var.file_provider_config != "" ? [
+    {
+      name      = "traefik-dynamic-config"
+      mountPath = "/config"
+      readOnly  = true
+    }
+  ] : []
 }
 
 resource "kubernetes_secret" "traefik-hub-license" {
@@ -92,6 +111,19 @@ resource "kubernetes_secret" "traefik-hub-license" {
   }
 
   count = var.enable_api_gateway || var.enable_api_management ? 1 : 0
+}
+
+resource "kubernetes_config_map" "traefik-dynamic-config" {
+  metadata {
+    name      = "traefik-dynamic-config"
+    namespace = var.namespace
+  }
+
+  data = {
+    "dynamic.yaml" = var.file_provider_config
+  }
+
+  count = var.file_provider_config != "" ? 1 : 0
 }
 
 resource "helm_release" "traefik" {
@@ -284,12 +316,18 @@ resource "helm_release" "traefik" {
       tolerations = var.tolerations
 
       additionalArguments = local.additional_arguments
+      volumes             = local.volumes
+      additionalVolumeMounts = local.volume_mounts
       extra_objects       = local.extra_objects
     }),
     yamlencode(var.extra_values)
   ]
 
-  depends_on = [kubernetes_secret.traefik-hub-license, helm_release.traefik-crds]
+  depends_on = [
+    kubernetes_secret.traefik-hub-license,
+    kubernetes_config_map.traefik-dynamic-config,
+    helm_release.traefik-crds
+  ]
 }
 
 module "redis" {
