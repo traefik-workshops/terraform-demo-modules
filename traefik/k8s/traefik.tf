@@ -17,7 +17,7 @@ locals {
     "--experimental.knative=true",
     "--providers.knative=true"
   ] : [], var.file_provider_config != "" ? [
-    "--providers.file.filename=/etc/traefik/dynamic/dynamic.yaml"
+    "--providers.file.filename=/file-provider/dynamic.yaml"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -82,19 +82,19 @@ locals {
   extra_objects = var.custom_objects
 
   # Volumes configuration for file provider
-  volumes = var.file_provider_config != "" ? [
+  deployment_volumes = var.file_provider_config != "" ? [
     {
-      name      = "traefik-dynamic-config"
-      mountPath = "/etc/traefik/dynamic"
-      type      = "configMap"
+      name = "traefik-dynamic-config"
+      configMap = {
+        name = "traefik-dynamic-config"
+      }
     }
   ] : []
 
   volume_mounts = var.file_provider_config != "" ? [
     {
       name      = "traefik-dynamic-config"
-      mountPath = "/etc/traefik/dynamic"
-      readOnly  = true
+      mountPath = "/file-provider"
     }
   ] : []
 }
@@ -315,8 +315,11 @@ resource "helm_release" "traefik" {
       resources   = var.resources
       tolerations = var.tolerations
 
+      deployment = {
+        additionalVolumes = local.deployment_volumes
+      }
+
       additionalArguments = local.additional_arguments
-      volumes             = local.volumes
       additionalVolumeMounts = local.volume_mounts
       extra_objects       = local.extra_objects
     }),
