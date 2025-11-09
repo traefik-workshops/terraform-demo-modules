@@ -3,16 +3,12 @@ resource "helm_release" "open_webui" {
   namespace  = var.namespace
   repository = "https://helm.openwebui.com/"
   chart      = "open-webui"
-  version    = "8.12.2"
+  version    = "8.14.0"
   timeout    = 900
   atomic     = true
 
   values = [
     yamlencode({
-      image = {
-        repository = "zalbiraw/open-webui"
-        tag        = "latest"
-      }
       ollama = {
         enabled = false
       }
@@ -47,14 +43,6 @@ resource "helm_release" "open_webui" {
         {
           name = "TOOL_SERVER_CONNECTIONS"
           value = replace(jsonencode(var.mcp_connections), "/\\s+/", "")
-        },
-        {
-          name = "DEFAULT_CHAT_STREAM_RESPONSE"
-          value = "False"
-        },
-        {
-          name = "DEFAULT_FUNCTION_CALLING_MODE"
-          value = "native"
         }
       ]
     }),
