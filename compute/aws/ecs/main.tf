@@ -11,7 +11,7 @@ locals {
         port               = app_config.port
         docker_image       = app_config.docker_image
         docker_command     = app_config.docker_command
-        environment        = lookup(app_config, "environment", {})
+        environment        = app_config.environment
         app_labels         = app_config.labels
         subnet_ids         = app_config.subnet_ids
         security_group_ids = app_config.security_group_ids
