@@ -5,7 +5,7 @@ locals {
       app_config,
       {
         docker_image = "traefik/whoami:latest"
-        docker_options = "-p ${app_config.port}:${app_config.port}"
+        docker_options = "-p ${app_config.port}:${app_config.port} -e WHOAMI_NAME=${app_name}"
       }
     )
   }

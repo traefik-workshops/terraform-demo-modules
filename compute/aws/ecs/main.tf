@@ -11,6 +11,7 @@ locals {
         port               = app_config.port
         docker_image       = app_config.docker_image
         docker_command     = app_config.docker_command
+        environment        = lookup(app_config, "environment", {})
         app_labels         = app_config.labels
         subnet_ids         = app_config.subnet_ids
         security_group_ids = app_config.security_group_ids
@@ -102,6 +103,14 @@ resource "aws_ecs_task_definition" "service" {
       },
       each.value.docker_command != "" ? {
         command = split(" ", each.value.docker_command)
+      } : {},
+      length(each.value.environment) > 0 ? {
+        environment = [
+          for key, value in each.value.environment : {
+            name  = key
+            value = value
+          }
+        ]
       } : {}
     )
   ])

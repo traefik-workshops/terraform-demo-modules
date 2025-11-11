@@ -13,6 +13,7 @@ variable "clusters" {
       docker_image       = optional(string, "traefik/whoami:latest")
       docker_command     = optional(string, "")
       labels             = optional(map(string), {})
+      environment        = optional(map(string), {})
       security_group_ids = optional(list(string), [])
     }))
   }))

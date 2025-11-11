@@ -45,11 +45,6 @@ resource "kubernetes_deployment" "echo" {
           }
 
           env {
-            name  = "APP_NAME"
-            value = each.key
-          }
-
-          env {
             name  = "WHOAMI_NAME"
             value = each.key
           }
