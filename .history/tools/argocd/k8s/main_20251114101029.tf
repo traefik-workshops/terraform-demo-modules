@@ -77,6 +77,6 @@ resource "kubernetes_ingress_v1" "argocd-traefik" {
     }
   }
 
-  count      = var.ingress ? 1 : 0
+  count = var.ingress ? 1 : 0
   depends_on = [helm_release.argocd]
 }
