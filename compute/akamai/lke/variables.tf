@@ -56,3 +56,9 @@ variable "update_kubeconfig" {
   default     = true
   description = "Update kubeconfig after cluster creation"
 }
+
+variable "node_labels" {
+  type        = map(string)
+  default     = {}
+  description = "Labels to apply to the default node pool nodes"
+}

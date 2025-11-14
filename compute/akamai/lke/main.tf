@@ -8,15 +8,17 @@ resource "linode_lke_cluster" "traefik_demo" {
   }
 
   pool {
-    type  = var.cluster_node_type
-    count = var.cluster_node_count
+    type   = var.cluster_node_type
+    count  = var.cluster_node_count
+    labels = var.node_labels
   }
 
   dynamic "pool" {
     for_each = var.enable_gpu ? ["gpu"] : []
     content {
-      type  = var.gpu_node_type
-      count = var.gpu_node_count
+      type   = var.gpu_node_type
+      count  = var.gpu_node_count
+      labels = var.node_labels
     }
   }
 }
