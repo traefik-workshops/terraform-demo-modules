@@ -9,6 +9,12 @@ variable "cluster_name" {
   description = "LKE cluster name"
 }
 
+variable "cluster_name_prefix" {
+  type        = string
+  default     = "lke-"
+  description = "LKE cluster name prefix"
+}
+
 variable "cluster_location" {
   type        = string
   default     = "us-sea"

@@ -43,9 +43,9 @@ resource "null_resource" "lke_cluster" {
       kubectl config view --flatten > merged.yaml
       mv merged.yaml ~/.kube/config
 
-      kubectl config delete-context "lke-${var.cluster_name}" 2>/dev/null || true
-      kubectl config rename-context "lke${linode_lke_cluster.traefik_demo.id}-ctx" "lke-${var.cluster_name}"
-      kubectl config use-context "lke-${var.cluster_name}"
+      kubectl config delete-context "${var.cluster_name_prefix}${var.cluster_name}" 2>/dev/null || true
+      kubectl config rename-context "lke${linode_lke_cluster.traefik_demo.id}-ctx" "${var.cluster_name_prefix}${var.cluster_name}"
+      kubectl config use-context "${var.cluster_name_prefix}${var.cluster_name}"
 
       rm lke-kubeconfig.yaml
     EOT
