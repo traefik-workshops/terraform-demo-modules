@@ -22,7 +22,7 @@ resource "argocd_application" "chats" {
           
           components = var.components
 
-          entrypoints = var.entrypoints
+          entryPoints = var.entrypoints
           
           keycloak = {
             adminId     = var.keycloak_admin_id
