@@ -145,4 +145,10 @@ variable "entrypoints" {
   type        = list(string)
   default     = ["websecure"]
 }
+
+variable "protocol" {
+  description = "Protocol for the chats deployment"
+  type        = string
+  default     = "https"
+}
   

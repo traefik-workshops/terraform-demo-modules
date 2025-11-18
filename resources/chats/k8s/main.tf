@@ -22,6 +22,7 @@ resource "argocd_application" "chats" {
           
           components = var.components
 
+          protocol = "https"
           entryPoints = var.entrypoints
           
           keycloak = {
