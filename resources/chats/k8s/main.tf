@@ -21,6 +21,8 @@ resource "argocd_application" "chats" {
           domain = var.domain
           
           components = var.components
+
+          entrypoints = var.entrypoints
           
           keycloak = {
             adminId     = var.keycloak_admin_id

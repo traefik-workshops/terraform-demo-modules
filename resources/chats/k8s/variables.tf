@@ -139,4 +139,10 @@ variable "llm_guards_jailbreak_detection_guard" {
   type        = bool
   default     = true
 }
+
+variable "entrypoints" {
+  description = "List of entrypoints"
+  type        = list(string)
+  default     = ["websecure"]
+}
   
