@@ -75,7 +75,7 @@ resource "argocd_application" "chats" {
                 podId   = var.nim_jb_pod_id
               }
               graniteGuard = {
-                enabled = var.llm_guards_granite_guard
+                enabled = var.llm_guards_granite_guardian
                 podId   = var.nim_jb_pod_id
               }
             }
