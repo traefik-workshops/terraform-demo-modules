@@ -140,8 +140,8 @@ variable "llm_guards_jailbreak_detection_guard" {
   default     = true
 }
 
-variable "llm_guards_granite_guard" {
-  description = "Enable Granite Guard for LLM Guards"
+variable "llm_guards_granite_guardian" {
+  description = "Enable Granite Guardian for LLM Guards"
   type        = bool
   default     = true
 }
