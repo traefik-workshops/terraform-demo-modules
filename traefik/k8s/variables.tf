@@ -68,7 +68,7 @@ variable "redis_password" {
 variable "dashboard_match_rule" {
   description = "Dashboard match rule"
   type        = string
-  default     = "Host(`dashboard.traefik.cloud`) || Host(`dashboard.traefik.localhost`)"
+  default     = "Host(`dashboard.cloud`) || Host(`dashboard.localhost`)"
 }
 
 variable "dashboard_entrypoints" {
@@ -80,7 +80,7 @@ variable "dashboard_entrypoints" {
 variable "deploymentType" {
   description = "Traefik deployment type."
   type        = string
-  default     = "Deployment" 
+  default     = "Deployment"
 }
 
 variable "replicaCount" {
@@ -92,7 +92,7 @@ variable "replicaCount" {
 variable "serviceType" {
   description = "Traefik service type."
   type        = string
-  default     = "LoadBalancer" 
+  default     = "LoadBalancer"
 }
 
 variable "resources" {
@@ -192,7 +192,7 @@ variable "enable_prometheus" {
 }
 
 variable "custom_plugins" {
-  type        = map(object({
+  type = map(object({
     moduleName = string
     version    = string
   }))
@@ -219,7 +219,7 @@ variable "custom_objects" {
 }
 
 variable "custom_envs" {
-  type        = list(object({
+  type = list(object({
     name  = string
     value = string
   }))

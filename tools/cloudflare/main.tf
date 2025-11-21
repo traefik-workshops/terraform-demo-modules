@@ -15,21 +15,3 @@ resource "cloudflare_dns_record" "wildcard" {
   ttl     = 1
   proxied = false
 }
-
-resource "cloudflare_dns_record" "wildcard_traefik" {
-  zone_id = var.zone_id
-  name    = "*.traefik.${var.domain}"
-  content = var.record_type == "A" ? var.ip : var.hostname
-  type    = var.record_type
-  ttl     = 1
-  proxied = false
-}
-
-resource "cloudflare_dns_record" "wildcard_portal" {
-  zone_id = var.zone_id
-  name    = "*.portal.${var.domain}"
-  content = var.record_type == "A" ? var.ip : var.hostname
-  type    = var.record_type
-  ttl     = 1
-  proxied = false
-}

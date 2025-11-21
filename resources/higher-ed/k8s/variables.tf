@@ -12,7 +12,7 @@ variable "namespace" {
 variable "domain" {
   description = "Base domain for all services"
   type        = string
-  default     = "demo.traefikhub.dev"
+  default     = "demo.traefik.ai"
 }
 
 variable "git_ref" {

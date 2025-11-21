@@ -5,19 +5,19 @@ locals {
     "--experimental.otlpLogs=true",
     "--accesslog.otlp.http.tls.insecureSkipVerify=true",
     "--accesslog.otlp.http.endpoint=${local.otlp_address}/v1/logs"
-  ] : [],
-  var.enable_otlp_application_logs ? [
-    "--experimental.otlpLogs=true",
-    "--log.otlp.http.tls.insecureSkipVerify=true",
-    "--log.otlp.http.endpoint=${local.otlp_address}/v1/logs"
-  ] : [], var.enable_mcp_gateway ? [
-    "--hub.mcpgateway",
-    "--hub.mcpgateway.maxRequestBodySize=2097152"
-  ] : [], var.enable_knative_provider ? [
-    "--experimental.knative=true",
-    "--providers.knative=true"
-  ] : [], var.file_provider_config != "" ? [
-    "--providers.file.filename=/file-provider/dynamic.yaml"
+    ] : [],
+    var.enable_otlp_application_logs ? [
+      "--experimental.otlpLogs=true",
+      "--log.otlp.http.tls.insecureSkipVerify=true",
+      "--log.otlp.http.endpoint=${local.otlp_address}/v1/logs"
+      ] : [], var.enable_mcp_gateway ? [
+      "--hub.mcpgateway",
+      "--hub.mcpgateway.maxRequestBodySize=2097152"
+      ] : [], var.enable_knative_provider ? [
+      "--experimental.knative=true",
+      "--providers.knative=true"
+      ] : [], var.file_provider_config != "" ? [
+      "--providers.file.filename=/file-provider/dynamic.yaml"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -32,24 +32,24 @@ locals {
   } : {}
 
   ports = merge({
-      traefik = {
-        expose = {
-          default = true
-        }
+    traefik = {
+      expose = {
+        default = true
       }
+    }
     }, var.cloudflare_dns.enabled ? {
-      websecure = {
-        tls = {
-          certResolver = "cf"
-          domains = [
-            {
-              main = "${var.cloudflare_dns.domain}"
-              sans = ["*.${var.cloudflare_dns.domain}", "*.traefik.${var.cloudflare_dns.domain}", "*.portal.${var.cloudflare_dns.domain}"]
-            }
-          ]
-        }
+    websecure = {
+      tls = {
+        certResolver = "cf"
+        domains = [
+          {
+            main = "${var.cloudflare_dns.domain}"
+            sans = ["*.${var.cloudflare_dns.domain}"]
+          }
+        ]
       }
-    }: {},
+    }
+    } : {},
     local.metrics_port,
     var.custom_ports
   )
@@ -319,9 +319,9 @@ resource "helm_release" "traefik" {
         additionalVolumes = local.deployment_volumes
       }
 
-      additionalArguments = local.additional_arguments
+      additionalArguments    = local.additional_arguments
       additionalVolumeMounts = local.volume_mounts
-      extra_objects       = local.extra_objects
+      extra_objects          = local.extra_objects
     }),
     yamlencode(var.extra_values)
   ]
@@ -373,7 +373,7 @@ resource "kubernetes_cluster_role" "knative_networking_role" {
     verbs      = ["update"]
   }
 
-  count = var.enable_knative_provider ? 1 : 0
+  count      = var.enable_knative_provider ? 1 : 0
   depends_on = [helm_release.traefik]
 }
 
@@ -394,6 +394,6 @@ resource "kubernetes_cluster_role_binding" "gateway_controller_binding" {
     namespace = var.namespace
   }
 
-  count = var.enable_knative_provider ? 1 : 0
+  count      = var.enable_knative_provider ? 1 : 0
   depends_on = [kubernetes_cluster_role.knative_networking_role]
 }

@@ -10,7 +10,7 @@ module "keycloak_postgres" {
 
 resource "kubernetes_secret" "keycloak_db_secret" {
   metadata {
-    name = "keycloak-db-secret"
+    name      = "keycloak-db-secret"
     namespace = var.namespace
     labels = {
       "operator.keycloak.org/component" = "watched-secret"
@@ -26,7 +26,7 @@ resource "kubernetes_secret" "keycloak_db_secret" {
 
 resource "kubernetes_secret" "keycloak_secret" {
   metadata {
-    name = "keycloak-secret"
+    name      = "keycloak-secret"
     namespace = var.namespace
   }
 
@@ -40,76 +40,76 @@ resource "kubernetes_secret" "keycloak_secret" {
 # Keycloak Operator and CRDs
 resource "kubectl_manifest" "keycloak_operator_deployment" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloak-operator-deployment.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloak-operator-deployment.yml")
 }
 
 resource "kubectl_manifest" "keycloak_operator_role_binding" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloak-operator-role-binding.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloak-operator-role-binding.yml")
 }
 
 resource "kubectl_manifest" "keycloak_operator_role" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloak-operator-role.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloak-operator-role.yml")
 }
 
 resource "kubectl_manifest" "keycloak_operator_service_account" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloak-operator-service-account.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloak-operator-service-account.yml")
 }
 
 resource "kubectl_manifest" "keycloak_operator_service" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloak-operator-service.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloak-operator-service.yml")
 }
 
 resource "kubectl_manifest" "keycloak_operator_view_role_binding" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloak-operator-view-role-binding.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloak-operator-view-role-binding.yml")
 }
 
 resource "kubectl_manifest" "keycloakcontroller_cluster_role" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloakcontroller-cluster-role.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloakcontroller-cluster-role.yml")
 }
 
 resource "kubectl_manifest" "keycloakcontroller_role_binding" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloakcontroller-role-binding.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloakcontroller-role-binding.yml")
 }
 
 resource "kubectl_manifest" "keycloakrealmimportcontroller_cluster_role" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloakrealmimportcontroller-cluster-role.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloakrealmimportcontroller-cluster-role.yml")
 }
 
 resource "kubectl_manifest" "keycloakrealmimportcontroller_role_binding" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloakrealmimportcontroller-role-binding.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloakrealmimportcontroller-role-binding.yml")
 }
 
 # Keycloak CRDs
 resource "kubectl_manifest" "keycloak_crds" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloaks.k8s.keycloak.org-v1.yml")
 }
 
 # Keycloak Realm Import CRDs
 resource "kubectl_manifest" "keycloak_realm_import_crds" {
   override_namespace = var.namespace
-  wait = true
-  yaml_body = file("${path.module}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml")
+  wait               = true
+  yaml_body          = file("${path.module}/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml")
 }
 
 resource "kubectl_manifest" "keycloak_crd" {
@@ -152,7 +152,7 @@ YAML
 
 resource "kubernetes_ingress_v1" "keycloak-traefik" {
   metadata {
-    name = "keycloak"
+    name      = "keycloak"
     namespace = var.namespace
     annotations = {
       "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
@@ -167,7 +167,7 @@ resource "kubernetes_ingress_v1" "keycloak-traefik" {
       host = "keycloak.${var.ingress_domain}"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -184,7 +184,7 @@ resource "kubernetes_ingress_v1" "keycloak-traefik" {
       host = "keycloak-service.${var.namespace}.svc"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -199,28 +199,28 @@ resource "kubernetes_ingress_v1" "keycloak-traefik" {
     }
   }
 
-  count = var.ingress == true ? 1 : 0
+  count      = var.ingress == true ? 1 : 0
   depends_on = [kubectl_manifest.keycloak_crd]
 }
 
 resource "kubernetes_ingress_v1" "keycloak-internal-traefik" {
   metadata {
-    name = "keycloak-internal"
+    name      = "keycloak-internal"
     namespace = var.namespace
     annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints" = "traefik"
+      "traefik.ingress.kubernetes.io/router.entrypoints"              = "traefik"
       "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.metrics" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.tracing" = "false"
+      "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+      "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
     }
   }
 
   spec {
     rule {
-      host = "keycloak.traefik.localhost"
+      host = "keycloak.localhost"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -237,7 +237,7 @@ resource "kubernetes_ingress_v1" "keycloak-internal-traefik" {
       host = "keycloak-service.${var.namespace}.svc"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -252,6 +252,6 @@ resource "kubernetes_ingress_v1" "keycloak-internal-traefik" {
     }
   }
 
-  count = var.ingress == true && var.ingress_internal == true ? 1 : 0
+  count      = var.ingress == true && var.ingress_internal == true ? 1 : 0
   depends_on = [kubectl_manifest.keycloak_crd]
 }

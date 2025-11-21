@@ -115,7 +115,7 @@ User credentials marked as sensitive output:
 ## Testing Authentication
 
 ```bash
-curl -L --insecure -s -X POST 'http://keycloak.traefik.localhost:8080/realms/traefik/protocol/openid-connect/token' \
+curl -L --insecure -s -X POST 'http://keycloak.localhost:8080/realms/traefik/protocol/openid-connect/token' \
    -H 'Content-Type: application/x-www-form-urlencoded' \
    --data-urlencode 'client_id=traefik' \
    --data-urlencode 'grant_type=password' \
@@ -126,7 +126,7 @@ curl -L --insecure -s -X POST 'http://keycloak.traefik.localhost:8080/realms/tra
 ```
 
 ```bash
-curl -L --insecure -s -X POST 'http://keycloak.traefik.localhost:8080/realms/traefik/protocol/openid-connect/token' \
+curl -L --insecure -s -X POST 'http://keycloak.localhost:8080/realms/traefik/protocol/openid-connect/token' \
    -H 'Content-Type: application/x-www-form-urlencoded' \
    --data-urlencode 'client_id=traefik' \
    --data-urlencode 'grant_type=password' \
