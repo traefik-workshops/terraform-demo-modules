@@ -44,3 +44,18 @@ variable "oidc_jwks_url" {
   description = "OIDC JWKS URL for the API Portal"
   type        = string
 }
+
+variable "keycloak_admin_id" {
+  description = "Admin user ID from Keycloak"
+  type        = string
+}
+
+variable "keycloak_developer_id" {
+  description = "Developer user ID from Keycloak"
+  type        = string
+}
+
+variable "keycloak_agent_id" {
+  description = "Agent user ID from Keycloak"
+  type        = string
+}

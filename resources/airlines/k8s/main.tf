@@ -32,6 +32,12 @@ resource "argocd_application" "airlines" {
             issuerUrl    = "https://keycloak.${var.domain}/realms/traefik"
             jwksUrl      = var.oidc_jwks_url
           }
+
+          keycloak = {
+            adminId     = var.keycloak_admin_id
+            developerId = var.keycloak_developer_id
+            agentId     = var.keycloak_agent_id
+          }
         })
       }
     }
