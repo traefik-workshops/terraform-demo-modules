@@ -25,6 +25,24 @@ resource "argocd_application" "airlines" {
             clientSecret = var.oidc_client_secret
             issuerURL    = var.oidc_issuer_url
           }
+
+          oidc = {
+            ticketing = {
+              clientID     = var.oidc_client_id
+              clientSecret = var.oidc_client_secret
+              issuerURL    = var.oidc_issuer_url
+            }
+            userAssistance = {
+              clientID     = var.oidc_client_id
+              clientSecret = var.oidc_client_secret
+              issuerURL    = var.oidc_issuer_url
+            }
+            partnerAssistance = {
+              clientID     = var.oidc_client_id
+              clientSecret = var.oidc_client_secret
+              issuerURL    = var.oidc_issuer_url
+            }
+          }
         })
       }
     }
