@@ -25,6 +25,12 @@ resource "argocd_application" "airlines" {
             userAssistance    = var.jwt_tokens["userAssistance"]
             partnerAssistance = var.jwt_tokens["partnerAssistance"]
           }
+
+          oidc = {
+            clientId     = var.oidc_client_id
+            clientSecret = var.oidc_client_secret
+            issuerUrl    = "https://keycloak.${var.domain}/realms/traefik"
+          }
         })
       }
     }

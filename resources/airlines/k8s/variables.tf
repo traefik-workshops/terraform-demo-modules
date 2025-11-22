@@ -29,3 +29,13 @@ variable "jwt_tokens" {
     partnerAssistance = string
   })
 }
+
+variable "oidc_client_id" {
+  description = "OIDC Client ID for the API Portal"
+  type        = string
+}
+
+variable "oidc_client_secret" {
+  description = "OIDC Client Secret for the API Portal"
+  type        = string
+}
