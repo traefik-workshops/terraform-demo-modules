@@ -20,28 +20,10 @@ resource "argocd_application" "airlines" {
         values = yamlencode({
           domain = var.domain
 
-          dashboardOidc = {
-            clientID     = var.oidc_client_id
-            clientSecret = var.oidc_client_secret
-            issuerURL    = var.oidc_issuer_url
-          }
-
-          oidc = {
-            ticketing = {
-              clientID     = var.oidc_client_id
-              clientSecret = var.oidc_client_secret
-              issuerURL    = var.oidc_issuer_url
-            }
-            userAssistance = {
-              clientID     = var.oidc_client_id
-              clientSecret = var.oidc_client_secret
-              issuerURL    = var.oidc_issuer_url
-            }
-            partnerAssistance = {
-              clientID     = var.oidc_client_id
-              clientSecret = var.oidc_client_secret
-              issuerURL    = var.oidc_issuer_url
-            }
+          tokens = {
+            ticketing         = var.jwt_tokens["ticketing"]
+            userAssistance    = var.jwt_tokens["userAssistance"]
+            partnerAssistance = var.jwt_tokens["partnerAssistance"]
           }
         })
       }

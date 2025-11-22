@@ -21,18 +21,11 @@ variable "git_ref" {
   default     = "main"
 }
 
-variable "oidc_client_id" {
-  description = "OIDC client ID for dashboard authentication"
-  type        = string
-}
-
-variable "oidc_client_secret" {
-  description = "OIDC client secret"
-  type        = string
-  sensitive   = true
-}
-
-variable "oidc_issuer_url" {
-  description = "OIDC issuer URL"
-  type        = string
+variable "jwt_tokens" {
+  description = "Map of JWT tokens for MCP servers (ticketing, userAssistance, partnerAssistance)"
+  type = object({
+    ticketing         = string
+    userAssistance    = string
+    partnerAssistance = string
+  })
 }
