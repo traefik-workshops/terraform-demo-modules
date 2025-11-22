@@ -8,5 +8,9 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = ">= 2.24.0"
     }
+    argocd = {
+      source  = "argoproj-labs/argocd"
+      version = ">= 7.0.0"
+    }
   }
 }
