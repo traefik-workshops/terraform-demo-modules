@@ -44,7 +44,7 @@ locals {
         domains = [
           {
             main = "${var.cloudflare_dns.domain}"
-            sans = ["*.${var.cloudflare_dns.domain}"]
+            sans = ["*.${var.cloudflare_dns.domain}", "*.traefik.${var.cloudflare_dns.domain}", "*.portal.${var.cloudflare_dns.domain}", "*.airlines.${var.cloudflare_dns.domain}"]
           }
         ]
       }

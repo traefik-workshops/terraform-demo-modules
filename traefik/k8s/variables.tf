@@ -254,14 +254,16 @@ variable "enable_knative_provider" {
 variable "cloudflare_dns" {
   description = "Cloudflare DNS configuration"
   type = object({
-    enabled   = optional(bool, false)
-    domain    = optional(string, "")
-    api_token = optional(string, "")
+    enabled           = optional(bool, false)
+    domain            = optional(string, "")
+    api_token         = optional(string, "")
+    extra_san_domains = optional(list(string), [])
   })
   default = {
-    enabled   = false
-    domain    = ""
-    api_token = ""
+    enabled           = false
+    domain            = ""
+    api_token         = ""
+    extra_san_domains = []
   }
 }
 variable "custom_providers" {
