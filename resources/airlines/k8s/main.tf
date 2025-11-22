@@ -30,6 +30,7 @@ resource "argocd_application" "airlines" {
             clientId     = var.oidc_client_id
             clientSecret = var.oidc_client_secret
             issuerUrl    = "https://keycloak.${var.domain}/realms/traefik"
+            jwksUrl      = var.oidc_jwks_url
           }
         })
       }

@@ -39,3 +39,8 @@ variable "oidc_client_secret" {
   description = "OIDC Client Secret for the API Portal"
   type        = string
 }
+
+variable "oidc_jwks_url" {
+  description = "OIDC JWKS URL for the API Portal"
+  type        = string
+}
