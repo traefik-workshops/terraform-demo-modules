@@ -24,6 +24,7 @@ resource "argocd_application" "airlines" {
             ticketing         = var.jwt_tokens["ticketing"]
             userAssistance    = var.jwt_tokens["userAssistance"]
             partnerAssistance = var.jwt_tokens["partnerAssistance"]
+            dashboard         = var.jwt_tokens["dashboard"]
           }
 
           oidc = {

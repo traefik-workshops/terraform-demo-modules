@@ -22,11 +22,12 @@ variable "git_ref" {
 }
 
 variable "jwt_tokens" {
-  description = "Map of JWT tokens for MCP servers (ticketing, userAssistance, partnerAssistance)"
+  description = "Map of JWT tokens for MCP servers and dashboard (ticketing, userAssistance, partnerAssistance, dashboard)"
   type = object({
     ticketing         = string
     userAssistance    = string
     partnerAssistance = string
+    dashboard         = string
   })
 }
 
