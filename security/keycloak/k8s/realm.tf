@@ -9,10 +9,10 @@ locals {
       claims   = {}
     }
   ]
-  
+
   # Merge simple and advanced users
   all_users = concat(local.simple_users_transformed, var.advanced_users)
-  
+
   # Extract all unique groups from all users
   all_groups = distinct(flatten([
     for user in local.all_users : user.groups
@@ -31,32 +31,32 @@ spec:
   keycloakCRName: keycloak
   realm:
     users: ${jsonencode([
-      for user in local.all_users : {
-        id              = uuidv5("dns", user.username)
-        enabled         = true
-        emailVerified   = true
-        username        = user.username
-        email          = user.email
-        firstName      = title(user.username)
-        lastName       = "Example"
-        credentials    = [
-          {
-            value     = user.password
-            type      = "password"
-            temporary = false
-          }
-        ]
-        groups         = user.groups
-        attributes     = user.claims
+  for user in local.all_users : {
+    id            = uuidv5("dns", user.username)
+    enabled       = true
+    emailVerified = true
+    username      = user.username
+    email         = user.email
+    firstName     = title(user.username)
+    lastName      = "Example"
+    credentials = [
+      {
+        value     = user.password
+        type      = "password"
+        temporary = false
       }
-    ])}
+    ]
+    groups     = user.groups
+    attributes = user.claims
+  }
+  ])}
     id: 9e470c18-f69f-4ebd-9006-5d4ed05c1cf2
     realm: traefik
     notBefore: 0
     defaultSignatureAlgorithm: RS256
     revokeRefreshToken: false
     refreshTokenMaxReuse: 0
-    accessTokenLifespan: 86400
+    accessTokenLifespan: ${var.access_token_lifespan}
     accessTokenLifespanForImplicitFlow: 900
     ssoSessionIdleTimeout: 1800
     ssoSessionMaxLifespan: 36000
@@ -368,16 +368,16 @@ spec:
             attributes: { }
         traefik: [ ]
     groups: ${jsonencode([
-      for group in local.all_groups : {
-        id: uuidv5("dns", group)
-        name: group
-        path: "/${group}"
-        attributes: {}
-        realmRoles: []
-        clientRoles: {}
-        subGroups: []
-      }
-    ])}
+  for group in local.all_groups : {
+    id : uuidv5("dns", group)
+    name : group
+    path : "/${group}"
+    attributes : {}
+    realmRoles : []
+    clientRoles : {}
+    subGroups : []
+  }
+  ])}
     defaultRole:
       id: 029a8b80-9512-4ca9-ab98-d2ac64747514
       name: default-roles-traefik
@@ -1144,25 +1144,25 @@ ${join("\n", [for uri in var.redirect_uris : "          - '${uri}/callback'"])}
           gui.order: ''
           consent.screen.text: ''
         protocolMappers: ${jsonencode(flatten([
-          for claim_name in distinct(flatten([
-            for user in local.all_users : keys(user.claims)
-          ])) : {
-            id: uuidv5("dns", "mapper-${claim_name}")
-            name: claim_name
-            protocol: "openid-connect"
-            protocolMapper: "oidc-usermodel-attribute-mapper"
-            consentRequired: false
-            config: {
-              "user.attribute": claim_name
-              "claim.name": claim_name
-              "jsonType.label": "String"
-              "id.token.claim": "true"
-              "access.token.claim": "true"
-              "userinfo.token.claim": "true"
-              "multivalued": "true"
-            }
-          }
-        ]))}
+    for claim_name in distinct(flatten([
+      for user in local.all_users : keys(user.claims)
+      ])) : {
+      id : uuidv5("dns", "mapper-${claim_name}")
+      name : claim_name
+      protocol : "openid-connect"
+      protocolMapper : "oidc-usermodel-attribute-mapper"
+      consentRequired : false
+      config : {
+        "user.attribute" : claim_name
+        "claim.name" : claim_name
+        "jsonType.label" : "String"
+        "id.token.claim" : "true"
+        "access.token.claim" : "true"
+        "userinfo.token.claim" : "true"
+        "multivalued" : "true"
+      }
+    }
+]))}
     defaultDefaultClientScopes:
       - role_list
       - profile
