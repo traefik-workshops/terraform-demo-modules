@@ -20,24 +20,14 @@ resource "argocd_application" "airlines" {
         values = yamlencode({
           domain = var.domain
 
-          tokens = {
-            ticketing         = var.jwt_tokens["ticketing"]
-            userAssistance    = var.jwt_tokens["userAssistance"]
-            partnerAssistance = var.jwt_tokens["partnerAssistance"]
-            dashboard         = var.jwt_tokens["dashboard"]
-          }
+          "tool-access" = var.tool_access
+          "user-access" = var.user_access
 
           oidc = {
             clientId     = var.oidc_client_id
             clientSecret = var.oidc_client_secret
             issuerUrl    = "https://keycloak.${var.domain}/realms/traefik"
             jwksUrl      = var.oidc_jwks_url
-          }
-
-          keycloak = {
-            adminId     = var.keycloak_admin_id
-            developerId = var.keycloak_developer_id
-            agentId     = var.keycloak_agent_id
           }
         })
       }

@@ -21,16 +21,6 @@ variable "git_ref" {
   default     = "main"
 }
 
-variable "jwt_tokens" {
-  description = "Map of JWT tokens for MCP servers and dashboard (ticketing, userAssistance, partnerAssistance, dashboard)"
-  type = object({
-    ticketing         = string
-    userAssistance    = string
-    partnerAssistance = string
-    dashboard         = string
-  })
-}
-
 variable "oidc_client_id" {
   description = "OIDC Client ID for the API Portal"
   type        = string
@@ -46,17 +36,19 @@ variable "oidc_jwks_url" {
   type        = string
 }
 
-variable "keycloak_admin_id" {
-  description = "Admin user ID from Keycloak"
-  type        = string
+variable "tool_access" {
+  description = "Configuration for tool access (tokens and groups)"
+  type = map(object({
+    token = string
+    group = string
+  }))
 }
 
-variable "keycloak_developer_id" {
-  description = "Developer user ID from Keycloak"
-  type        = string
-}
-
-variable "keycloak_agent_id" {
-  description = "Agent user ID from Keycloak"
-  type        = string
+variable "user_access" {
+  description = "Configuration for user access (ids and groups)"
+  type = list(object({
+    name  = string
+    id    = string
+    group = string
+  }))
 }
