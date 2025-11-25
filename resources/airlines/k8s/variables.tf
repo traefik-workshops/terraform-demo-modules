@@ -61,7 +61,7 @@ variable "chat" {
         enabled = bool
         api_key = string
       })
-      gpt_oss = object({
+      gpt = object({
         enabled = bool
         host    = string
       })
