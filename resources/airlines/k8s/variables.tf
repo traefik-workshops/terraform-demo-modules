@@ -31,8 +31,8 @@ variable "oidc_client_secret" {
   type        = string
 }
 
-variable "oidc_jwks_url" {
-  description = "OIDC JWKS URL for the API Portal"
+variable "oidc_issuer_url" {
+  description = "OIDC Issuer URL for the API Management"
   type        = string
 }
 
