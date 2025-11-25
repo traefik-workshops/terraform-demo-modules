@@ -3,7 +3,7 @@ resource "helm_release" "open_webui" {
   namespace  = var.namespace
   repository = "https://helm.openwebui.com/"
   chart      = "open-webui"
-  version    = "8.14.0"
+  version    = "8.18.0"
   timeout    = 900
   atomic     = true
 
@@ -17,31 +17,31 @@ resource "helm_release" "open_webui" {
       }
       extraEnvVars = [
         {
-          name = "DEFAULT_USER_ROLE"
+          name  = "DEFAULT_USER_ROLE"
           value = "admin"
         },
         {
-          name = "WEBUI_NAME"
+          name  = "WEBUI_NAME"
           value = "Traefik Chat"
         },
         {
-          name = "USE_CUDA_DOCKER"
+          name  = "USE_CUDA_DOCKER"
           value = "false"
         },
         {
-          name = "OPENAI_API_BASE_URLS"
+          name  = "OPENAI_API_BASE_URLS"
           value = join(";", var.openai_api_base_urls)
         },
         {
-          name = "OPENAI_API_KEYS"
+          name  = "OPENAI_API_KEYS"
           value = join(";", var.openai_api_keys)
         },
         {
-          name = "ENABLE_DIRECT_CONNECTIONS"
+          name  = "ENABLE_DIRECT_CONNECTIONS"
           value = "true"
         },
         {
-          name = "TOOL_SERVER_CONNECTIONS"
+          name  = "TOOL_SERVER_CONNECTIONS"
           value = replace(jsonencode(var.mcp_connections), "/\\s+/", "")
         }
       ]
@@ -49,8 +49,8 @@ resource "helm_release" "open_webui" {
     yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
       ingress = {
-        enabled = true
-        host = "chat.${var.ingress_domain}"
+        enabled         = true
+        host            = "chat.${var.ingress_domain}"
         additionalHosts = []
         annotations = {
           "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
