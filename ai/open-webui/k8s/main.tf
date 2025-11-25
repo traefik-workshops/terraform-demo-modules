@@ -42,7 +42,7 @@ resource "helm_release" "open_webui" {
         },
         {
           name  = "TOOL_SERVER_CONNECTIONS"
-          value = replace(jsonencode(var.mcp_connections), "/\\s+/", "")
+          value = trimspace(replace(replace(jsonencode(var.mcp_connections), "/[^\\S ]+/", ""), "/ {2,}/", " "))
         }
       ]
     }),
