@@ -22,6 +22,7 @@ resource "argocd_application" "airlines" {
 
           "tool-access" = var.tool_access
           "user-access" = var.user_access
+          chat          = var.chat
 
           oidc = {
             clientId     = var.oidc_client_id

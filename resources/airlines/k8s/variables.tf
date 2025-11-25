@@ -52,3 +52,56 @@ variable "user_access" {
     group = string
   }))
 }
+
+variable "chat" {
+  description = "Configuration for chat features (LLMs, guards, etc.)"
+  type = object({
+    llms = object({
+      openai = object({
+        enabled = bool
+        api_key = string
+      })
+      gpt_oss = object({
+        enabled = bool
+        host    = string
+      })
+    })
+    guards = object({
+      enabled  = bool
+      parallel = bool
+      topic_control = object({
+        enabled = bool
+        host    = string
+      })
+      content_safety = object({
+        enabled = bool
+        host    = string
+      })
+      jailbreak_detection = object({
+        enabled = bool
+        host    = string
+      })
+      granite_guardian = object({
+        enabled = bool
+        host    = string
+      })
+    })
+    content_guard = object({
+      enabled = bool
+      presidio = object({
+        host = string
+      })
+    })
+    semantic_cache = object({
+      enabled = bool
+      tokenizer = object({
+        host = string
+      })
+      vectorDB = object({
+        weaviate = object({
+          host = string
+        })
+      })
+    })
+  })
+}
