@@ -57,7 +57,10 @@ data "external" "fetch_tokens" {
       # Iterate and fetch tokens
       # We use jq to parse the JSON string and iterate
       
-      TOKENS=$(echo "$USERS_JSON" | jq -c '.[]' | while read -r user; do
+      TOKENS=""
+      MISSING_USERS=""
+      
+      while read -r user; do
         USERNAME=$(echo "$user" | jq -r '.username')
         PASSWORD=$(echo "$user" | jq -r '.password')
         
@@ -71,12 +74,19 @@ data "external" "fetch_tokens" {
           -d "password=$PASSWORD" | jq -r '.access_token')
           
         if [ "$TOKEN" != "null" ] && [ -n "$TOKEN" ]; then
-           echo "\"$USERNAME\": \"$TOKEN\","
+          TOKENS="$TOKENS\"$USERNAME\": \"$TOKEN\"," 
+        else
+          MISSING_USERS="$MISSING_USERS$USERNAME "
         fi
-      done)
+      done < <(echo "$USERS_JSON" | jq -c '.[]')
       
       # Kill port-forward
       kill $PF_PID || true
+      
+      if [ -n "$MISSING_USERS" ]; then
+        echo "Error: Failed to fetch tokens for users: $MISSING_USERS" >&2
+        exit 1
+      fi
       
       # Format output as JSON
       echo "{ $${TOKENS%,} }"
