@@ -20,8 +20,8 @@ resource "argocd_application" "airlines" {
         values = yamlencode({
           domain = var.domain
 
-          "tool-access" = var.tool_access
-          "user-access" = var.user_access
+          "tools-access" = var.tools_access
+          "users-access" = var.users_access
           chat          = var.chat
 
           oidc = {

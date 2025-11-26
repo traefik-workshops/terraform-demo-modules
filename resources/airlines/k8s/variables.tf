@@ -36,7 +36,7 @@ variable "oidc_issuer_url" {
   type        = string
 }
 
-variable "tool_access" {
+variable "tools_access" {
   description = "Configuration for tool access (tokens and groups)"
   type = map(object({
     token = string
@@ -44,7 +44,7 @@ variable "tool_access" {
   }))
 }
 
-variable "user_access" {
+variable "users_access" {
   description = "Configuration for user access (ids and groups)"
   type = list(object({
     name  = string
