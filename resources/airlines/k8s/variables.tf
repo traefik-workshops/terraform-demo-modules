@@ -65,6 +65,10 @@ variable "chat" {
         enabled = bool
         host    = string
       })
+      gemini = object({
+        enabled = bool
+        api_key = string
+      })
     })
     guards = object({
       enabled  = bool
