@@ -59,5 +59,5 @@ variable "advanced_users" {
 variable "access_token_lifespan" {
   description = "The lifespan of the access token in seconds"
   type        = number
-  default     = 1209600 # 14 days
+  default     = 2419200 # 28 days
 }

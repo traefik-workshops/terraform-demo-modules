@@ -59,7 +59,7 @@ spec:
     accessTokenLifespan: ${var.access_token_lifespan}
     accessTokenLifespanForImplicitFlow: 900
     ssoSessionIdleTimeout: 1800
-    ssoSessionMaxLifespan: 36000
+    ssoSessionMaxLifespan: ${var.access_token_lifespan}
     ssoSessionIdleTimeoutRememberMe: 0
     ssoSessionMaxLifespanRememberMe: 0
     offlineSessionIdleTimeout: 2592000
