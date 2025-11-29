@@ -277,3 +277,21 @@ variable "file_provider_config" {
   description = "YAML configuration for Traefik file provider. This will be mounted as a ConfigMap and used for dynamic configuration."
   default     = ""
 }
+
+variable "custom_image_registry" {
+  description = "Custom image registry"
+  type        = string
+  default     = ""
+}
+
+variable "custom_image_repository" {
+  description = "Custom image repository"
+  type        = string
+  default     = ""
+}
+
+variable "custom_image_tag" {
+  description = "Custom image tag"
+  type        = string
+  default     = ""
+}
