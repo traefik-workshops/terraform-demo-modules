@@ -7,7 +7,7 @@ resource "helm_release" "argocd" {
   namespace  = var.namespace
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version    = "7.8.2"
+  version    = "9.1.5"
   timeout    = 900
   atomic     = true
 
@@ -36,7 +36,7 @@ resource "helm_release" "argocd" {
       value = local.argocd_password_hash
     }
   ]
-  
+
   lifecycle {
     ignore_changes = [set_sensitive]
   }
@@ -44,7 +44,7 @@ resource "helm_release" "argocd" {
 
 resource "kubernetes_ingress_v1" "argocd-traefik" {
   metadata {
-    name = "argocd"
+    name      = "argocd"
     namespace = "traefik-tools"
     annotations = {
       "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
@@ -61,7 +61,7 @@ resource "kubernetes_ingress_v1" "argocd-traefik" {
         host = "argocd.${var.ingress_domain}"
         http {
           path {
-            path = "/"
+            path      = "/"
             path_type = "Prefix"
             backend {
               service {
