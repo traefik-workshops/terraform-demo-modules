@@ -1,6 +1,6 @@
 # Create ArgoCD Application for airlines resources using Helm
-resource "kubernetes_manifest" "airlines" {
-  manifest = {
+resource "kubectl_manifest" "airlines" {
+  yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
     kind       = "Application"
     metadata = {
@@ -44,5 +44,5 @@ resource "kubernetes_manifest" "airlines" {
         ]
       }
     }
-  }
+  })
 }

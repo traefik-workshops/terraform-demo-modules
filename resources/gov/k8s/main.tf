@@ -1,6 +1,6 @@
 # Create ArgoCD Application for gov resources using Helm
-resource "kubernetes_manifest" "gov" {
-  manifest = {
+resource "kubectl_manifest" "gov" {
+  yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
     kind       = "Application"
     metadata = {
@@ -47,5 +47,5 @@ resource "kubernetes_manifest" "gov" {
         ]
       }
     }
-  }
+  })
 }

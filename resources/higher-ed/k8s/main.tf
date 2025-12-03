@@ -1,6 +1,6 @@
 # Create ArgoCD Application for higher-ed resources using Helm
-resource "kubernetes_manifest" "higher-ed" {
-  manifest = {
+resource "kubectl_manifest" "higher-ed" {
+  yaml_body = yamlencode({
     apiVersion = "argoproj.io/v1alpha1"
     kind       = "Application"
     metadata = {
@@ -44,5 +44,5 @@ resource "kubernetes_manifest" "higher-ed" {
         ]
       }
     }
-  }
+  })
 }
