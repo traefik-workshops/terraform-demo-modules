@@ -22,7 +22,7 @@ resource "argocd_application" "airlines" {
 
           "tools-access" = var.tools_access
           "users-access" = var.users_access
-          chat          = var.chat
+          chat           = var.chat
 
           oidc = {
             clientId     = var.oidc_client_id
@@ -47,7 +47,8 @@ resource "argocd_application" "airlines" {
 
       sync_options = [
         "CreateNamespace=true",
-        "PruneLast=true"
+        "PruneLast=true",
+        "ServerSideApply=true"
       ]
     }
   }
