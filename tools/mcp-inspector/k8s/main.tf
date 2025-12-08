@@ -81,7 +81,7 @@ resource "kubernetes_ingress_v1" "mcp_inspector_traefik" {
 
   spec {
     rule {
-      host = "mcp-inspector.${var.ingress_domain}"
+      host = "inspector.${var.ingress_domain}"
       http {
         path {
           path      = "/"
