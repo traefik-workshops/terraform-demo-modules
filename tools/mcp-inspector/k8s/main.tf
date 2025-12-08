@@ -34,6 +34,16 @@ resource "kubernetes_deployment" "mcp_inspector" {
             container_port = 6277
             name           = "server"
           }
+
+          env {
+            name  = "DANGEROUSLY_OMIT_AUTH"
+            value = "true"
+          }
+
+          env {
+            name  = "HOST"
+            value = "0.0.0.0"
+          }
         }
       }
     }
