@@ -9,11 +9,11 @@ resource "helm_release" "nginx_ingress" {
 
   set = [
     {
-      name  = "controller.containerPort.http"
+      name  = "controller.service.ports.http"
       value = "8081"
     },
     {
-      name  = "controller.containerPort.https"
+      name  = "controller.service.ports.https"
       value = "8444"
     }
   ]
