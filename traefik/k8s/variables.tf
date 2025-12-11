@@ -295,3 +295,15 @@ variable "custom_image_tag" {
   type        = string
   default     = ""
 }
+
+variable "nginx_provider_enabled" {
+  description = "Enable NGINX provider"
+  type        = bool
+  default     = false
+}
+
+variable "nginx_provider_migration" {
+  description = "NGINX provider migration configuration"
+  type        = any
+  default     = {}
+}

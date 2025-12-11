@@ -250,7 +250,14 @@ resource "helm_release" "traefik" {
           enabled             = true
           experimentalChannel = false
         }
-      }, var.custom_providers)
+        }, var.nginx_provider_enabled ? {
+        kubernetesIngressNGINX = {
+          ingressClass             = "nginx"
+          controllerClass          = "k8s.io/ingress-nginx"
+          watchIngressWithoutClass = true
+          migration                = var.nginx_provider_migration
+        }
+      } : {}, var.custom_providers)
 
       certificatesResolvers = {
         treafik-airlines = {
