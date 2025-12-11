@@ -251,7 +251,7 @@ resource "helm_release" "traefik" {
           experimentalChannel = false
         }
         }, var.nginx_provider_enabled ? {
-        kubernetesIngressNGINX = {
+        kubernetesIngressNginx = {
           ingressClass             = "nginx"
           controllerClass          = "k8s.io/ingress-nginx"
           watchIngressWithoutClass = true
