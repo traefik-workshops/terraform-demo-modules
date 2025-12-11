@@ -9,8 +9,12 @@ resource "helm_release" "nginx_ingress" {
 
   set = [
     {
-      name  = "controller.service.type"
-      value = "ClusterIP"
+      name  = "controller.containerPort.http"
+      value = "8081"
+    },
+    {
+      name  = "controller.containerPort.https"
+      value = "8444"
     }
   ]
 }
