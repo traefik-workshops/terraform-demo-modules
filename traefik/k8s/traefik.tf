@@ -229,6 +229,11 @@ resource "helm_release" "traefik" {
         repository = var.custom_image_repository != "" ? var.custom_image_repository : var.enable_preview_mode ? "traefik-hub/traefik-hub" : "traefik/traefik-hub"
         tag        = var.custom_image_tag != "" ? var.custom_image_tag : var.enable_preview_mode ? var.traefik_hub_preview_tag != "" ? var.traefik_hub_preview_tag : "latest-v3" : var.traefik_hub_tag
         pullPolicy = "Always"
+        } : custom_image_registry != "" || custom_image_repository != "" || custom_image_tag != "" ? {
+        registry   = var.custom_image_registry
+        repository = var.custom_image_repository
+        tag        = var.custom_image_tag
+        pullPolicy = "Always"
         } : var.traefik_tag != "" ? {
         tag = var.traefik_tag
       } : {}
