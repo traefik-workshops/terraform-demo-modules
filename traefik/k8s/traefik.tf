@@ -252,10 +252,8 @@ resource "helm_release" "traefik" {
         }
         }, var.nginx_provider_enabled ? {
         kubernetesIngressNginx = {
-          ingressClass             = "nginx"
-          controllerClass          = "k8s.io/ingress-nginx"
-          watchIngressWithoutClass = true
-          migration                = var.nginx_provider_migration
+          enabled   = true
+          migration = var.nginx_provider_migration
         }
       } : {}, var.custom_providers)
 
