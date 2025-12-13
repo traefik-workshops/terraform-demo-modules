@@ -25,11 +25,11 @@ resource "helm_release" "nginx_ingress" {
       value = "8444"
     },
     {
-      name  = "controller.service.targetPort.http"
+      name  = "controller.service.targetPorts.http"
       value = "8001"
     },
     {
-      name  = "controller.service.targetPort.https"
+      name  = "controller.service.targetPorts.https"
       value = "8444"
     },
     {
