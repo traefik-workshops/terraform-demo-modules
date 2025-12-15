@@ -147,7 +147,7 @@ resource "kubernetes_config_map" "traefik-nginx-config" {
   }
 
   data = {
-    "nginx.yaml" = yamldecode({
+    "nginx.yaml" = yamlencode({
       providers = {
         kubernetesIngressNginx = {
           enabled   = true
