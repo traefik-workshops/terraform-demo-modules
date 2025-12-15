@@ -148,6 +148,18 @@ resource "kubernetes_config_map" "traefik-nginx-config" {
 
   data = {
     "nginx.yaml" = yamlencode({
+      global = {
+        checkNewVersion    = true
+        sendAnonymousUsage = true
+      }
+      entryPoints = {
+        web = {
+          address = ":80"
+        }
+        websecure = {
+          address = ":443"
+        }
+      }
       providers = {
         kubernetesIngressNginx = {
           enabled   = true
