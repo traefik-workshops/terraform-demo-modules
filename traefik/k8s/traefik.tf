@@ -18,6 +18,8 @@ locals {
       "--providers.knative=true"
       ] : [], var.file_provider_config != "" ? [
       "--providers.file.filename=/file-provider/dynamic.yaml"
+      ] : [], var.nginx_provider_enabled ? [
+      "--configFile=/traefik-nginx-config/nginx.yaml"
   ] : [], var.custom_arguments)
 
   metrics_port = var.enable_prometheus ? {
@@ -82,21 +84,33 @@ locals {
   extra_objects = var.custom_objects
 
   # Volumes configuration for file provider
-  deployment_volumes = var.file_provider_config != "" ? [
+  deployment_volumes = concat(var.file_provider_config != "" ? [
     {
       name = "traefik-dynamic-config"
       configMap = {
         name = "traefik-dynamic-config"
       }
     }
-  ] : []
+    ] : [], var.nginx_provider_enabled ? [
+    {
+      name = "traefik-nginx-config"
+      configMap = {
+        name = "traefik-nginx-config"
+      }
+    }
+  ] : [])
 
-  volume_mounts = var.file_provider_config != "" ? [
+  volume_mounts = concat(var.file_provider_config != "" ? [
     {
       name      = "traefik-dynamic-config"
       mountPath = "/file-provider"
     }
-  ] : []
+    ] : [], var.nginx_provider_enabled ? [
+    {
+      name      = "traefik-nginx-config"
+      mountPath = "/traefik-nginx-config"
+    }
+  ] : [])
 }
 
 resource "kubernetes_secret" "traefik-hub-license" {
@@ -124,6 +138,26 @@ resource "kubernetes_config_map" "traefik-dynamic-config" {
   }
 
   count = var.file_provider_config != "" ? 1 : 0
+}
+
+resource "kubernetes_config_map" "traefik-nginx-config" {
+  metadata {
+    name      = "traefik-nginx-config"
+    namespace = var.namespace
+  }
+
+  data = {
+    "nginx.yaml" = yamldecode({
+      providers = {
+        kubernetesIngressNginx = {
+          enabled   = true
+          migration = var.nginx_provider_migration
+        }
+      }
+    })
+  }
+
+  count = var.nginx_provider_enabled ? 1 : 0
 }
 
 resource "helm_release" "traefik" {
@@ -250,12 +284,7 @@ resource "helm_release" "traefik" {
           enabled             = true
           experimentalChannel = false
         }
-        }, var.nginx_provider_enabled ? {
-        kubernetesIngressNginx = {
-          enabled   = true
-          migration = var.nginx_provider_migration
-        }
-      } : {}, var.custom_providers)
+      }, var.custom_providers)
 
       certificatesResolvers = {
         treafik-airlines = {
@@ -339,6 +368,7 @@ resource "helm_release" "traefik" {
   depends_on = [
     kubernetes_secret.traefik-hub-license,
     kubernetes_config_map.traefik-dynamic-config,
+    kubernetes_config_map.traefik-nginx-config,
     helm_release.traefik-crds
   ]
 }
