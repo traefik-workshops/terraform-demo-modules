@@ -30,8 +30,8 @@ locals {
     "amd64" = "tcg"
   }
   iso_url = {
-    "arm64" = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img"
-    "amd64" = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+    "arm64" = "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    "amd64" = "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
   }
   efi_boot = {
     "arm64" = true
@@ -47,7 +47,7 @@ source "qemu" "whoami" {
   headless          = true
 
   iso_url           = local.iso_url[var.arch]
-  iso_checksum      = "file:https://cloud-images.ubuntu.com/releases/22.04/release/SHA256SUMS"
+  iso_checksum      = "file:https://cloud-images.ubuntu.com/releases/24.04/release/SHA256SUMS"
   output_directory  = "images"
   shutdown_command  = "sudo shutdown -P now"
   disk_size         = "10G"

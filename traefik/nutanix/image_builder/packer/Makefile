@@ -1,7 +1,5 @@
 .PHONY: clean build-binaries packer-build-arm64 packer-build-amd64 all
 
-# Relative path to traefik-hub repo
-HUB_DIR := ../../../../traefik-hub
 BIN_DIR := bin
 
 clean:

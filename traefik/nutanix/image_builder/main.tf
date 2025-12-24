@@ -9,7 +9,7 @@ resource "terraform_data" "build_image" {
     command = <<EOT
       cd ${path.module}/packer
       if [ ! -f images/${local.image_filename} ]; then
-        make packer-build-${var.arch}
+        make packer-build-${var.arch} HUB_DIR="${var.hub_dir}"
       fi
     EOT
   }
