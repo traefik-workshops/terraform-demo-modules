@@ -5,3 +5,8 @@
 .DS_Store
 
 .history
+
+**/bin
+**/images
+
+runtime-config.yaml
