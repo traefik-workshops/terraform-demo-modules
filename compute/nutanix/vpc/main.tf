@@ -34,4 +34,27 @@ resource "nutanix_subnet_v2" "subnets" {
       }
     }
   }
+
+  dhcp_options {
+    domain_name_servers {
+      dynamic "ipv4" {
+        for_each = var.dns_servers
+        content {
+          value         = ipv4.value
+          prefix_length = 32
+        }
+      }
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [dhcp_options]
+  }
+}
+
+resource "nutanix_static_routes" "external_reroute" {
+  vpc_name = nutanix_vpc_v2.vpc.name
+  default_route_nexthop {
+    external_subnet_reference_uuid = var.external_subnet_uuid
+  }
 }

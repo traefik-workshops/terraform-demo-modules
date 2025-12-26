@@ -24,3 +24,9 @@ variable "subnets" {
   }))
   default = {}
 }
+
+variable "dns_servers" {
+  description = "List of DNS Servers"
+  type        = list(string)
+  default     = ["10.8.1.10", "10.42.196.10"]
+}
