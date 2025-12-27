@@ -118,22 +118,37 @@ resource "null_resource" "nkp_create_cluster" {
   }
 }
 
-# Fetch kubeconfig from bastion after cluster creation
-resource "null_resource" "fetch_kubeconfig" {
-  triggers = {
-    cluster_created = null_resource.nkp_create_cluster.id
+# Fetch kubeconfig content from bastion and store in terraform state
+resource "terraform_data" "kubeconfig" {
+  triggers_replace = [null_resource.nkp_create_cluster.id]
+
+  connection {
+    type     = "ssh"
+    user     = var.bastion_vm_username
+    password = var.bastion_vm_password
+    host     = local.bastion_vm_ip
   }
 
   provisioner "local-exec" {
     command = <<-EOF
-      mkdir -p ${path.root}/.kubeconfigs
-      sshpass -p '${var.bastion_vm_password}' scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-        ${var.bastion_vm_username}@${local.bastion_vm_ip}:~/${var.cluster_name}.conf \
-        ${path.root}/.kubeconfigs/${var.cluster_name}.conf 2>/dev/null || true
+      sshpass -p '${var.bastion_vm_password}' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        ${var.bastion_vm_username}@${local.bastion_vm_ip} "cat ~/${var.cluster_name}.conf" 2>/dev/null \
+        > /tmp/${var.cluster_name}-kubeconfig.tmp || true
     EOF
   }
 
+  input = {
+    cluster_name = var.cluster_name
+    bastion_ip   = local.bastion_vm_ip
+  }
+
   depends_on = [null_resource.nkp_create_cluster]
+}
+
+# Read the kubeconfig content
+data "local_file" "kubeconfig" {
+  filename   = "/tmp/${var.cluster_name}-kubeconfig.tmp"
+  depends_on = [terraform_data.kubeconfig]
 }
 
 # Update local kubeconfig with cluster context
@@ -141,29 +156,34 @@ resource "null_resource" "update_kubeconfig" {
   count = var.update_kubeconfig ? 1 : 0
 
   triggers = {
-    kubeconfig_fetched = null_resource.fetch_kubeconfig.id
+    kubeconfig_fetched = terraform_data.kubeconfig.id
   }
 
   provisioner "local-exec" {
     command = <<-EOF
-      KUBECONFIG_PATH="${path.root}/.kubeconfigs/${var.cluster_name}.conf"
-      if [ -f "$KUBECONFIG_PATH" ]; then
-        # Merge kubeconfig into default config
-        KUBECONFIG="$KUBECONFIG_PATH:$HOME/.kube/config" kubectl config view --flatten > /tmp/merged-kubeconfig
+      KUBECONFIG_CONTENT='${try(data.local_file.kubeconfig.content, "")}'
+      if [ -n "$KUBECONFIG_CONTENT" ]; then
+        # Write to temp file and merge
+        echo "$KUBECONFIG_CONTENT" > /tmp/${var.cluster_name}.conf
+        KUBECONFIG="/tmp/${var.cluster_name}.conf:$HOME/.kube/config" kubectl config view --flatten > /tmp/merged-kubeconfig
         mv /tmp/merged-kubeconfig $HOME/.kube/config
         chmod 600 $HOME/.kube/config
 
         # Rename context to cluster name
         kubectl config delete-context "${var.cluster_name}" 2>/dev/null || true
-        kubectl config rename-context "$(kubectl config current-context --kubeconfig="$KUBECONFIG_PATH")" "${var.cluster_name}" 2>/dev/null || true
-        kubectl config use-context "${var.cluster_name}"
+        CURRENT_CONTEXT=$(kubectl config current-context --kubeconfig="/tmp/${var.cluster_name}.conf" 2>/dev/null || echo "")
+        if [ -n "$CURRENT_CONTEXT" ]; then
+          kubectl config rename-context "$CURRENT_CONTEXT" "${var.cluster_name}" 2>/dev/null || true
+        fi
+        kubectl config use-context "${var.cluster_name}" 2>/dev/null || true
 
+        rm -f /tmp/${var.cluster_name}.conf
         echo "Kubeconfig updated. Context '${var.cluster_name}' added."
       else
-        echo "Kubeconfig file not found at $KUBECONFIG_PATH"
+        echo "Kubeconfig content not available"
       fi
     EOF
   }
 
-  depends_on = [null_resource.fetch_kubeconfig]
+  depends_on = [terraform_data.kubeconfig, data.local_file.kubeconfig]
 }
