@@ -1,9 +1,7 @@
 locals {
   bastion_vm_ip       = nutanix_floating_ip_v2.bastion_fip.floating_ip[0].ipv4[0].value
   cluster_subnets_str = join(",", var.cluster_subnets)
-}
 
-locals {
   bastion_vm_cloud_init = templatefile("${path.module}/templates/cloud-init.tpl", {
     hostname             = "${var.cluster_name}-nkp-bastion"
     bastion_vm_username  = var.bastion_vm_username
@@ -12,6 +10,8 @@ locals {
     registry_host        = split("/", replace(replace(var.registry_mirror_url, "https://", ""), "http://", ""))[0]
     registry_mirror_full = can(regex("^http", var.registry_mirror_url)) ? var.registry_mirror_url : "https://${var.registry_mirror_url}"
   })
+
+  control_plane_fip = nutanix_floating_ip_v2.control_plane_fip.floating_ip[0].ipv4[0].value
 }
 
 resource "nutanix_virtual_machine" "bastion_vm" {
@@ -53,6 +53,24 @@ resource "nutanix_floating_ip_v2" "bastion_fip" {
   depends_on = [
     nutanix_virtual_machine.bastion_vm
   ]
+}
+
+resource "nutanix_floating_ip_v2" "control_plane_fip" {
+  name                      = "${var.cluster_name}-control-plane-fip"
+  external_subnet_reference = var.external_subnet_uuid
+
+  association {
+    private_ip_association {
+      vpc_reference = var.vpc_uuid
+      private_ip {
+        ipv4 {
+          value = var.control_plane_vip
+        }
+      }
+    }
+  }
+
+  depends_on = [null_resource.nkp_create_cluster]
 }
 
 resource "null_resource" "nkp_create_cluster" {
@@ -120,32 +138,36 @@ resource "null_resource" "nkp_create_cluster" {
 
 # Fetch kubeconfig content from bastion and store in terraform state
 resource "terraform_data" "kubeconfig" {
-  triggers_replace = [null_resource.nkp_create_cluster.id]
-
-  connection {
-    type     = "ssh"
-    user     = var.bastion_vm_username
-    password = var.bastion_vm_password
-    host     = local.bastion_vm_ip
-  }
+  triggers_replace = [null_resource.nkp_create_cluster.id, nutanix_floating_ip_v2.control_plane_fip.id]
 
   provisioner "local-exec" {
     command = <<-EOF
+      # Fetch kubeconfig from bastion
       sshpass -p '${var.bastion_vm_password}' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
         ${var.bastion_vm_username}@${local.bastion_vm_ip} "cat ~/${var.cluster_name}.conf" 2>/dev/null \
-        > /tmp/${var.cluster_name}-kubeconfig.tmp || true
+        > /tmp/${var.cluster_name}-kubeconfig-orig.tmp || true
+
+      # Replace internal VIP with external FIP and add insecure-skip-tls-verify
+      if [ -f /tmp/${var.cluster_name}-kubeconfig-orig.tmp ]; then
+        sed -e 's/${var.control_plane_vip}/${local.control_plane_fip}/g' \
+            -e 's/certificate-authority-data:.*/insecure-skip-tls-verify: true/' \
+          /tmp/${var.cluster_name}-kubeconfig-orig.tmp \
+          > /tmp/${var.cluster_name}-kubeconfig.tmp
+        rm -f /tmp/${var.cluster_name}-kubeconfig-orig.tmp
+      fi
     EOF
   }
 
   input = {
-    cluster_name = var.cluster_name
-    bastion_ip   = local.bastion_vm_ip
+    cluster_name      = var.cluster_name
+    bastion_ip        = local.bastion_vm_ip
+    control_plane_fip = local.control_plane_fip
   }
 
-  depends_on = [null_resource.nkp_create_cluster]
+  depends_on = [null_resource.nkp_create_cluster, nutanix_floating_ip_v2.control_plane_fip]
 }
 
-# Read the kubeconfig content
+# Read the kubeconfig content (with FIP address)
 data "local_file" "kubeconfig" {
   filename   = "/tmp/${var.cluster_name}-kubeconfig.tmp"
   depends_on = [terraform_data.kubeconfig]
@@ -161,27 +183,57 @@ resource "null_resource" "update_kubeconfig" {
 
   provisioner "local-exec" {
     command = <<-EOF
+      set -e
       KUBECONFIG_CONTENT='${try(data.local_file.kubeconfig.content, "")}'
-      if [ -n "$KUBECONFIG_CONTENT" ]; then
-        # Write to temp file and merge
-        echo "$KUBECONFIG_CONTENT" > /tmp/${var.cluster_name}.conf
-        KUBECONFIG="/tmp/${var.cluster_name}.conf:$HOME/.kube/config" kubectl config view --flatten > /tmp/merged-kubeconfig
-        mv /tmp/merged-kubeconfig $HOME/.kube/config
-        chmod 600 $HOME/.kube/config
+      CLUSTER_NAME="${var.cluster_name}"
+      KUBECONFIG_DIR="$HOME/.kube"
+      KUBECONFIG_FILE="$KUBECONFIG_DIR/config"
+      LOCK_FILE="$KUBECONFIG_DIR/.config.lock"
+      TEMP_FILE="/tmp/$${CLUSTER_NAME}.conf"
 
-        # Rename context to cluster name
-        kubectl config delete-context "${var.cluster_name}" 2>/dev/null || true
-        CURRENT_CONTEXT=$(kubectl config current-context --kubeconfig="/tmp/${var.cluster_name}.conf" 2>/dev/null || echo "")
-        if [ -n "$CURRENT_CONTEXT" ]; then
-          kubectl config rename-context "$CURRENT_CONTEXT" "${var.cluster_name}" 2>/dev/null || true
-        fi
-        kubectl config use-context "${var.cluster_name}" 2>/dev/null || true
-
-        rm -f /tmp/${var.cluster_name}.conf
-        echo "Kubeconfig updated. Context '${var.cluster_name}' added."
-      else
-        echo "Kubeconfig content not available"
+      if [ -z "$KUBECONFIG_CONTENT" ]; then
+        echo "Kubeconfig content not available for $CLUSTER_NAME"
+        exit 0
       fi
+
+      # Ensure .kube directory exists
+      mkdir -p "$KUBECONFIG_DIR"
+
+      # Write cluster kubeconfig to temp file
+      echo "$KUBECONFIG_CONTENT" > "$TEMP_FILE"
+
+      # Use flock for atomic merge (macOS compatible with perl fallback)
+      (
+        # Try flock, fall back to a simple lock file approach for macOS
+        if command -v flock >/dev/null 2>&1; then
+          flock -x 200
+        else
+          # Simple spinlock for macOS
+          while ! mkdir "$LOCK_FILE" 2>/dev/null; do
+            sleep 0.1
+          done
+          trap "rmdir '$LOCK_FILE' 2>/dev/null" EXIT
+        fi
+
+        # Merge kubeconfigs
+        if [ -f "$KUBECONFIG_FILE" ]; then
+          KUBECONFIG="$TEMP_FILE:$KUBECONFIG_FILE" kubectl config view --flatten > "$KUBECONFIG_FILE.new"
+          mv "$KUBECONFIG_FILE.new" "$KUBECONFIG_FILE"
+        else
+          cp "$TEMP_FILE" "$KUBECONFIG_FILE"
+        fi
+        chmod 600 "$KUBECONFIG_FILE"
+
+        # Get original context name and rename to cluster name
+        ORIG_CONTEXT=$(kubectl config current-context --kubeconfig="$TEMP_FILE" 2>/dev/null || echo "")
+        if [ -n "$ORIG_CONTEXT" ] && [ "$ORIG_CONTEXT" != "$CLUSTER_NAME" ]; then
+          kubectl config rename-context "$ORIG_CONTEXT" "$CLUSTER_NAME" 2>/dev/null || true
+        fi
+
+      ) 200>"$KUBECONFIG_DIR/.config.flock" 2>/dev/null || true
+
+      rm -f "$TEMP_FILE"
+      echo "Kubeconfig updated. Context '$CLUSTER_NAME' added with FIP ${local.control_plane_fip}."
     EOF
   }
 

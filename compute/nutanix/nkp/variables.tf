@@ -28,6 +28,11 @@ variable "cluster_subnets" {
   type        = list(string)
 }
 
+variable "vpc_uuid" {
+  description = "UUID of the VPC where the NKP cluster is deployed"
+  type        = string
+}
+
 variable "control_plane_vip" {
   description = "Control Plane VIP"
   type        = string
