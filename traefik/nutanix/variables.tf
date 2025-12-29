@@ -1,3 +1,10 @@
+# =============================================================================
+# Nutanix VM-specific Variables
+# =============================================================================
+# Shared Traefik variables are defined in shared.tf.
+# This file contains only Nutanix platform-specific variables.
+# =============================================================================
+
 variable "vm_name" {
   description = "Name of the VM"
   type        = string
@@ -43,9 +50,10 @@ variable "vm_memory_mib" {
 }
 
 variable "traefik_hub_token" {
-  description = "Traefik Hub Token"
+  description = "Traefik Hub Token (alias for traefik_license)"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "traefik_static_config" {
@@ -54,98 +62,8 @@ variable "traefik_static_config" {
   default     = ""
 }
 
-variable "entry_points" {
-  description = "Traefik entry points configuration"
-  type = map(object({
-    address = string
-  }))
-  default = {
-    web = { address = ":80" }
-  }
-}
-
-variable "enable_dashboard" {
-  description = "Enable Traefik Dashboard"
-  type        = bool
-  default     = true
-}
-
-variable "dashboard_insecure" {
-  description = "Enable insecure dashboard (HTTP)"
-  type        = bool
-  default     = false
-}
-
-variable "log_level" {
-  description = "Traefik log level"
-  type        = string
-  default     = "INFO"
-}
-
-variable "enable_prometheus" {
-  description = "Enable Prometheus metrics"
-  type        = bool
-  default     = true
-}
-
 variable "metrics_port" {
   description = "Port for metrics"
   type        = number
   default     = 8082
-}
-
-# OTLP Configuration
-variable "otlp_address" {
-  description = "OTLP gRPC endpoint (e.g. localhost:4317)"
-  type        = string
-  default     = ""
-}
-
-variable "otlp_service_name" {
-  description = "Service name for OTLP traces/metrics"
-  type        = string
-  default     = "traefik"
-}
-
-variable "enable_otlp_metrics" {
-  description = "Enable OTLP metrics"
-  type        = bool
-  default     = false
-}
-
-variable "enable_otlp_traces" {
-  description = "Enable OTLP traces"
-  type        = bool
-  default     = false
-}
-
-variable "enable_otlp_access_logs" {
-  description = "Enable OTLP access logs. Requires enable_otlp_traces = true or enable_otlp_metrics = true usually, but handled by otlp.http/grpc config"
-  type        = bool
-  default     = false
-}
-
-variable "enable_otlp_application_logs" {
-  description = "Enable OTLP application logs (requires Traefik v3+ logic)"
-  type        = bool
-  default     = false
-}
-
-# Custom Extensions
-variable "custom_plugins" {
-  description = "Map of custom plugins configuration"
-  type        = map(any)
-  default     = {}
-}
-
-variable "custom_envs" {
-  description = "Map of custom environment variables to inject into Traefik"
-  type        = map(string)
-  default     = {}
-}
-
-variable "file_provider_config" {
-  description = "Additional dynamic configuration for file provider"
-  type        = string
-  default     = ""
 }
