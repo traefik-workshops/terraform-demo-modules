@@ -5,8 +5,8 @@ variable "apps" {
     subnet_ids          = optional(list(string), [])
     port                = optional(number, 80)
     docker_image        = optional(string, "traefik/whoami:latest")
-    docker_options      = optional(string, "")  # Docker run flags: -e, -p, -v, etc.
-    container_arguments = optional(string, "")  # Container CMD/ARGS: --flag=value, etc.
+    docker_options      = optional(string, "") # Docker run flags: -e, -p, -v, etc.
+    container_arguments = optional(string, "") # Container CMD/ARGS: --flag=value, etc.
     tags                = optional(map(string), {})
   }))
 }
@@ -52,7 +52,7 @@ variable "subnet_ids" {
 }
 
 variable "security_group_ids" {
-  description = "List of security group IDs"
+  description = "List of security group IDs to associate with the instances (used if not creating VPC)"
   type        = list(string)
   default     = []
 
@@ -66,4 +66,10 @@ variable "iam_instance_profile" {
   description = "IAM instance profile name to attach to EC2 instances"
   type        = string
   default     = ""
+}
+
+variable "enable_acme_setup" {
+  description = "Enable ACME storage setup for Let's Encrypt certificates"
+  type        = bool
+  default     = false
 }

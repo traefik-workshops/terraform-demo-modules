@@ -200,7 +200,7 @@ variable "file_provider_path" {
 # Licensing & DNS
 # -----------------------------------------------------------------------------
 
-variable "traefik_license" {
+variable "traefik_hub_token" {
   description = "Traefik Hub license token"
   type        = string
   default     = ""

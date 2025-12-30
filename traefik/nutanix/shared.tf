@@ -50,7 +50,7 @@ module "config" {
   file_provider_path   = var.file_provider_path
 
   # Licensing & DNS
-  traefik_license        = var.traefik_license
+  traefik_hub_token      = var.traefik_hub_token
   cloudflare_dns         = var.cloudflare_dns
   is_staging_letsencrypt = var.is_staging_letsencrypt
 
@@ -244,7 +244,7 @@ variable "file_provider_path" {
 }
 
 # Licensing & DNS
-variable "traefik_license" {
+variable "traefik_hub_token" {
   description = "Traefik Hub license token"
   type        = string
   default     = ""

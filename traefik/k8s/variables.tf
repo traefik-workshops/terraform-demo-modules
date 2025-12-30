@@ -116,3 +116,9 @@ variable "extra_values" {
   description = "Extra Helm values to merge"
   default     = {}
 }
+
+variable "kubernetes_namespaces" {
+  description = "List of namespaces to watch for Kubernetes providers (Ingress, Gateway, CRD)"
+  type        = list(string)
+  default     = []
+}

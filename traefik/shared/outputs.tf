@@ -31,6 +31,14 @@ output "extracted_cli_args" {
   value       = var.extract_config ? jsondecode(data.external.helm_config[0].result.cli_args) : []
 }
 
+output "extracted_cli_args_cloud" {
+  description = "CLI arguments extraction filtered for cloud/VM environments (excludes Kubernetes providers)"
+  value = [
+    for arg in(var.extract_config ? jsondecode(data.external.helm_config[0].result.cli_args) : []) :
+    arg if !startswith(arg, "--providers.kubernetes") && !startswith(arg, "--experimental.kubernetes")
+  ]
+}
+
 output "extracted_env_vars" {
   description = "Environment variables extracted from rendered Helm chart (as JSON string)"
   value       = var.extract_config ? data.external.helm_config[0].result.env_vars : "[]"
@@ -125,9 +133,9 @@ output "entry_points" {
   value       = var.entry_points
 }
 
-output "traefik_license" {
+output "traefik_hub_token" {
   description = "Traefik Hub license token"
-  value       = var.traefik_license
+  value       = var.traefik_hub_token
   sensitive   = true
 }
 

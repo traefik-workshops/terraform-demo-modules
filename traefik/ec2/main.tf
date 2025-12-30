@@ -6,7 +6,8 @@
 
 locals {
   # Use extracted CLI arguments from Helm template (includes file provider if configured)
-  traefik_arguments = module.config.extracted_cli_args
+  # Uses centralized filtering to exclude Kubernetes-specific args
+  traefik_arguments = module.config.extracted_cli_args_cloud
 
   # Build environment variables for Docker run command
   env_vars = [
@@ -58,6 +59,7 @@ module "ec2" {
   vpc_id               = var.vpc_id
   security_group_ids   = var.security_group_ids
   iam_instance_profile = var.iam_instance_profile
+  enable_acme_setup    = module.config.cloudflare_dns.enabled
 
   common_tags = merge(var.extra_tags, {
     "Name"                                                     = "traefik"

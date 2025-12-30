@@ -30,7 +30,7 @@ locals {
       }
     ]
   ])
-  
+
   # Convert to map for for_each with global index for even distribution
   instances_map = {
     for idx, inst in local.instances : inst.instance_key => merge(inst, {
@@ -51,13 +51,13 @@ module "vpc" {
 # Create EC2 instances for each app replica
 resource "aws_instance" "ec2" {
   for_each = local.instances_map
-  
+
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = var.instance_type
   subnet_id              = var.create_vpc ? module.vpc[0].public_subnet_ids[each.value.idx % length(module.vpc[0].public_subnet_ids)] : each.value.subnet_ids[each.value.idx % length(each.value.subnet_ids)]
   vpc_security_group_ids = var.create_vpc ? module.vpc[0].security_group_ids : var.security_group_ids
   iam_instance_profile   = var.iam_instance_profile != "" ? var.iam_instance_profile : null
-  
+
   # Generate user data with app-specific Docker settings
   user_data = <<-EOF
     #!/bin/bash
@@ -68,6 +68,13 @@ resource "aws_instance" "ec2" {
     yum install -y docker
     systemctl start docker
     systemctl enable docker
+    %{if var.enable_acme_setup~}
+    
+    # Create ACME storage with correct permissions (when using Cloudflare DNS for certificates)
+    mkdir -p /var/lib/docker/volumes/traefik-data/_data
+    touch /var/lib/docker/volumes/traefik-data/_data/acme.json
+    chmod 600 /var/lib/docker/volumes/traefik-data/_data/acme.json
+    %{endif~}
     
     # Pull the Docker image
     docker pull ${each.value.docker_image}
@@ -84,14 +91,14 @@ resource "aws_instance" "ec2" {
     echo "Container ${each.value.app_name}-${each.value.replica_number} started successfully"
     docker ps
   EOF
-  
+
   user_data_replace_on_change = true
-  
+
   tags = merge(
     var.common_tags,
     each.value.app_tags,
     {
-      Name = each.key  # Format: "app-name-replica-number" (e.g., "whoami-1")
+      Name = each.key # Format: "app-name-replica-number" (e.g., "whoami-1")
     }
   )
 }

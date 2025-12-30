@@ -49,13 +49,6 @@ variable "vm_memory_mib" {
   default     = 2048
 }
 
-variable "traefik_hub_token" {
-  description = "Traefik Hub Token (alias for traefik_license)"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
 variable "traefik_static_config" {
   description = "Traefik static configuration (YAML string)"
   type        = string

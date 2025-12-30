@@ -6,7 +6,8 @@
 
 locals {
   # Use extracted CLI arguments from Helm template
-  traefik_arguments = module.config.extracted_cli_args
+  # Uses centralized filtering to exclude Kubernetes-specific args
+  traefik_arguments = module.config.extracted_cli_args_cloud
 
   # Use extracted environment variables
   traefik_envs = module.config.env_vars_list

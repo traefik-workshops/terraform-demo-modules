@@ -54,12 +54,10 @@ locals {
     )
 
     hub = var.enable_api_gateway || var.enable_api_management || var.enable_preview_mode ? {
-      token   = var.traefik_license
-      offline = var.enable_offline_mode
-      aigateway = var.enable_ai_gateway ? {
-        enabled = true
-      } : null
-      mcpgateway  = var.enable_mcp_gateway ? true : null
+      token       = var.traefik_hub_token
+      offline     = var.enable_offline_mode
+      aigateway   = var.enable_ai_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
+      mcpgateway  = var.enable_mcp_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
       platformUrl = var.enable_preview_mode ? "https://api-preview.hub.traefik.io/agent" : null
     } : null
 
@@ -104,13 +102,6 @@ locals {
     }
 
     additionalArguments = concat(
-      var.enable_mcp_gateway ? [
-        "--hub.mcpgateway",
-        "--hub.mcpgateway.maxRequestBodySize=2097152"
-      ] : [],
-      var.enable_ai_gateway ? [
-        "--hub.aigateway.enabled"
-      ] : [],
       var.file_provider_config != "" ? [
         "--providers.file.filename=${var.file_provider_path}"
       ] : [],
@@ -184,7 +175,7 @@ locals {
       plugins = var.custom_plugins
     } : null)
 
-    certResolvers = var.cloudflare_dns.enabled ? {
+    certificatesResolvers = var.cloudflare_dns.enabled ? {
       cf = {
         acme = {
           email    = "zaid@traefik.io"

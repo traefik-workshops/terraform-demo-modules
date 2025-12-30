@@ -44,16 +44,21 @@ locals {
     # Hub - extend with K8s-specific redis config for API Management
     hub = var.enable_api_gateway || var.enable_api_management ? merge(
       try(module.config.helm_values.hub, {}),
-      {
-        token = "traefik-hub-license"
-        apimanagement = {
-          enabled = var.enable_api_management
-        }
-        redis = var.enable_api_management ? {
+      merge(
+        { token = "traefik-hub-license" },
+        var.enable_api_management ? {
+          apimanagement = { enabled = true }
+        } : {}
+      ),
+      var.enable_api_management ? {
+        redis = {
           endpoints = "traefik-redis.${var.namespace}.svc:6379"
           password  = var.redis_password
-        } : null
-      }
+          database  = "0"
+          sentinel  = { enabled = false }
+          cluster   = { enabled = false }
+        }
+      } : {}
     ) : null
 
     # Deployment configuration
@@ -76,17 +81,23 @@ locals {
 
     # K8s providers (not in shared)
     providers = merge({
-      kubernetesCRD = {
+      kubernetesCRD = merge({
         allowCrossNamespace       = true
         allowExternalNameServices = true
-      }
-      kubernetesIngress = {
+        }, length(var.kubernetes_namespaces) > 0 ? {
+        namespaces = var.kubernetes_namespaces
+      } : {})
+      kubernetesIngress = merge({
         allowExternalNameServices = true
-      }
-      kubernetesGateway = {
-        enabled             = true
+        }, length(var.kubernetes_namespaces) > 0 ? {
+        namespaces = var.kubernetes_namespaces
+      } : {})
+      kubernetesGateway = merge({
+        enabled             = false
         experimentalChannel = false
-      }
+        }, length(var.kubernetes_namespaces) > 0 ? {
+        namespaces = var.kubernetes_namespaces
+      } : {})
       }, var.enable_knative_provider ? {
       knative = {
         enabled = true
@@ -94,7 +105,7 @@ locals {
     } : {}, var.custom_providers)
 
     experimental = {
-      kubernetesGateway = true
+      kubernetesGateway = { enabled = false }
       knative           = var.enable_knative_provider
     }
 
@@ -102,7 +113,7 @@ locals {
     gateway = {
       listeners = {
         web = {
-          port            = 8000
+          port            = 80
           protocol        = "HTTP"
           namespacePolicy = { from = "All" }
         }
@@ -151,7 +162,7 @@ resource "kubernetes_secret_v1" "traefik-hub-license" {
 
   type = "Opaque"
   data = {
-    token = var.traefik_license
+    token = var.traefik_hub_token
   }
 }
 

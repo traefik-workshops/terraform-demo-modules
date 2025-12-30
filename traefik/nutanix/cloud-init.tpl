@@ -1,6 +1,5 @@
 #cloud-config
 write_files:
-  # Write CLI arguments to a file that will be used by systemd
   - path: /etc/traefik-hub/cli-args
     content: |
 %{ for arg in cli_arguments ~}
@@ -8,8 +7,6 @@ write_files:
 %{ endfor ~}
     owner: traefik-hub:traefik-hub
     permissions: "0640"
-
-  # Write environment variables for systemd
   - path: /etc/traefik-hub/env
     content: |
 %{ for env in env_vars ~}
@@ -17,9 +14,7 @@ write_files:
 %{ endfor ~}
     owner: root:root
     permissions: "0644"
-
 %{ if file_provider_config != "" ~}
-  # Dynamic configuration for file provider
   - path: /etc/traefik-hub/dynamic/dynamic.yaml
     content: |
       ${indent(6, file_provider_config)}
@@ -28,18 +23,30 @@ write_files:
 %{ endif ~}
 
 runcmd:
+  # Configure firewall to allow Traefik ports
+%{ for port in ports_to_open ~}
+  - firewall-cmd --permanent --add-port=${port}/tcp
+%{ endfor ~}
+  - firewall-cmd --reload
+
   # Create systemd override directory
   - mkdir -p /etc/systemd/system/traefik-hub.service.d
+%{ if cloudflare_dns_enabled ~}
+
+  # Create ACME storage directory and file (only when using Cloudflare DNS for certificates)
+  - mkdir -p /data
+  - touch /data/acme.json
+  - chmod 600 /data/acme.json
+  - chown -R traefik-hub:traefik-hub /data || chown -R root:root /data
+%{ endif ~}
 
   # Configure systemd to use environment file and CLI args
   - |
     cat > /etc/systemd/system/traefik-hub.service.d/override.conf << 'EOF'
     [Service]
     EnvironmentFile=-/etc/traefik-hub/env
-%{ for arg in cli_arguments ~}
     ExecStart=
-    ExecStart=/usr/bin/traefik-hub ${join(" ", cli_arguments)}
-%{ endfor ~}
+    ExecStart=/usr/local/bin/traefik-hub --hub.token=$${HUB_TOKEN} ${join(" ", cli_arguments)}
     EOF
 
   - systemctl daemon-reload

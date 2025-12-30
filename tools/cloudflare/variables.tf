@@ -14,9 +14,15 @@ variable "ip" {
   default     = ""
 
   validation {
-    condition     = var.record_type != "A" || var.ip != ""
-    error_message = "IP address is required for A record"
+    condition     = var.record_type != "A" || var.ip != "" || length(var.ips) > 0
+    error_message = "IP address is required for A record (set either 'ip' or 'ips')"
   }
+}
+
+variable "ips" {
+  description = "List of IP addresses for the Cloudflare DNS record (Round Robin)"
+  type        = list(string)
+  default     = []
 }
 
 variable "hostname" {
