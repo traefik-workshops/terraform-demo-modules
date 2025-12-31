@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "presidio" {
   metadata {
-    name = var.name
+    name      = var.name
     namespace = var.namespace
   }
   spec {
@@ -18,7 +18,7 @@ resource "kubernetes_deployment" "presidio" {
       }
       spec {
         container {
-          name = "presidio"
+          name  = "presidio"
           image = "mcr.microsoft.com/presidio-analyzer:2.2.358"
         }
       }
@@ -26,9 +26,9 @@ resource "kubernetes_deployment" "presidio" {
   }
 }
 
-resource "kubernetes_service" "presidio" {
+resource "kubernetes_service_v1" "presidio" {
   metadata {
-    name = var.name
+    name      = var.name
     namespace = var.namespace
   }
   spec {

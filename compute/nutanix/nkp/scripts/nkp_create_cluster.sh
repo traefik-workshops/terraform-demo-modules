@@ -57,7 +57,11 @@ if [ -n "${REGISTRY_MIRROR_URL:-}" ]; then
     
     ARGS+=(--bootstrap-cluster-image "$BOOTSTRAP_IMAGE")
     ARGS+=(--registry-mirror-url "$REGISTRY_MIRROR_URL")
-    ARGS+=(--skip-preflight-checks "Registry,NutanixCredentials,NutanixVMImageKubernetesVersion,NutanixStorageContainer")
+    ARGS+=(--skip-preflight-checks "Registry,NutanixCredentials")
+fi
+
+if [ -n "${KUBERNETES_VERSION:-}" ]; then
+    ARGS+=(--kubernetes-version "$KUBERNETES_VERSION")
 fi
 
 nkp "${ARGS[@]}"

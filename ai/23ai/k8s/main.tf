@@ -27,8 +27,8 @@ resource "kubernetes_stateful_set" "db" {
         }
 
         init_container {
-          name  = "init-permissions"
-          image = "busybox:1.36"
+          name    = "init-permissions"
+          image   = "busybox:1.36"
           command = ["sh", "-c", "mkdir -p /opt/oracle/oradata && chown -R 54321:54321 /opt/oracle/oradata"]
 
           security_context {
@@ -97,7 +97,7 @@ resource "kubernetes_stateful_set" "db" {
   }
 }
 
-resource "kubernetes_service" "db" {
+resource "kubernetes_service_v1" "db" {
   metadata {
     name      = var.name
     namespace = var.namespace
@@ -119,7 +119,7 @@ resource "kubernetes_service" "db" {
 
 resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
   metadata {
-    name = var.name
+    name      = var.name
     namespace = var.namespace
     annotations = {
       "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
@@ -134,7 +134,7 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
       host = "oracledb.${var.ingress_domain}"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {

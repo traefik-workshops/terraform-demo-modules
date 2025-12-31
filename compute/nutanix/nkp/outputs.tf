@@ -5,6 +5,6 @@ output "control_plane_fip" {
 
 output "kubeconfig" {
   description = "Kubeconfig content for the cluster"
-  value       = try(data.local_file.kubeconfig.content, "")
+  value       = data.local_file.kubeconfig.content
   sensitive   = true
 }

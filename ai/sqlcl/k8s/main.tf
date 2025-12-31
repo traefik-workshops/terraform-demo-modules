@@ -38,7 +38,7 @@ resource "kubernetes_deployment" "sqlcl" {
   }
 }
 
-resource "kubernetes_service" "sqlcl" {
+resource "kubernetes_service_v1" "sqlcl" {
   metadata {
     name      = var.name
     namespace = var.namespace
@@ -60,7 +60,7 @@ resource "kubernetes_service" "sqlcl" {
 
 resource "kubernetes_ingress_v1" "sqlcl-traefik" {
   metadata {
-    name = var.name
+    name      = var.name
     namespace = var.namespace
     annotations = {
       "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
@@ -75,7 +75,7 @@ resource "kubernetes_ingress_v1" "sqlcl-traefik" {
       host = "sqlcl.${var.ingress_domain}"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {

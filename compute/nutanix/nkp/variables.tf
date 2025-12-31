@@ -159,3 +159,21 @@ variable "update_kubeconfig" {
   type        = bool
   default     = true
 }
+
+variable "install_kommander" {
+  description = "Install Kommander on the cluster"
+  type        = bool
+  default     = false
+}
+
+variable "traefik_values" {
+  description = "Traefik Helm values (YAML string) for Kommander installation"
+  type        = string
+  default     = ""
+}
+
+variable "kubernetes_version" {
+  description = "Kubernetes Version"
+  type        = string
+  default     = ""
+}

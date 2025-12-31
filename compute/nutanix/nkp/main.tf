@@ -78,8 +78,7 @@ resource "null_resource" "nkp_create_cluster" {
     bastion_vm_ip       = local.bastion_vm_ip
     bastion_vm_username = var.bastion_vm_username
     bastion_vm_password = var.bastion_vm_password
-    # Trigger recreation if key variables change
-    cluster_name = var.cluster_name
+    cluster_name        = var.cluster_name
   }
 
   connection {
@@ -98,28 +97,29 @@ resource "null_resource" "nkp_create_cluster" {
   provisioner "file" {
     destination = "variables.sh"
     content     = <<-EOF
-      export PATH=$PATH:/usr/local/bin
-      export NO_COLOR=1
-      export CLUSTER_NAME=${var.cluster_name}
-      export CONTROL_PLANE_ENDPOINT_IP=${var.control_plane_vip}
-      export LB_IP_RANGE=${var.lb_ip_range}
-      export NKP_VERSION=${var.nkp_version}
-      export NUTANIX_ENDPOINT=${var.nutanix_endpoint}
-      export NUTANIX_MACHINE_TEMPLATE_IMAGE_NAME=${var.nkp_image_name}
-      export NUTANIX_PASSWORD='${var.nutanix_password}'
-      export NUTANIX_PORT=${var.nutanix_port}
-      export NUTANIX_PRISM_ELEMENT_CLUSTER_NAME=${var.nutanix_prism_element_cluster_name}
-      export NUTANIX_STORAGE_CONTAINER_NAME=${var.storage_container}
-      export NUTANIX_SUBNETS="${local.cluster_subnets_str}"
-      export NUTANIX_USER=${var.nutanix_username}
-      export REGISTRY_MIRROR_URL=${var.registry_mirror_url}
-
-      export CP_REPLICAS=${var.control_plane_replicas}
-      export CP_MEM=${var.control_plane_memory_mib}
-      export CP_CPU=${var.control_plane_vcpus}
-      export WORKER_REPLICAS=${var.worker_replicas}
-      export WORKER_MEM=${var.worker_memory_mib}
-      export WORKER_CPU=${var.worker_vcpus}
+    export NUTANIX_USER="${var.nutanix_username}"
+    export NUTANIX_PASSWORD="${var.nutanix_password}"
+    export NUTANIX_ENDPOINT="${var.nutanix_endpoint}"
+    export NUTANIX_PORT="${var.nutanix_port}"
+    export NUTANIX_INSECURE="${var.nutanix_insecure}"
+    export NUTANIX_PRISM_ELEMENT_CLUSTER_NAME="${var.nutanix_prism_element_cluster_name}"
+    export NUTANIX_SUBNETS="${join(",", var.cluster_subnets)}"
+    export NUTANIX_CLUSTER_NAME="${var.cluster_name}"
+    export CLUSTER_NAME="${var.cluster_name}"
+    export NUTANIX_MACHINE_TEMPLATE_IMAGE_NAME="${var.nkp_image_name}"
+    export NUTANIX_STORAGE_CONTAINER_NAME="${var.storage_container}"
+    export CONTROL_PLANE_ENDPOINT_IP="${var.control_plane_vip}"
+    export LB_IP_RANGE="${var.lb_ip_range}"
+    export NKP_VERSION="${var.nkp_version}"
+    export REGISTRY_MIRROR_URL="${var.registry_mirror_url}"
+    export BASTION_IMAGE_NAME="${var.bastion_image_name}"
+    export CP_REPLICAS="${var.control_plane_replicas}"
+    export WORKER_REPLICAS="${var.worker_replicas}"
+    export CP_MEM="${var.control_plane_memory_mib}"
+    export CP_CPU="${var.control_plane_vcpus}"
+    export WORKER_MEM="${var.worker_memory_mib}"
+    export WORKER_CPU="${var.worker_vcpus}"
+    export KUBERNETES_VERSION="${var.kubernetes_version}"
     EOF
   }
 
@@ -130,10 +130,11 @@ resource "null_resource" "nkp_create_cluster" {
   provisioner "remote-exec" {
     when = destroy
     inline = [
-      "source ~/variables.sh",
-      "nkp delete cluster -c $CLUSTER_NAME --self-managed || true"
+      "nkp delete cluster -c ${self.triggers.cluster_name} || true"
     ]
   }
+
+  depends_on = [nutanix_floating_ip_v2.bastion_fip]
 }
 
 # Fetch kubeconfig content from bastion and store in terraform state
@@ -238,4 +239,38 @@ resource "null_resource" "update_kubeconfig" {
   }
 
   depends_on = [terraform_data.kubeconfig, data.local_file.kubeconfig]
+}
+
+resource "null_resource" "install_kommander" {
+  count = var.install_kommander ? 1 : 0
+
+  triggers = {
+    cluster_name   = var.cluster_name
+    traefik_values = var.traefik_values
+  }
+
+  connection {
+    type     = "ssh"
+    user     = var.bastion_vm_username
+    password = var.bastion_vm_password
+    host     = local.bastion_vm_ip
+  }
+
+  provisioner "file" {
+    content = templatefile("${path.module}/templates/kommander.yaml.tpl", {
+      cluster_name      = var.cluster_name
+      control_plane_fip = local.control_plane_fip
+      traefik_values    = var.traefik_values
+    })
+    destination = "/home/${var.bastion_vm_username}/kommander.yaml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "source ~/variables.sh",
+      "nkp install kommander --installer-config ~/kommander.yaml --kubeconfig ~/${var.cluster_name}.conf --wait"
+    ]
+  }
+
+  depends_on = [null_resource.nkp_create_cluster, terraform_data.kubeconfig]
 }

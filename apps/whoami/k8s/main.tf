@@ -78,7 +78,7 @@ resource "kubernetes_deployment" "echo" {
 }
 
 # Create Kubernetes services for each app
-resource "kubernetes_service" "echo" {
+resource "kubernetes_service_v1" "echo" {
   for_each = var.apps
 
   metadata {
