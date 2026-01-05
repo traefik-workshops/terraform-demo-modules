@@ -15,11 +15,11 @@ locals {
 }
 
 resource "nutanix_virtual_machine" "bastion_vm" {
-  name                 = "${var.cluster_name}-nkp-bastion"
+  name                 = "${var.cluster_name}-bastion"
   cluster_uuid         = var.nutanix_cluster_id
-  num_vcpus_per_socket = 2
+  num_vcpus_per_socket = 8
   num_sockets          = 1
-  memory_size_mib      = 4 * 1024
+  memory_size_mib      = 16 * 1024
   disk_list {
     data_source_reference = {
       kind = "image"
@@ -75,10 +75,20 @@ resource "nutanix_floating_ip_v2" "control_plane_fip" {
 
 resource "null_resource" "nkp_create_cluster" {
   triggers = {
+    bastion_vm_id       = nutanix_virtual_machine.bastion_vm.metadata.uuid
     bastion_vm_ip       = local.bastion_vm_ip
     bastion_vm_username = var.bastion_vm_username
     bastion_vm_password = var.bastion_vm_password
     cluster_name        = var.cluster_name
+    control_plane_vip   = var.control_plane_vip
+    lb_ip_range         = var.lb_ip_range
+    create_script_hash  = filesha256("${path.module}/scripts/nkp_create_cluster.sh")
+    delete_script_hash  = filesha256("${path.module}/scripts/cleanup_nutanix_resources.py")
+    nutanix_endpoint    = var.nutanix_endpoint
+    nutanix_port        = var.nutanix_port
+    nutanix_username    = var.nutanix_username
+    nutanix_password    = var.nutanix_password
+    storage_container   = var.storage_container
   }
 
   connection {
@@ -127,10 +137,16 @@ resource "null_resource" "nkp_create_cluster" {
     script = "${path.module}/scripts/nkp_create_cluster.sh"
   }
 
+  provisioner "file" {
+    source      = "${path.module}/scripts/cleanup_nutanix_resources.py"
+    destination = "cleanup_nutanix_resources.py"
+  }
+
   provisioner "remote-exec" {
     when = destroy
     inline = [
-      "nkp delete cluster -c ${self.triggers.cluster_name} || true"
+      "pip3 install 'ntnx-vmm-py-client<4.2' 'ntnx-volumes-py-client<4.2' requests --quiet",
+      "NUTANIX_ENDPOINT=${self.triggers.nutanix_endpoint} NUTANIX_PORT=${self.triggers.nutanix_port} NUTANIX_USERNAME=${self.triggers.nutanix_username} NUTANIX_PASSWORD=${self.triggers.nutanix_password} python3 cleanup_nutanix_resources.py --vm-pattern '^(?!.*-bastion$).*${self.triggers.cluster_name}.*' --storage-container ${self.triggers.storage_container}"
     ]
   }
 
@@ -145,8 +161,8 @@ resource "terraform_data" "kubeconfig" {
     command = <<-EOF
       # Fetch kubeconfig from bastion
       sshpass -p '${var.bastion_vm_password}' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-        ${var.bastion_vm_username}@${local.bastion_vm_ip} "cat ~/${var.cluster_name}.conf" 2>/dev/null \
-        > /tmp/${var.cluster_name}-kubeconfig-orig.tmp || true
+        ${var.bastion_vm_username}@${local.bastion_vm_ip} "cat ~/${var.cluster_name}.conf" \
+        > /tmp/${var.cluster_name}-kubeconfig-orig.tmp
 
       # Replace internal VIP with external FIP and add insecure-skip-tls-verify
       if [ -f /tmp/${var.cluster_name}-kubeconfig-orig.tmp ]; then
@@ -231,7 +247,7 @@ resource "null_resource" "update_kubeconfig" {
           kubectl config rename-context "$ORIG_CONTEXT" "$CLUSTER_NAME" 2>/dev/null || true
         fi
 
-      ) 200>"$KUBECONFIG_DIR/.config.flock" 2>/dev/null || true
+      ) 200>"$KUBECONFIG_DIR/.config.flock"
 
       rm -f "$TEMP_FILE"
       echo "Kubeconfig updated. Context '$CLUSTER_NAME' added with FIP ${local.control_plane_fip}."
@@ -242,10 +258,10 @@ resource "null_resource" "update_kubeconfig" {
 }
 
 resource "null_resource" "install_kommander" {
-  count = var.install_kommander ? 1 : 0
+  count = var.traefik_values != null && var.traefik_values != "" ? 1 : 0
 
   triggers = {
-    cluster_name   = var.cluster_name
+    bastion_vm_id  = nutanix_virtual_machine.bastion_vm.metadata.uuid
     traefik_values = var.traefik_values
   }
 
@@ -256,21 +272,73 @@ resource "null_resource" "install_kommander" {
     host     = local.bastion_vm_ip
   }
 
-  provisioner "file" {
-    content = templatefile("${path.module}/templates/kommander.yaml.tpl", {
-      cluster_name      = var.cluster_name
-      control_plane_fip = local.control_plane_fip
-      traefik_values    = var.traefik_values
-    })
-    destination = "/home/${var.bastion_vm_username}/kommander.yaml"
-  }
-
   provisioner "remote-exec" {
     inline = [
-      "source ~/variables.sh",
-      "nkp install kommander --installer-config ~/kommander.yaml --kubeconfig ~/${var.cluster_name}.conf --wait"
+      "cat <<EOF > kommander.yaml",
+      "apiVersion: config.kommander.mesosphere.io/v1alpha1",
+      "kind: Installation",
+      "apps:",
+      "  ai-navigator-app:",
+      "    enabled: true",
+      "  dex:",
+      "    enabled: true",
+      "  dex-k8s-authenticator:",
+      "    enabled: true",
+      "  external-secrets:",
+      "    enabled: true",
+      "  gatekeeper:",
+      "    enabled: true",
+      "  git-operator:",
+      "    enabled: true",
+      "  grafana-logging:",
+      "    enabled: true",
+      "  grafana-loki:",
+      "    enabled: true",
+      "  kommander:",
+      "    enabled: true",
+      "  kommander-ui:",
+      "    enabled: true",
+      "  kube-prometheus-stack:",
+      "    enabled: true",
+      "  kubefed:",
+      "    enabled: true",
+      "  kubernetes-dashboard:",
+      "    enabled: true",
+      "  kubetunnel:",
+      "    enabled: true",
+      "  logging-operator:",
+      "    enabled: true",
+      "  nkp-insights-management:",
+      "    enabled: true",
+      "  prometheus-adapter:",
+      "    enabled: true",
+      "  reloader:",
+      "    enabled: true",
+      "  rook-ceph:",
+      "    enabled: true",
+      "  rook-ceph-cluster:",
+      "    enabled: true",
+      "  traefik:",
+      "    enabled: true",
+      "    values: |",
+      "$(echo '${var.traefik_values}' | sed 's/^/      /')",
+      "  traefik-forward-auth-mgmt:",
+      "    enabled: true",
+      "  velero:",
+      "    enabled: true",
+      "ageEncryptionSecretName: sops-age",
+      "clusterHostname: \"\"",
+      "EOF",
+
+      # Install/Update Kommander
+      "echo 'Installing/Updating Kommander...'",
+      "nkp install kommander --installer-config kommander.yaml --kubeconfig ~/${var.cluster_name}.conf --wait"
     ]
   }
 
-  depends_on = [null_resource.nkp_create_cluster, terraform_data.kubeconfig]
+  # Ensure cluster is created and kubeconfig is fetched before installing Kommander
+  depends_on = [
+    null_resource.nkp_create_cluster,
+    null_resource.update_kubeconfig
+  ]
 }

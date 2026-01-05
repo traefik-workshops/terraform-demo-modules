@@ -114,7 +114,7 @@ variable "bastion_vm_username" {
 variable "bastion_vm_password" {
   description = "Password for the Bastion VM"
   type        = string
-  sensitive   = true
+  sensitive   = false
   default     = "topsecretpassword"
 }
 
@@ -158,12 +158,6 @@ variable "update_kubeconfig" {
   description = "Update local kubeconfig with cluster context"
   type        = bool
   default     = true
-}
-
-variable "install_kommander" {
-  description = "Install Kommander on the cluster"
-  type        = bool
-  default     = false
 }
 
 variable "traefik_values" {

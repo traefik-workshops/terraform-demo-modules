@@ -64,12 +64,12 @@ locals {
     ports = merge(
       {
         web = {
-          port     = 80
+          port     = var.entry_points.web.port
           expose   = { default = true }
           protocol = "TCP"
         }
         websecure = {
-          port     = 443
+          port     = var.entry_points.websecure.port
           expose   = { default = true }
           protocol = "TCP"
           tls = var.cloudflare_dns.enabled ? {
@@ -81,7 +81,7 @@ locals {
           } : null
         }
         traefik = {
-          port   = 8080
+          port   = var.entry_points.traefik.port
           expose = { default = true }
         }
       },
