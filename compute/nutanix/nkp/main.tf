@@ -11,7 +11,7 @@ locals {
     registry_mirror_full = can(regex("^http", var.registry_mirror_url)) ? var.registry_mirror_url : "https://${var.registry_mirror_url}"
   })
 
-  control_plane_fip = nutanix_floating_ip_v2.control_plane_fip.floating_ip[0].ipv4[0].value
+  control_plane_fip = var.control_plane_fip
 }
 
 resource "nutanix_virtual_machine" "bastion_vm" {
@@ -55,30 +55,12 @@ resource "nutanix_floating_ip_v2" "bastion_fip" {
   ]
 }
 
-resource "nutanix_floating_ip_v2" "control_plane_fip" {
-  name                      = "${var.cluster_name}-control-plane-fip"
-  external_subnet_reference = var.external_subnet_uuid
-
-  association {
-    private_ip_association {
-      vpc_reference = var.vpc_uuid
-      private_ip {
-        ipv4 {
-          value = var.control_plane_vip
-        }
-      }
-    }
-  }
-
-  depends_on = [null_resource.nkp_create_cluster]
-}
-
 resource "null_resource" "nkp_create_cluster" {
   triggers = {
     bastion_vm_id       = nutanix_virtual_machine.bastion_vm.metadata.uuid
     bastion_vm_ip       = local.bastion_vm_ip
     bastion_vm_username = var.bastion_vm_username
-    bastion_vm_password = var.bastion_vm_password
+    bastion_vm_password = nonsensitive(var.bastion_vm_password)
     cluster_name        = var.cluster_name
     control_plane_vip   = var.control_plane_vip
     lb_ip_range         = var.lb_ip_range
@@ -87,7 +69,7 @@ resource "null_resource" "nkp_create_cluster" {
     nutanix_endpoint    = var.nutanix_endpoint
     nutanix_port        = var.nutanix_port
     nutanix_username    = var.nutanix_username
-    nutanix_password    = var.nutanix_password
+    nutanix_password    = nonsensitive(var.nutanix_password)
     storage_container   = var.storage_container
   }
 
@@ -108,7 +90,7 @@ resource "null_resource" "nkp_create_cluster" {
     destination = "variables.sh"
     content     = <<-EOF
     export NUTANIX_USER="${var.nutanix_username}"
-    export NUTANIX_PASSWORD="${var.nutanix_password}"
+    export NUTANIX_PASSWORD="${nonsensitive(var.nutanix_password)}"
     export NUTANIX_ENDPOINT="${var.nutanix_endpoint}"
     export NUTANIX_PORT="${var.nutanix_port}"
     export NUTANIX_INSECURE="${var.nutanix_insecure}"
@@ -145,200 +127,10 @@ resource "null_resource" "nkp_create_cluster" {
   provisioner "remote-exec" {
     when = destroy
     inline = [
-      "pip3 install 'ntnx-vmm-py-client<4.2' 'ntnx-volumes-py-client<4.2' requests --quiet",
-      "NUTANIX_ENDPOINT=${self.triggers.nutanix_endpoint} NUTANIX_PORT=${self.triggers.nutanix_port} NUTANIX_USERNAME=${self.triggers.nutanix_username} NUTANIX_PASSWORD=${self.triggers.nutanix_password} python3 cleanup_nutanix_resources.py --vm-pattern '^(?!.*-bastion$).*${self.triggers.cluster_name}.*' --storage-container ${self.triggers.storage_container}"
+      "python3 -m pip install 'ntnx-vmm-py-client<4.2' 'ntnx-volumes-py-client<4.2' requests --quiet --break-system-packages",
+      "NUTANIX_ENDPOINT=${self.triggers.nutanix_endpoint} NUTANIX_PORT=${self.triggers.nutanix_port} NUTANIX_USERNAME=${self.triggers.nutanix_username} NUTANIX_PASSWORD=${nonsensitive(self.triggers.nutanix_password)} python3 cleanup_nutanix_resources.py --vm-pattern '^(?!.*-bastion$).*${self.triggers.cluster_name}.*' --storage-container ${self.triggers.storage_container}"
     ]
   }
 
   depends_on = [nutanix_floating_ip_v2.bastion_fip]
-}
-
-# Fetch kubeconfig content from bastion and store in terraform state
-resource "terraform_data" "kubeconfig" {
-  triggers_replace = [null_resource.nkp_create_cluster.id, nutanix_floating_ip_v2.control_plane_fip.id]
-
-  provisioner "local-exec" {
-    command = <<-EOF
-      # Fetch kubeconfig from bastion
-      sshpass -p '${var.bastion_vm_password}' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-        ${var.bastion_vm_username}@${local.bastion_vm_ip} "cat ~/${var.cluster_name}.conf" \
-        > /tmp/${var.cluster_name}-kubeconfig-orig.tmp
-
-      # Replace internal VIP with external FIP and add insecure-skip-tls-verify
-      if [ -f /tmp/${var.cluster_name}-kubeconfig-orig.tmp ]; then
-        sed -e 's/${var.control_plane_vip}/${local.control_plane_fip}/g' \
-            -e 's/certificate-authority-data:.*/insecure-skip-tls-verify: true/' \
-          /tmp/${var.cluster_name}-kubeconfig-orig.tmp \
-          > /tmp/${var.cluster_name}-kubeconfig.tmp
-        rm -f /tmp/${var.cluster_name}-kubeconfig-orig.tmp
-      fi
-    EOF
-  }
-
-  input = {
-    cluster_name      = var.cluster_name
-    bastion_ip        = local.bastion_vm_ip
-    control_plane_fip = local.control_plane_fip
-  }
-
-  depends_on = [null_resource.nkp_create_cluster, nutanix_floating_ip_v2.control_plane_fip]
-}
-
-# Read the kubeconfig content (with FIP address)
-data "local_file" "kubeconfig" {
-  filename   = "/tmp/${var.cluster_name}-kubeconfig.tmp"
-  depends_on = [terraform_data.kubeconfig]
-}
-
-# Update local kubeconfig with cluster context
-resource "null_resource" "update_kubeconfig" {
-  count = var.update_kubeconfig ? 1 : 0
-
-  triggers = {
-    kubeconfig_fetched = terraform_data.kubeconfig.id
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOF
-      set -e
-      KUBECONFIG_CONTENT='${try(data.local_file.kubeconfig.content, "")}'
-      CLUSTER_NAME="${var.cluster_name}"
-      KUBECONFIG_DIR="$HOME/.kube"
-      KUBECONFIG_FILE="$KUBECONFIG_DIR/config"
-      LOCK_FILE="$KUBECONFIG_DIR/.config.lock"
-      TEMP_FILE="/tmp/$${CLUSTER_NAME}.conf"
-
-      if [ -z "$KUBECONFIG_CONTENT" ]; then
-        echo "Kubeconfig content not available for $CLUSTER_NAME"
-        exit 0
-      fi
-
-      # Ensure .kube directory exists
-      mkdir -p "$KUBECONFIG_DIR"
-
-      # Write cluster kubeconfig to temp file
-      echo "$KUBECONFIG_CONTENT" > "$TEMP_FILE"
-
-      # Use flock for atomic merge (macOS compatible with perl fallback)
-      (
-        # Try flock, fall back to a simple lock file approach for macOS
-        if command -v flock >/dev/null 2>&1; then
-          flock -x 200
-        else
-          # Simple spinlock for macOS
-          while ! mkdir "$LOCK_FILE" 2>/dev/null; do
-            sleep 0.1
-          done
-          trap "rmdir '$LOCK_FILE' 2>/dev/null" EXIT
-        fi
-
-        # Merge kubeconfigs
-        if [ -f "$KUBECONFIG_FILE" ]; then
-          KUBECONFIG="$TEMP_FILE:$KUBECONFIG_FILE" kubectl config view --flatten > "$KUBECONFIG_FILE.new"
-          mv "$KUBECONFIG_FILE.new" "$KUBECONFIG_FILE"
-        else
-          cp "$TEMP_FILE" "$KUBECONFIG_FILE"
-        fi
-        chmod 600 "$KUBECONFIG_FILE"
-
-        # Get original context name and rename to cluster name
-        ORIG_CONTEXT=$(kubectl config current-context --kubeconfig="$TEMP_FILE" 2>/dev/null || echo "")
-        if [ -n "$ORIG_CONTEXT" ] && [ "$ORIG_CONTEXT" != "$CLUSTER_NAME" ]; then
-          kubectl config rename-context "$ORIG_CONTEXT" "$CLUSTER_NAME" 2>/dev/null || true
-        fi
-
-      ) 200>"$KUBECONFIG_DIR/.config.flock"
-
-      rm -f "$TEMP_FILE"
-      echo "Kubeconfig updated. Context '$CLUSTER_NAME' added with FIP ${local.control_plane_fip}."
-    EOF
-  }
-
-  depends_on = [terraform_data.kubeconfig, data.local_file.kubeconfig]
-}
-
-resource "null_resource" "install_kommander" {
-  count = var.traefik_values != null && var.traefik_values != "" ? 1 : 0
-
-  triggers = {
-    bastion_vm_id  = nutanix_virtual_machine.bastion_vm.metadata.uuid
-    traefik_values = var.traefik_values
-  }
-
-  connection {
-    type     = "ssh"
-    user     = var.bastion_vm_username
-    password = var.bastion_vm_password
-    host     = local.bastion_vm_ip
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "cat <<EOF > kommander.yaml",
-      "apiVersion: config.kommander.mesosphere.io/v1alpha1",
-      "kind: Installation",
-      "apps:",
-      "  ai-navigator-app:",
-      "    enabled: true",
-      "  dex:",
-      "    enabled: true",
-      "  dex-k8s-authenticator:",
-      "    enabled: true",
-      "  external-secrets:",
-      "    enabled: true",
-      "  gatekeeper:",
-      "    enabled: true",
-      "  git-operator:",
-      "    enabled: true",
-      "  grafana-logging:",
-      "    enabled: true",
-      "  grafana-loki:",
-      "    enabled: true",
-      "  kommander:",
-      "    enabled: true",
-      "  kommander-ui:",
-      "    enabled: true",
-      "  kube-prometheus-stack:",
-      "    enabled: true",
-      "  kubefed:",
-      "    enabled: true",
-      "  kubernetes-dashboard:",
-      "    enabled: true",
-      "  kubetunnel:",
-      "    enabled: true",
-      "  logging-operator:",
-      "    enabled: true",
-      "  nkp-insights-management:",
-      "    enabled: true",
-      "  prometheus-adapter:",
-      "    enabled: true",
-      "  reloader:",
-      "    enabled: true",
-      "  rook-ceph:",
-      "    enabled: true",
-      "  rook-ceph-cluster:",
-      "    enabled: true",
-      "  traefik:",
-      "    enabled: true",
-      "    values: |",
-      "$(echo '${var.traefik_values}' | sed 's/^/      /')",
-      "  traefik-forward-auth-mgmt:",
-      "    enabled: true",
-      "  velero:",
-      "    enabled: true",
-      "ageEncryptionSecretName: sops-age",
-      "clusterHostname: \"\"",
-      "EOF",
-
-      # Install/Update Kommander
-      "echo 'Installing/Updating Kommander...'",
-      "nkp install kommander --installer-config kommander.yaml --kubeconfig ~/${var.cluster_name}.conf --wait"
-    ]
-  }
-
-  # Ensure cluster is created and kubeconfig is fetched before installing Kommander
-  depends_on = [
-    null_resource.nkp_create_cluster,
-    null_resource.update_kubeconfig
-  ]
 }

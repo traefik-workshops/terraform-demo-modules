@@ -10,6 +10,8 @@ chpasswd:
   - name: ${bastion_vm_username}
     password: ${bastion_vm_password} # Recommended to change the password or update the script to use SSH keys
     type: text
+packages:
+- python3-pip
 bootcmd:
 - mkdir -p /etc/docker
 write_files:

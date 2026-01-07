@@ -4,6 +4,10 @@ resource "nutanix_vpc_v2" "vpc" {
   external_subnets {
     subnet_reference = var.external_subnet_uuid
   }
+
+  lifecycle {
+    ignore_changes = [external_subnets[0].active_gateway_node]
+  }
 }
 
 resource "nutanix_subnet_v2" "subnets" {

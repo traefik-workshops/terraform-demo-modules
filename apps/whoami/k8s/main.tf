@@ -1,5 +1,5 @@
 # Create Kubernetes deployments for each app
-resource "kubernetes_deployment" "echo" {
+resource "kubernetes_deployment_v1" "echo" {
   for_each = var.apps
 
   metadata {
@@ -106,5 +106,5 @@ resource "kubernetes_service_v1" "echo" {
     }
   }
 
-  depends_on = [kubernetes_deployment.echo]
+  depends_on = [kubernetes_deployment_v1.echo]
 }

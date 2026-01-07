@@ -95,7 +95,7 @@ data "external" "fetch_tokens" {
   ]
 }
 
-resource "kubernetes_secret" "user_tokens" {
+resource "kubernetes_secret_v1" "user_tokens" {
   metadata {
     name      = "traefik-user-tokens"
     namespace = var.namespace

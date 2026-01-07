@@ -8,7 +8,7 @@ output "users" {
       groups       = user.groups
       claims       = user.claims
       password     = user.password
-      access_token = lookup(kubernetes_secret.user_tokens.data, user.username, "")
+      access_token = lookup(kubernetes_secret_v1.user_tokens.data, user.username, "")
     }
   ]
 }
@@ -23,7 +23,7 @@ output "users_map" {
       groups       = user.groups
       claims       = user.claims
       password     = user.password
-      access_token = lookup(kubernetes_secret.user_tokens.data, user.username, "")
+      access_token = lookup(kubernetes_secret_v1.user_tokens.data, user.username, "")
     }
   }
 }

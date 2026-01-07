@@ -1,5 +1,40 @@
 #cloud-config
+packages:
+  - keepalived
+  - procps-ng
+
 write_files:
+  - path: /etc/keepalived/keepalived.conf
+    content: |
+      vrrp_script chk_traefik {
+          script "pkill -0 traefik-hub"
+          interval 2
+          weight 2
+          fall 2
+          rise 2
+          user root
+      }
+
+      vrrp_instance VI_1 {
+          state BACKUP
+          interface ${network_interface}
+          virtual_router_id 51
+          priority ${keepalived_priority}
+          advert_int 1
+          authentication {
+              auth_type PASS
+              auth_pass topsecre
+          }
+          virtual_ipaddress {
+              ${vip}
+          }
+          track_script {
+              chk_traefik
+          }
+      }
+    owner: root:root
+    permissions: "0644"
+
   - path: /etc/traefik-hub/cli-args
     content: |
 %{ for arg in cli_arguments ~}
@@ -18,6 +53,13 @@ write_files:
   - path: /etc/traefik-hub/dynamic/dynamic.yaml
     content: |
       ${indent(6, file_provider_config)}
+    owner: traefik-hub:traefik-hub
+    permissions: "0640"
+%{ endif ~}
+%{ if dashboard_config != "" ~}
+  - path: /etc/traefik-hub/dynamic/dashboard.yaml
+    content: |
+      ${indent(6, dashboard_config)}
     owner: traefik-hub:traefik-hub
     permissions: "0640"
 %{ endif ~}
@@ -50,4 +92,5 @@ runcmd:
     EOF
 
   - systemctl daemon-reload
+  - systemctl enable --now keepalived
   - systemctl restart traefik-hub

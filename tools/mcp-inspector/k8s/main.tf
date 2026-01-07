@@ -1,4 +1,4 @@
-resource "kubernetes_deployment" "mcp_inspector" {
+resource "kubernetes_deployment_v1" "mcp_inspector" {
   metadata {
     name      = var.name
     namespace = var.namespace

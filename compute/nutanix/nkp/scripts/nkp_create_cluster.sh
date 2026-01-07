@@ -71,7 +71,6 @@ echo "Nodes are ready."
 echo "Moving cluster to self-managed..."
 nkp create capi-components --kubeconfig ${CLUSTER_NAME}.conf
 nkp move capi-resources --to-kubeconfig ${CLUSTER_NAME}.conf
-nkp delete bootstrap
 echo "Cluster moved to self-managed."
 
 # Wait for the dashboard deployment to be created

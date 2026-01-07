@@ -1,4 +1,4 @@
-resource "kubernetes_deployment" "presidio" {
+resource "kubernetes_deployment_v1" "presidio" {
   metadata {
     name      = var.name
     namespace = var.namespace
@@ -42,5 +42,5 @@ resource "kubernetes_service_v1" "presidio" {
     }
   }
 
-  depends_on = [kubernetes_deployment.presidio]
+  depends_on = [kubernetes_deployment_v1.presidio]
 }

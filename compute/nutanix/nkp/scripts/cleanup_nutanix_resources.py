@@ -4,6 +4,7 @@ import re
 import argparse
 import urllib3
 import logging
+import time
 
 # Import Nutanix SDKs
 import ntnx_vmm_py_client
@@ -161,46 +162,59 @@ def cleanup_vms(dry_run, pattern):
             logger.info(f"[DRY RUN] Would power off and delete VM: {vm.name}")
             continue
 
-        try:
-            # Fetch VM to get fresh ETag and current state
-            single_vm_resp = api.get_vm_by_id(vm.ext_id)
-            vm_data = single_vm_resp.data
-            etag = None
-            if hasattr(vm_data, '_reserved') and vm_data._reserved:
-                etag = vm_data._reserved.get('ETag')
-            
-            # Force power off first if VM is ON
-            power_state = vm_data.power_state if hasattr(vm_data, 'power_state') else None
-            if power_state and str(power_state).upper() != 'OFF':
-                logger.info(f"  Powering off VM (current state: {power_state})...")
-                try:
-                    if etag:
-                        client.add_default_header('If-Match', etag)
-                    api.power_off_vm(vm.ext_id)
-                    logger.info(f"  Power off initiated, waiting 5s...")
-                    import time
-                    time.sleep(5)
-                    # Refresh ETag after power off
-                    single_vm_resp = api.get_vm_by_id(vm.ext_id)
-                    vm_data = single_vm_resp.data
-                    if hasattr(vm_data, '_reserved') and vm_data._reserved:
-                        etag = vm_data._reserved.get('ETag')
-                except Exception as power_err:
-                    logger.warning(f"  Power off failed: {power_err}")
-            
-            if etag:
-                client.add_default_header('If-Match', etag)
-            
-            api.delete_vm_by_id(vm.ext_id)
-            logger.info(f"Successfully initiated deletion for {vm.name}")
-            
-            # Remove header for next iteration
-            if hasattr(client, '_ApiClient__default_headers') and 'If-Match' in client._ApiClient__default_headers:
-                del client._ApiClient__default_headers['If-Match']
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                # Fetch VM to get fresh ETag and current state
+                single_vm_resp = api.get_vm_by_id(vm.ext_id)
+                vm_data = single_vm_resp.data
+                etag = None
+                if hasattr(vm_data, '_reserved') and vm_data._reserved:
+                    etag = vm_data._reserved.get('ETag')
+                
+                # Force power off first if VM is ON
+                power_state = vm_data.power_state if hasattr(vm_data, 'power_state') else None
+                if power_state and str(power_state).upper() != 'OFF':
+                    logger.info(f"  Powering off VM (current state: {power_state})...")
+                    try:
+                        if etag:
+                            client.add_default_header('If-Match', etag)
+                        api.power_off_vm(vm.ext_id)
+                        logger.info(f"  Power off initiated, waiting 10s...")
+                        time.sleep(10)
+                        # Refresh ETag after power off
+                        single_vm_resp = api.get_vm_by_id(vm.ext_id)
+                        vm_data = single_vm_resp.data
+                        if hasattr(vm_data, '_reserved') and vm_data._reserved:
+                            etag = vm_data._reserved.get('ETag')
+                    except Exception as power_err:
+                        logger.warning(f"  Power off failed: {power_err}")
+                
+                if etag:
+                    client.add_default_header('If-Match', etag)
+                
+                api.delete_vm_by_id(vm.ext_id)
+                logger.info(f"Successfully initiated deletion for {vm.name}")
+                
+                # Remove header for next iteration
+                if hasattr(client, '_ApiClient__default_headers') and 'If-Match' in client._ApiClient__default_headers:
+                    del client._ApiClient__default_headers['If-Match']
+                
+                # Success - break retry loop
+                break
 
-        except Exception as e:
-            logger.error(f"Failed to delete VM {vm.name}: {e}")
-            sys.exit(1)
+            except Exception as e:
+                # Cleanup headers
+                if hasattr(client, '_ApiClient__default_headers') and 'If-Match' in client._ApiClient__default_headers:
+                    del client._ApiClient__default_headers['If-Match']
+
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 5
+                    logger.warning(f"Failed to delete VM {vm.name} (Attempt {attempt+1}/{max_retries}): {e}. Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"Failed to delete VM {vm.name} after {max_retries} attempts: {e}")
+                    sys.exit(1)
 
 def get_storage_container_id(container_name):
     """Look up storage container ID by name using v2 API"""

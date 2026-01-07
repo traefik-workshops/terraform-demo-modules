@@ -61,7 +61,12 @@ module "config" {
   dashboard_match_rule  = var.dashboard_match_rule
 
   # Entry Points (for Nutanix VM static config)
-  entry_points = var.entry_points
+  entry_points = {
+    for k, v in var.entry_points : k => {
+      address = v.address
+      port    = tonumber(replace(v.address, ":", ""))
+    }
+  }
 }
 
 # =============================================================================

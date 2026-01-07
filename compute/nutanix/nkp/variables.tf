@@ -38,6 +38,12 @@ variable "control_plane_vip" {
   type        = string
 }
 
+variable "control_plane_fip" {
+  description = "Control Plane FIP"
+  type        = string
+  default     = ""
+}
+
 variable "lb_ip_range" {
   description = "Load Balancer IP Range"
   type        = string

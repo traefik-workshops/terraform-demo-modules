@@ -60,3 +60,21 @@ variable "metrics_port" {
   type        = number
   default     = 8082
 }
+
+variable "vip" {
+  description = "Virtual IP for Keepalived"
+  type        = string
+  default     = ""
+}
+
+variable "keepalived_priority" {
+  description = "Priority for Keepalived VRRP (higher wins)"
+  type        = number
+  default     = 100
+}
+
+variable "network_interface" {
+  description = "Network interface name for Keepalived VRRP"
+  type        = string
+  default     = "ens3"
+}

@@ -5,13 +5,36 @@
 # =============================================================================
 
 locals {
-  cli_arguments = module.config.extracted_cli_args_cloud
+  # Base CLI arguments from shared module
+  base_cli_arguments = module.config.extracted_cli_args_cloud
+
+  # Append directory provider args for dynamic configuration splitting
+  cli_arguments = concat(local.base_cli_arguments, [
+    "--providers.file.directory=/etc/traefik-hub/dynamic",
+    "--providers.file.watch=true"
+  ])
 
   # Extract ports from entry points (e.g. ":80" -> "80")
   ports_to_open = [
     for ep in module.config.entry_points :
     replace(ep.address, ":", "")
   ]
+
+  # Generate Dashboard Configuration if enabled
+  dashboard_config = var.enable_dashboard ? yamlencode({
+    http = {
+      routers = {
+        dashboard = {
+          rule        = var.dashboard_match_rule != "" ? var.dashboard_match_rule : "Host(`dashboard.localhost`)"
+          service     = "api@internal"
+          entryPoints = var.dashboard_entrypoints
+          tls = var.cloudflare_dns.enabled ? {
+            certResolver = "cf"
+          } : {}
+        }
+      }
+    }
+  }) : ""
 }
 
 module "traefik_vm" {
@@ -38,11 +61,19 @@ module "traefik_vm" {
     # File provider config (user-provided)
     file_provider_config = var.file_provider_config
 
+    # Dashboard Config (auto-generated)
+    dashboard_config = local.dashboard_config
+
     # Dynamic ports for firewall
     ports_to_open = local.ports_to_open
 
     # Cloudflare DNS flag for conditional ACME setup
     cloudflare_dns_enabled = module.config.cloudflare_dns.enabled
+
+    # Keepalived config
+    vip                 = var.vip
+    keepalived_priority = var.keepalived_priority
+    network_interface   = var.network_interface
   })
 }
 

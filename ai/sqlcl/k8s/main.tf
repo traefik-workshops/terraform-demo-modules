@@ -1,4 +1,4 @@
-resource "kubernetes_deployment" "sqlcl" {
+resource "kubernetes_deployment_v1" "sqlcl" {
   metadata {
     name      = var.name
     namespace = var.namespace
