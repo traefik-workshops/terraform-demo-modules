@@ -16,5 +16,13 @@ resource "nutanix_virtual_machine" "vm" {
     }
   }
 
+  dynamic "categories" {
+    for_each = var.categories
+    content {
+      name  = categories.key
+      value = categories.value
+    }
+  }
+
   guest_customization_cloud_init_user_data = base64encode(var.cloud_init_user_data)
 }

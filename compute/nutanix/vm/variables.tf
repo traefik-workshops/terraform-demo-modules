@@ -41,3 +41,9 @@ variable "cloud_init_user_data" {
   type        = string
   default     = ""
 }
+
+variable "categories" {
+  description = "Map of category key-value pairs to assign to the VM"
+  type        = map(string)
+  default     = {}
+}
