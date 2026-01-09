@@ -1,8 +1,8 @@
 provider "helm" {
   kubernetes = {
-    host                    = local.cluster_server
-    cluster_ca_certificate  = local.cluster_ca_cert
-    token                   = local.token
+    host                   = local.cluster_server
+    cluster_ca_certificate = local.cluster_ca_cert
+    token                  = local.token
   }
 }
 
@@ -12,7 +12,7 @@ resource "helm_release" "metrics_server" {
   chart      = "metrics-server"
   version    = "3.12.2"
 
-  namespace  = "kube-system"
+  namespace = "kube-system"
 
   depends_on = [oci_containerengine_node_pool.traefik_demo]
 }

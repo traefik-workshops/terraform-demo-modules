@@ -54,7 +54,7 @@ variable "mcp_connections" {
     auth_type = optional(string, "bearer")
     key       = optional(string, "")
     config    = optional(map(string), {})
-    info      = object({
+    info = object({
       id          = string
       name        = string
       description = string

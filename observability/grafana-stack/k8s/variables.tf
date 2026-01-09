@@ -48,6 +48,6 @@ variable "dashboards" {
   type = object({
     aigateway  = bool
     mcpgateway = bool
-    apim       = bool 
+    apim       = bool
   })
 }

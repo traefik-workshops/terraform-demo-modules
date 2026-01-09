@@ -1,5 +1,5 @@
 resource "k3d_cluster" "traefik_demo" {
-  name    = var.cluster_name
+  name = var.cluster_name
   # See https://k3d.io/v5.8.3/usage/configfile/#config-options
   k3d_config = <<EOF
 apiVersion: k3d.io/v1alpha5
@@ -9,32 +9,32 @@ metadata:
 servers: ${var.control_plane_nodes.count}
 agents: ${length(var.worker_nodes) == 0 ? 0 : sum([for node in var.worker_nodes : node.count])}
 ports:
-%{ for port in var.ports ~}
+%{for port in var.ports~}
   - port: ${port.to}:${port.from}
     nodeFilters:
       - loadbalancer
-%{ endfor ~}
+%{endfor~}
 options:
   k3s:
     extraArgs:
       - arg: "--disable=traefik"
         nodeFilters:
           - "server:*"
-%{ for node_idx, node in var.worker_nodes ~}
-%{ if node.taint != "" ~}
-%{ for instance in range(0, node.count) ~}
+%{for node_idx, node in var.worker_nodes~}
+%{if node.taint != ""~}
+%{for instance in range(0, node.count)~}
       - arg: "--node-taint=node=${node.taint}:NoSchedule"
         nodeFilters:
-          - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}
-%{ endfor ~}
-%{ endif ~}
-%{ if node.label != "" ~}
-%{ for instance in range(0, node.count) ~}
+          - agent:${node_idx > 0 ? sum([for i in range(0, node_idx) : var.worker_nodes[i].count]) + instance : instance}
+%{endfor~}
+%{endif~}
+%{if node.label != ""~}
+%{for instance in range(0, node.count)~}
       - arg: "--node-label=node=${node.label}"
         nodeFilters:
-          - agent:${node_idx > 0 ? sum([for i in range(0, node_idx): var.worker_nodes[i].count]) + instance : instance}
-%{ endfor ~}
-%{ endif ~}
-%{ endfor ~}
+          - agent:${node_idx > 0 ? sum([for i in range(0, node_idx) : var.worker_nodes[i].count]) + instance : instance}
+%{endfor~}
+%{endif~}
+%{endfor~}
 EOF
 }

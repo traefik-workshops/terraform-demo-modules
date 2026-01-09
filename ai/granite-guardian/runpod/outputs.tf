@@ -4,7 +4,7 @@ output "pods" {
   value = { for k, v in module.granite.pods : k => {
     id   = v.id
     host = v.host
-  }}
+  } }
 
-  depends_on = [ module.granite ]
+  depends_on = [module.granite]
 }

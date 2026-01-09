@@ -12,7 +12,7 @@ variable "namespace" {
 variable "prometheus" {
   type = object({
     enabled = bool
-    url     = object({
+    url = object({
       override  = string
       service   = string
       port      = number
@@ -25,7 +25,7 @@ variable "prometheus" {
 variable "tempo" {
   type = object({
     enabled = bool
-    url     = object({
+    url = object({
       override  = string
       service   = string
       port      = number
@@ -38,7 +38,7 @@ variable "tempo" {
 variable "loki" {
   type = object({
     enabled = bool
-    url     = object({
+    url = object({
       override  = string
       service   = string
       port      = number
@@ -87,6 +87,6 @@ variable "dashboards" {
   type = object({
     aigateway  = bool
     mcpgateway = bool
-    apim       = bool 
+    apim       = bool
   })
 }

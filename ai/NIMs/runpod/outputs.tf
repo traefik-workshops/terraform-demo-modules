@@ -4,7 +4,7 @@ output "pods" {
   value = { for k, v in module.nims.pods : k => {
     id   = v.id
     host = v.host
-  }}
+  } }
 
-  depends_on = [ module.nims ]
+  depends_on = [module.nims]
 }

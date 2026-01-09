@@ -29,8 +29,8 @@ module "eks" {
 }
 
 module "eks_node_groups" {
-  source   = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
-  version  = "~> 20.0"
+  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+  version = "~> 20.0"
 
   name            = "${var.cluster_name}-ng"
   cluster_name    = module.eks.cluster_name

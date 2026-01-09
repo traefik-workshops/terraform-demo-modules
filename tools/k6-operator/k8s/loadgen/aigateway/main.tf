@@ -4,7 +4,7 @@ locals {
     url    = api.url
     models = api.models
   }])
-  
+
   # Encode users configuration
   users_json = jsonencode([for user in var.users : {
     username = user.username

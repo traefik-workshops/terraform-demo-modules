@@ -5,7 +5,7 @@ variable "name" {
 }
 
 variable "namespace" {
-  type    = string
+  type        = string
   description = "The namespace of the oracle-db StatefulSet and Service"
 }
 
@@ -41,8 +41,8 @@ variable "oracle_pwd" {
 }
 
 variable "oracle_characterset" {
-  type    = string
-  default = "AL32UTF8"
+  type        = string
+  default     = "AL32UTF8"
   description = "Oracle database character set."
 }
 

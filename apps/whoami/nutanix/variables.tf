@@ -41,3 +41,21 @@ variable "vm_memory_mib" {
   type        = number
   default     = 1024
 }
+
+variable "service_name" {
+  description = "Service name for Nutanix Prism Central discovery (TraefikServiceName category)"
+  type        = string
+  default     = "whoami"
+}
+
+variable "service_port" {
+  description = "Service port for Nutanix Prism Central discovery (TraefikServicePort category)"
+  type        = number
+  default     = 8080
+}
+
+variable "load_balancer_strategy" {
+  description = "Load balancer strategy for Nutanix Prism Central discovery (TraefikLoadBalancerStrategy category)"
+  type        = string
+  default     = ""
+}

@@ -11,11 +11,11 @@ resource "helm_release" "prometheus" {
     yamlencode({
       prometheus = {
         prometheusSpec = {
-          scrapeInterval = "5s"
+          scrapeInterval     = "5s"
           evaluationInterval = "5s"
           additionalScrapeConfigs = var.traefik_metrics_job_url != "" ? [
             {
-              job_name = "traefik-otel-metrics"
+              job_name     = "traefik-otel-metrics"
               metrics_path = var.traefik_metrics_job_metrics_path
               static_configs = [
                 {
@@ -38,7 +38,7 @@ resource "helm_release" "prometheus" {
       prometheus = {
         ingress = {
           enabled = true
-          hosts = ["prometheus.${var.ingress_domain}"]
+          hosts   = ["prometheus.${var.ingress_domain}"]
           annotations = {
             "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
             "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"

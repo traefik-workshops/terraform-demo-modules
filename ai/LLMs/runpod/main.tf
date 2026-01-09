@@ -12,7 +12,7 @@ locals {
         command  = "--host 0.0.0.0 --port 8000 --model meta-llama/Meta-Llama-3.1-8B-Instruct --dtype bfloat16 --enforce-eager --gpu-memory-utilization 0.95"
         pod_type = var.pod_type
       }
-    } : {}, var.enable_gpt_oss_20b ? {
+      } : {}, var.enable_gpt_oss_20b ? {
       gpt_oss_20b = {
         name     = "gpt-oss-20b"
         image    = "vllm/vllm-openai"
@@ -20,7 +20,7 @@ locals {
         command  = "--model openai/gpt-oss-20b"
         pod_type = var.pod_type
       }
-    } : {} 
+    } : {}
   )
 }
 
