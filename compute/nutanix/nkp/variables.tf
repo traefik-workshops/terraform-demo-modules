@@ -80,7 +80,7 @@ variable "nutanix_insecure" {
 variable "nkp_version" {
   description = "NKP Version"
   type        = string
-  default     = "2.16.1"
+  default     = "2.17.0"
 }
 
 variable "nkp_image_name" {
