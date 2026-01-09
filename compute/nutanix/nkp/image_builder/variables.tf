@@ -3,11 +3,3 @@ variable "arch" {
   type        = string
   default     = "amd64"
 }
-
-variable "vm_name" {
-  description = "Name prefix for the image"
-  type        = string
-  default     = "whoami"
-}
-
-
