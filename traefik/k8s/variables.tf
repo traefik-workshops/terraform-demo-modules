@@ -16,12 +16,6 @@ variable "namespace" {
   type        = string
 }
 
-variable "traefik_chart_version" {
-  description = "Traefik chart version"
-  type        = string
-  default     = "v38.0.1"
-}
-
 variable "deploymentType" {
   description = "Traefik deployment type"
   type        = string

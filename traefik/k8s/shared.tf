@@ -47,6 +47,7 @@ module "config" {
   custom_arguments     = var.custom_arguments
   custom_envs          = var.custom_envs
   file_provider_config = var.file_provider_config
+  file_provider_path   = var.file_provider_path
 
   # Licensing & DNS
   traefik_hub_token      = var.traefik_hub_token
@@ -54,10 +55,13 @@ module "config" {
   is_staging_letsencrypt = var.is_staging_letsencrypt
 
   # Dashboard
-  enable_dashboard      = true
-  dashboard_insecure    = false
+  enable_dashboard      = var.enable_dashboard
+  dashboard_insecure    = var.dashboard_insecure
   dashboard_entrypoints = var.dashboard_entrypoints
   dashboard_match_rule  = var.dashboard_match_rule
+  # Nutanix Provider
+  nutanix_provider = var.nutanix_provider
+
 }
 
 # =============================================================================
@@ -108,10 +112,16 @@ variable "replica_count" {
 }
 
 # Versions & Images
+variable "traefik_chart_version" {
+  description = "Traefik Helm chart version"
+  type        = string
+  default     = "38.0.2"
+}
+
 variable "traefik_tag" {
   description = "Traefik OSS version tag"
   type        = string
-  default     = "v3.6.5"
+  default     = "v3.6.6"
 }
 
 variable "traefik_hub_tag" {
@@ -230,6 +240,12 @@ variable "file_provider_config" {
   default     = ""
 }
 
+variable "file_provider_path" {
+  description = "Path where the file provider config is mounted"
+  type        = string
+  default     = "/etc/traefik/dynamic.yaml"
+}
+
 # Licensing & DNS
 variable "traefik_hub_token" {
   description = "Traefik Hub license token"
@@ -272,4 +288,38 @@ variable "dashboard_match_rule" {
   description = "Match rule for the Traefik dashboard router"
   type        = string
   default     = ""
+}
+
+variable "enable_dashboard" {
+  description = "Enable Traefik dashboard"
+  type        = bool
+  default     = true
+}
+
+variable "dashboard_insecure" {
+  description = "Enable insecure dashboard access (no auth)"
+  type        = bool
+  default     = false
+}
+
+# -----------------------------------------------------------------------------
+# Nutanix Provider
+# -----------------------------------------------------------------------------
+
+variable "nutanix_provider" {
+  description = "Nutanix Prism Central provider configuration for VM discovery"
+  type = object({
+    enabled              = optional(bool, false)
+    endpoint             = optional(string, "")
+    username             = optional(string, "")
+    password             = optional(string, "")
+    api_key              = optional(string, "")
+    insecure_skip_verify = optional(bool, false)
+    poll_interval        = optional(string, "30s")
+    poll_timeout         = optional(string, "5s")
+  })
+  default = {
+    enabled = false
+  }
+  sensitive = true
 }

@@ -5,22 +5,22 @@
 # =============================================================================
 
 locals {
-  # Base CLI arguments from shared module
-  base_cli_arguments = module.config.extracted_cli_args_cloud
+  # CLI arguments from shared module
+  cli_arguments = concat(
+    module.config.extracted_cli_args_cloud,
+    [
+      "--providers.file.directory=/etc/traefik-hub/dynamic",
+      "--providers.file.watch=true"
+    ]
+  )
 
-  # Append directory provider args for dynamic configuration splitting
-  cli_arguments = concat(local.base_cli_arguments, [
-    "--providers.file.directory=/etc/traefik-hub/dynamic",
-    "--providers.file.watch=true"
-  ])
-
-  # Extract ports from entry points (e.g. ":80" -> "80")
+  # Extract ports from entry points
   ports_to_open = [
     for ep in module.config.entry_points :
     replace(ep.address, ":", "")
   ]
 
-  # Generate Dashboard Configuration if enabled
+  # Dashboard configuration
   dashboard_config = var.enable_dashboard ? yamlencode({
     http = {
       routers = {
@@ -35,6 +35,12 @@ locals {
       }
     }
   }) : ""
+
+  # Traefik instances tagged for service discovery (always enabled with defaults)
+  traefik_categories = {
+    "TraefikServiceName" = "traefik"
+    "TraefikServicePort" = "80"
+  }
 }
 
 module "traefik_vm" {
@@ -48,11 +54,13 @@ module "traefik_vm" {
   num_sockets          = var.vm_num_sockets
   memory_size_mib      = var.vm_memory_mib
 
+  categories = local.traefik_categories
+
   cloud_init_user_data = templatefile("${path.module}/cloud-init.tpl", {
     # Use computed CLI arguments
     cli_arguments = local.cli_arguments
 
-    # Use extracted environment variables (plus Hub Token which is usually a Secret in K8s)
+    # Environment variables
     env_vars = concat(
       module.config.env_vars_list,
       module.config.traefik_hub_token != "" ? [{ name = "HUB_TOKEN", value = module.config.traefik_hub_token }] : []
@@ -61,7 +69,7 @@ module "traefik_vm" {
     # File provider config (user-provided)
     file_provider_config = var.file_provider_config
 
-    # Dashboard Config (auto-generated)
+    # Dashboard Config
     dashboard_config = local.dashboard_config
 
     # Dynamic ports for firewall

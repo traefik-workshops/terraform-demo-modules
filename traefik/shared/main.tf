@@ -105,7 +105,41 @@ locals {
       var.file_provider_config != "" ? [
         "--providers.file.filename=${var.file_provider_path}"
       ] : [],
-      var.custom_arguments
+      var.custom_arguments,
+      # Nutanix provider CLI arguments (generated from shared config)
+      var.nutanix_provider.enabled ? concat(
+        # Enable Nutanix provider
+        ["--hub.providers.nutanixPrismCentral"],
+
+        # Required arguments
+        ["--hub.providers.nutanixPrismCentral.endpoint=${var.nutanix_provider.endpoint}"],
+
+        # Authentication (use API key OR username/password)
+        var.nutanix_provider.api_key != "" ? [
+          "--hub.providers.nutanixPrismCentral.apiKey=${var.nutanix_provider.api_key}"
+          ] : [
+          "--hub.providers.nutanixPrismCentral.username=${var.nutanix_provider.username}",
+          "--hub.providers.nutanixPrismCentral.password=${var.nutanix_provider.password}"
+        ],
+
+        # Optional TLS configuration
+        var.nutanix_provider.insecure_skip_verify ? [
+          "--hub.providers.nutanixPrismCentral.tls.insecureSkipVerify=true"
+        ] : [],
+
+        # Polling configuration
+        [
+          "--hub.providers.nutanixPrismCentral.pollInterval=${var.nutanix_provider.poll_interval}",
+          "--hub.providers.nutanixPrismCentral.pollTimeout=${var.nutanix_provider.poll_timeout}"
+        ],
+
+        # Category keys for service discovery
+        [
+          "--hub.providers.nutanixPrismCentral.serviceNameCategoryKey=TraefikServiceName",
+          "--hub.providers.nutanixPrismCentral.servicePortCategoryKey=TraefikServicePort",
+          "--hub.providers.nutanixPrismCentral.loadBalancerStrategyCategoryKey=TraefikLoadBalancerStrategy"
+        ]
+      ) : []
     )
 
     env = concat(

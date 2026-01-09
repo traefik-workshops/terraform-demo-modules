@@ -67,6 +67,9 @@ module "config" {
       port    = tonumber(replace(v.address, ":", ""))
     }
   }
+
+  # Nutanix Provider
+  nutanix_provider = var.nutanix_provider
 }
 
 # =============================================================================
@@ -114,13 +117,13 @@ variable "replica_count" {
 variable "traefik_chart_version" {
   description = "Traefik Helm chart version"
   type        = string
-  default     = "38.0.1"
+  default     = "38.0.2"
 }
 
 variable "traefik_tag" {
   description = "Traefik OSS version tag"
   type        = string
-  default     = "v3.6.5"
+  default     = "v3.6.6"
 }
 
 variable "traefik_hub_tag" {
@@ -315,4 +318,26 @@ variable "entry_points" {
     websecure = { address = ":443" }
     traefik   = { address = ":8080" }
   }
+}
+
+# -----------------------------------------------------------------------------
+# Nutanix Provider
+# -----------------------------------------------------------------------------
+
+variable "nutanix_provider" {
+  description = "Nutanix Prism Central provider configuration for VM discovery"
+  type = object({
+    enabled              = optional(bool, false)
+    endpoint             = optional(string, "")
+    username             = optional(string, "")
+    password             = optional(string, "")
+    api_key              = optional(string, "")
+    insecure_skip_verify = optional(bool, false)
+    poll_interval        = optional(string, "30s")
+    poll_timeout         = optional(string, "5s")
+  })
+  default = {
+    enabled = false
+  }
+  sensitive = true
 }
