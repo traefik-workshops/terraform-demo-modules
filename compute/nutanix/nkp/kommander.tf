@@ -103,5 +103,6 @@ resource "null_resource" "install_kommander" {
     null_resource.upload_kommander_config,
     null_resource.nkp_create_cluster,
     null_resource.update_kubeconfig
+    # null_resource.oci_patcher
   ]
 }
