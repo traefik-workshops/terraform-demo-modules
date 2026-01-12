@@ -115,6 +115,39 @@ resource "null_resource" "nkp_create_cluster" {
     EOF
   }
 
+  # Setup local Docker registry with preloaded bootstrap image
+  # The image and registry:2 are already loaded in the base image at /opt/nkp
+  provisioner "remote-exec" {
+    inline = [
+      # Source variables to get NKP_VERSION
+      "source ~/variables.sh",
+      # Wait for systemd service to start registry
+      "echo 'Waiting for nkp-local-registry service to start...'",
+      "sudo systemctl start nkp-local-registry.service",
+      "sleep 5",
+
+      # Wait for registry to be healthy
+      "for i in {1..30}; do",
+      "  if curl -s http://localhost:5000/v2/ > /dev/null 2>&1; then",
+      "    echo 'Registry is ready!'",
+      "    break",
+      "  fi",
+      "  if [ $i -eq 30 ]; then",
+      "    echo 'Error: Registry failed to start'",
+      "    exit 1",
+      "  fi",
+      "  echo \"Waiting for registry... (attempt $i/30)\"",
+      "  sleep 1",
+      "done",
+
+      # Tag and push the preloaded bootstrap image to local registry
+      "echo 'Tagging and pushing bootstrap image to local registry...'",
+      "docker tag mesosphere/konvoy-bootstrap:v2.17.0 localhost:5000/mesosphere/konvoy-bootstrap:v2.17.0",
+      "docker push localhost:5000/mesosphere/konvoy-bootstrap:v2.17.0",
+      "echo 'Local registry setup complete!'"
+    ]
+  }
+
   provisioner "remote-exec" {
     script = "${path.module}/scripts/nkp_create_cluster.sh"
   }

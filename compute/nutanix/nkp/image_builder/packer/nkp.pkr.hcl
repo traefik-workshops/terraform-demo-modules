@@ -113,6 +113,62 @@ build {
     ]
   }
 
+  # Copy bootstrap tar file to /opt for preloading
+  provisioner "file" {
+    source      = "bootstrap/konvoy-bootstrap-image-v2.17.0.tar"
+    destination = "/tmp/konvoy-bootstrap-image-v2.17.0.tar"
+  }
+
+  # Copy setup script
+  provisioner "file" {
+    source      = "../../scripts/setup_local_registry.sh"
+    destination = "/tmp/setup_local_registry.sh"
+  }
+
+  # Preload bootstrap image and setup local registry
+  provisioner "shell" {
+    environment_vars = [
+      "NKP_VERSION=2.17.0"
+    ]
+    inline = [
+      "sudo mkdir -p /opt/nkp",
+      "sudo mv /tmp/konvoy-bootstrap-image-v2.17.0.tar /opt/nkp/",
+      "sudo mv /tmp/setup_local_registry.sh /opt/nkp/",
+      "sudo chmod +x /opt/nkp/setup_local_registry.sh",
+      
+      # Pre-load the bootstrap image into Docker
+      "echo 'Pre-loading NKP bootstrap image...'",
+      "sudo docker load -i /opt/nkp/konvoy-bootstrap-image-v2.17.0.tar",
+      
+      # Pull registry:2 image
+      "echo 'Pulling Docker registry image...'",
+      "sudo docker pull registry:2",
+      
+      # Create systemd service for local registry
+      "sudo tee /etc/systemd/system/nkp-local-registry.service > /dev/null <<'EOF'",
+      "[Unit]",
+      "Description=NKP Local Docker Registry",
+      "After=docker.service",
+      "Requires=docker.service",
+      "",
+      "[Service]",
+      "Type=simple",
+      "ExecStartPre=-/usr/bin/docker stop nkp-registry",
+      "ExecStartPre=-/usr/bin/docker rm nkp-registry",
+      "ExecStart=/usr/bin/docker run --rm --name nkp-registry -p 5000:5000 registry:2",
+      "ExecStop=/usr/bin/docker stop nkp-registry",
+      "Restart=always",
+      "RestartSec=5",
+      "",
+      "[Install]",
+      "WantedBy=multi-user.target",
+      "EOF",
+      
+      # Enable the service (it will start on boot)
+      "sudo systemctl enable nkp-local-registry.service"
+    ]
+  }
+
   post-processor "shell-local" {
     inline = [
       "echo 'Compressing image...'",
