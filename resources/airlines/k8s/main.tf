@@ -18,7 +18,7 @@ resource "kubectl_manifest" "airlines" {
             domain         = var.domain
             "tools-access" = var.tools_access
             "users-access" = var.users_access
-            chat           = var.chat
+            ai-gateway     = var.ai_gateway
             oidc = {
               clientId     = var.oidc_client_id
               clientSecret = var.oidc_client_secret
