@@ -56,7 +56,7 @@ locals {
           password  = var.redis_password
           database  = "0"
           sentinel  = { enabled = false }
-          cluster   = { enabled = false }
+          cluster   = false
         }
       } : {}
     ) : null
