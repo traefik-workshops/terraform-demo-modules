@@ -9,3 +9,9 @@ variable "vm_name" {
   type        = string
   default     = "whoami"
 }
+
+variable "image_path" {
+  description = "Optional path to a pre-existing image file (skips building but still uploads)"
+  type        = string
+  default     = null
+}

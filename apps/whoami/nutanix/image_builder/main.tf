@@ -3,6 +3,7 @@ locals {
 }
 
 resource "terraform_data" "build_image" {
+  count            = var.image_path == null ? 1 : 0
   triggers_replace = [var.arch]
 
   provisioner "local-exec" {
@@ -17,7 +18,7 @@ resource "terraform_data" "build_image" {
 
 resource "nutanix_image" "whoami" {
   name        = "whoami_${var.arch}.qcow2"
-  source_path = "${path.module}/packer/images/${local.image_filename}"
+  source_path = var.image_path != null ? var.image_path : "${path.module}/packer/images/${local.image_filename}"
   description = "Traefik Whoami Pre-packaged Image"
 
   depends_on = [terraform_data.build_image]
