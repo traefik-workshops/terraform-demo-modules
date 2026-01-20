@@ -8,89 +8,101 @@ locals {
   ]
 }
 
-# Fetch tokens using external script - runs once if secret doesn't exist
-data "external" "fetch_tokens" {
+# Fetch tokens using a Kubernetes Job - runs in-cluster and outputs JSON to logs
+resource "kubernetes_job_v1" "fetch_tokens" {
   depends_on = [null_resource.validate_keycloak_deployment]
+
+  metadata {
+    name      = "fetch-keycloak-tokens"
+    namespace = var.namespace
+  }
+
+  spec {
+    template {
+      metadata {
+        labels = {
+          app = "token-fetcher"
+        }
+      }
+      spec {
+        container {
+          name    = "fetcher"
+          image   = "badouralix/curl-jq"
+          command = ["/bin/sh", "-c"]
+          args = [
+            <<-EOT
+            set -e
+            # Wait for internal DNS to resolve
+            until getent hosts keycloak-service; do echo "waiting for dns..."; sleep 2; done
+            
+            USERS_JSON='${jsonencode(local.token_users)}'
+            
+            # Use jq to iterate and fetch tokens
+            echo "$USERS_JSON" | jq -c '.[]' | while read -r user; do
+              USERNAME=$(echo "$user" | jq -r '.username')
+              PASSWORD=$(echo "$user" | jq -r '.password')
+              
+              TOKEN=$(curl -sk -X POST "http://keycloak-service:8080/realms/traefik/protocol/openid-connect/token" \
+                -H "Content-Type: application/x-www-form-urlencoded" \
+                -d "client_id=traefik" \
+                -d "grant_type=password" \
+                -d "client_secret=NoTgoLZpbrr5QvbNDIRIvmZOhe9wI0r0" \
+                -d "scope=openid" \
+                -d "username=$USERNAME" \
+                -d "password=$PASSWORD" | jq -r '.access_token')
+                
+              if [ "$TOKEN" != "null" ] && [ -n "$TOKEN" ]; then
+                # Safe JSON construction
+                echo "{\"key\": \"$USERNAME\", \"value\": \"$TOKEN\"}"
+              fi
+            done | jq -n -c 'reduce inputs as $i ({}; .[$i.key] = $i.value)'
+ EOT
+          ]
+        }
+        restart_policy = "Never"
+      }
+    }
+    backoff_limit = 4
+  }
+
+  lifecycle {
+    replace_triggered_by = [
+      null_resource.validate_keycloak_deployment
+    ]
+  }
+}
+
+# Capture tokens from Job logs
+data "external" "capture_tokens" {
+  depends_on = [kubernetes_job_v1.fetch_tokens]
 
   program = ["bash", "-c", <<-EOT
     set -e
     
-    NAMESPACE="${var.namespace}"
-    SECRET_NAME="traefik-user-tokens"
-    
-    # Check if secret exists
-    if kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" &>/dev/null; then
-      # Secret exists, read tokens from it
-      kubectl get secret "$SECRET_NAME" -n "$NAMESPACE" -o jsonpath='{.data}' | \
-      jq -r 'to_entries | map({key: .key, value: (.value | @base64d)}) | from_entries'
-    else
-      # Secret missing, generate new tokens
+    # Configure isolated kubectl context
+    if [ -n "${var.host}" ]; then
+      KUBECONFIG_FILE=$(mktemp)
+      CERT_FILE=$(mktemp)
+      KEY_FILE=$(mktemp)
       
-      # Start port-forward in background
-      kubectl port-forward svc/keycloak-service 8080:8080 -n "$NAMESPACE" &>/dev/null &
-      PF_PID=$!
+      echo "${var.client_certificate}" > "$CERT_FILE"
+      echo "${var.client_key}" > "$KEY_FILE"
       
-      # Wait for port-forward
-      sleep 5
+      export KUBECONFIG="$KUBECONFIG_FILE"
+      kubectl config set-cluster remote --server="${var.host}" --insecure-skip-tls-verify=true >/dev/null
+      kubectl config set-credentials admin --client-certificate="$CERT_FILE" --client-key="$KEY_FILE" >/dev/null
+      kubectl config set-context remote --cluster=remote --user=admin >/dev/null
+      kubectl config use-context remote >/dev/null
       
-      # Generate tokens for all users
-      TOKENS_JSON="{}"
-      
-      # We need to loop through users passed as JSON argument
-      # Since we can't easily pass complex JSON to bash in external data source without it being a string,
-      # we'll construct the loop in bash using the input variables which are limited to strings.
-      # Instead, we will iterate over the list of users provided in the input
-      
-      # Actually, passing a list of users to external program is tricky.
-      # Let's use a different approach: We will hardcode the user generation logic here 
-      # based on the known structure or pass them as a single JSON string argument if possible.
-      # But 'query' only supports map of strings.
-      
-      # Alternative: We can just use the same logic as in the realm.tf to know which users to generate for.
-      # But we don't have access to terraform variables inside the bash script easily unless passed.
-      
-      # Let's try to pass the users as a JSON string in the query.
-      # Terraform 'external' query values must be strings.
-      
-      USERS_JSON='${jsonencode(local.token_users)}'
-      
-      # Iterate and fetch tokens
-      # We use jq to parse the JSON string and iterate
-      
-      TOKENS=""
-      MISSING_USERS=""
-      
-      while read -r user; do
-        USERNAME=$(echo "$user" | jq -r '.username')
-        PASSWORD=$(echo "$user" | jq -r '.password')
-        
-        TOKEN=$(curl -sk -X POST "http://localhost:8080/realms/traefik/protocol/openid-connect/token" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          -d "client_id=traefik" \
-          -d "grant_type=password" \
-          -d "client_secret=NoTgoLZpbrr5QvbNDIRIvmZOhe9wI0r0" \
-          -d "scope=openid" \
-          -d "username=$USERNAME" \
-          -d "password=$PASSWORD" | jq -r '.access_token')
-          
-        if [ "$TOKEN" != "null" ] && [ -n "$TOKEN" ]; then
-          TOKENS="$TOKENS\"$USERNAME\": \"$TOKEN\"," 
-        else
-          MISSING_USERS="$MISSING_USERS$USERNAME "
-        fi
-      done < <(echo "$USERS_JSON" | jq -c '.[]')
-      
-      # Kill port-forward
-      kill $PF_PID || true
-      
-      if [ -n "$MISSING_USERS" ]; then
-        echo "Error: Failed to fetch tokens for users: $MISSING_USERS" >&2
-        exit 1
-      fi
-      
-      # Format output as JSON
-      echo "{ $${TOKENS%,} }"
+      # Ensure cleanup on exit
+      trap 'rm -f "$KUBECONFIG_FILE" "$CERT_FILE" "$KEY_FILE"' EXIT
     fi
+
+    # Wait for job completion
+    kubectl wait --for=condition=complete job/fetch-keycloak-tokens -n "${var.namespace}" --timeout=120s >&2
+    
+    # Fetch logs (find the line starting with { and ending with })
+    kubectl logs job/fetch-keycloak-tokens -n "${var.namespace}" | grep '^{.*}$' | tail -n 1
   EOT
   ]
 }
@@ -101,7 +113,7 @@ resource "kubernetes_secret_v1" "user_tokens" {
     namespace = var.namespace
   }
 
-  data = data.external.fetch_tokens.result
+  data = data.external.capture_tokens.result
 
   type = "Opaque"
 
