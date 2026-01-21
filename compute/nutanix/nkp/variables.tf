@@ -97,6 +97,11 @@ variable "registry_mirror_url" {
   description = "Registry Mirror URL"
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.registry_mirror_url == "" || can(regex("^https?://", var.registry_mirror_url))
+    error_message = "The registry_mirror_url must start with http:// or https:// (e.g., https://registry.example.com)."
+  }
 }
 
 variable "storage_container" {
@@ -164,12 +169,6 @@ variable "update_kubeconfig" {
   description = "Update local kubeconfig with cluster context"
   type        = bool
   default     = true
-}
-
-variable "traefik_values" {
-  description = "Traefik Helm values (YAML string) for Kommander installation"
-  type        = string
-  default     = ""
 }
 
 variable "kubernetes_version" {

@@ -30,10 +30,11 @@ ARGS=(
 )
 
 if [ -n "${REGISTRY_MIRROR_URL:-}" ]; then
-    CLEAN_MIRROR_URL="${REGISTRY_MIRROR_URL#https://}"
-    # Use local registry for bootstrap image to bypass harbor version issues
-    # BOOTSTRAP_IMAGE="$CLEAN_MIRROR_URL/mesosphere/konvoy-bootstrap:v$NKP_VERSION"
-    BOOTSTRAP_IMAGE="localhost:5000/mesosphere/konvoy-bootstrap:v$NKP_VERSION"
+    CLEAN_MIRROR_URL="${REGISTRY_MIRROR_URL#http://}"
+    CLEAN_MIRROR_URL="${CLEAN_MIRROR_URL#https://}"
+    
+    # Use the central registry mirror for the bootstrap image
+    BOOTSTRAP_IMAGE="$CLEAN_MIRROR_URL/mesosphere/konvoy-bootstrap:v$NKP_VERSION"
     
     ARGS+=(--bootstrap-cluster-image "$BOOTSTRAP_IMAGE")
     ARGS+=(--registry-mirror-url "$REGISTRY_MIRROR_URL")

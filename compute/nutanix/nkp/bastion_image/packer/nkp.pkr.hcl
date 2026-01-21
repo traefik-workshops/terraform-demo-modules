@@ -9,7 +9,17 @@ packer {
 
 variable "arch" {
   type    = string
-  default = "arm64"
+  default = "amd64"
+}
+
+variable "nkp_version" {
+  type    = string
+  default = "2.17.0"
+}
+
+variable "nkp_bundle_path" {
+  type    = string
+  default = ""
 }
 
 locals {
@@ -54,8 +64,10 @@ source "qemu" "nkp" {
   format            = "qcow2"
   ssh_username      = "traefiker"
   ssh_password      = "topsecretpassword"
-  ssh_timeout       = "2m"
+  ssh_timeout       = "15m"
   vm_name           = "nkp-${var.arch}.qcow2"
+  memory            = 8192
+  cpus              = 4
   net_device        = "virtio-net"
   disk_interface    = "virtio"
   disk_image        = true
@@ -88,7 +100,6 @@ build {
       "sudo apt-get update",
       "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
       "sudo usermod -aG docker traefiker", # Add build user to docker group
-      "id -u ubuntu &>/dev/null && sudo usermod -aG docker ubuntu || echo 'User ubuntu not found, skipping docker group addition'",
 
       # Install Kubectl
       "curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${var.arch}/kubectl\"",
@@ -102,7 +113,7 @@ build {
 
   # Copy NKP Binary
   provisioner "file" {
-    source      = "bin/${var.arch}/nkp"
+    source      = "bin/nkp"
     destination = "/tmp/nkp"
   }
 
@@ -110,71 +121,6 @@ build {
     inline = [
       "sudo mv /tmp/nkp /usr/local/bin/nkp",
       "sudo chmod +x /usr/local/bin/nkp"
-    ]
-  }
-
-  # Copy bootstrap tar file to /opt for preloading
-  provisioner "file" {
-    source      = "bootstrap/konvoy-bootstrap-image-v2.17.0.tar"
-    destination = "/tmp/konvoy-bootstrap-image-v2.17.0.tar"
-  }
-
-  # Copy setup script
-  provisioner "file" {
-    source      = "../../scripts/setup_local_registry.sh"
-    destination = "/tmp/setup_local_registry.sh"
-  }
-
-  # Preload bootstrap image and setup local registry
-  provisioner "shell" {
-    environment_vars = [
-      "NKP_VERSION=2.17.0"
-    ]
-    inline = [
-      "sudo mkdir -p /opt/nkp",
-      "sudo mv /tmp/konvoy-bootstrap-image-v2.17.0.tar /opt/nkp/",
-      "sudo mv /tmp/setup_local_registry.sh /opt/nkp/",
-      "sudo chmod +x /opt/nkp/setup_local_registry.sh",
-      
-      # Pre-load the bootstrap image into Docker
-      "echo 'Pre-loading NKP bootstrap image...'",
-      "sudo docker load -i /opt/nkp/konvoy-bootstrap-image-v2.17.0.tar",
-      
-      # Pull registry:2 image
-      "echo 'Pulling Docker registry image...'",
-      "sudo docker pull registry:2",
-      
-      # Create systemd service for local registry
-      "sudo tee /etc/systemd/system/nkp-local-registry.service > /dev/null <<'EOF'",
-      "[Unit]",
-      "Description=NKP Local Docker Registry",
-      "After=docker.service",
-      "Requires=docker.service",
-      "",
-      "[Service]",
-      "Type=simple",
-      "ExecStartPre=-/usr/bin/docker stop nkp-registry",
-      "ExecStartPre=-/usr/bin/docker rm nkp-registry",
-      "ExecStart=/usr/bin/docker run --rm --name nkp-registry -p 5000:5000 registry:2",
-      "ExecStop=/usr/bin/docker stop nkp-registry",
-      "Restart=always",
-      "RestartSec=5",
-      "",
-      "[Install]",
-      "WantedBy=multi-user.target",
-      "EOF",
-      
-      # Enable the service (it will start on boot)
-      "sudo systemctl enable nkp-local-registry.service"
-    ]
-  }
-
-  post-processor "shell-local" {
-    inline = [
-      "echo 'Compressing image...'",
-      "qemu-img convert -O qcow2 -c images/nkp-${var.arch}.qcow2 images/nkp-${var.arch}-compressed.qcow2",
-      "mv images/nkp-${var.arch}-compressed.qcow2 images/nkp-${var.arch}.qcow2",
-      "echo 'Compression complete.'"
     ]
   }
 }
