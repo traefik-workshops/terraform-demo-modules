@@ -13,16 +13,16 @@ build-binaries:
 		cp $(HUB_DIR)/dist/linux/amd64/traefik-hub $(BIN_DIR)/amd64/; \
 		cp $(HUB_DIR)/dist/linux/arm64/traefik-hub $(BIN_DIR)/arm64/; \
 	else \
-		echo "Extracting binaries from Docker image traefik/hub-agent:$(HUB_VERSION)..."; \
+		echo "Extracting binaries from Docker image $(HUB_REGISTRY)/$(HUB_REPOSITORY):$(HUB_VERSION)..."; \
 		mkdir -p $(BIN_DIR)/amd64 $(BIN_DIR)/arm64; \
-		docker pull --platform linux/amd64 traefik/hub-agent:$(HUB_VERSION); \
+		docker pull --platform linux/amd64 $(HUB_REGISTRY)/$(HUB_REPOSITORY):$(HUB_VERSION); \
 		docker rm -f temp-traefik-amd64 || true; \
-		docker create --name temp-traefik-amd64 --platform linux/amd64 traefik/hub-agent:$(HUB_VERSION); \
+		docker create --name temp-traefik-amd64 --platform linux/amd64 $(HUB_REGISTRY)/$(HUB_REPOSITORY):$(HUB_VERSION); \
 		docker cp temp-traefik-amd64:/traefik-hub $(BIN_DIR)/amd64/traefik-hub; \
 		docker rm temp-traefik-amd64; \
-		docker pull --platform linux/arm64 traefik/hub-agent:$(HUB_VERSION); \
+		docker pull --platform linux/arm64 $(HUB_REGISTRY)/$(HUB_REPOSITORY):$(HUB_VERSION); \
 		docker rm -f temp-traefik-arm64 || true; \
-		docker create --name temp-traefik-arm64 --platform linux/arm64 traefik/hub-agent:$(HUB_VERSION); \
+		docker create --name temp-traefik-arm64 --platform linux/arm64 $(HUB_REGISTRY)/$(HUB_REPOSITORY):$(HUB_VERSION); \
 		docker cp temp-traefik-arm64:/traefik-hub $(BIN_DIR)/arm64/traefik-hub; \
 		docker rm temp-traefik-arm64; \
 	fi

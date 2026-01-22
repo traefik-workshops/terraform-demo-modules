@@ -21,3 +21,27 @@ variable "image_path" {
   type        = string
   default     = null
 }
+
+variable "enable_preview_mode" {
+  description = "Enable Traefik Hub preview mode"
+  type        = bool
+  default     = false
+}
+
+variable "hub_preview_tag" {
+  description = "Tag to use when preview mode is enabled"
+  type        = string
+  default     = "latest-v3"
+}
+
+variable "custom_image_registry" {
+  description = "Custom registry for Traefik Hub image"
+  type        = string
+  default     = ""
+}
+
+variable "custom_image_repository" {
+  description = "Custom repository for Traefik Hub image"
+  type        = string
+  default     = ""
+}
