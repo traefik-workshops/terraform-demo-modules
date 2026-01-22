@@ -43,7 +43,7 @@ resource "terraform_data" "registry_health_check" {
       user     = "traefiker"
       password = "topsecretpassword"
       host     = self.input
-      timeout  = "20m"
+      timeout  = "10m"
     }
     source      = "${path.module}/../registry_image/packer/scripts/setup_registry_runtime.sh"
     destination = "/tmp/setup_registry_runtime.sh"
@@ -55,7 +55,7 @@ resource "terraform_data" "registry_health_check" {
       user     = "traefiker"
       password = "topsecretpassword"
       host     = self.input
-      timeout  = "20m"
+      timeout  = "40m"
     }
     inline = [
       "sudo mv /tmp/setup_registry_runtime.sh /usr/local/bin/setup_registry_runtime.sh",
