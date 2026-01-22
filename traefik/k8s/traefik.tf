@@ -31,7 +31,7 @@ locals {
   volume_mounts = concat(
     var.file_provider_config != "" ? [{
       name      = "traefik-dynamic-config"
-      mountPath = "/file-provider"
+      mountPath = "/etc/traefik"
     }] : [],
     var.nginx_provider_enabled ? [{
       name      = "traefik-nginx-config"
