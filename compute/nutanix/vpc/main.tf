@@ -1,6 +1,20 @@
 resource "nutanix_vpc_v2" "vpc" {
   name     = var.vpc_name
   vpc_type = var.vpc_type
+
+  dynamic "externally_routable_prefixes" {
+    for_each = var.externally_routable_prefixes
+    content {
+      ipv4 {
+        ip {
+          value         = split("/", externally_routable_prefixes.value)[0]
+          prefix_length = 32
+        }
+        prefix_length = tonumber(split("/", externally_routable_prefixes.value)[1])
+      }
+    }
+  }
+
   external_subnets {
     subnet_reference = var.external_subnet_uuid
   }

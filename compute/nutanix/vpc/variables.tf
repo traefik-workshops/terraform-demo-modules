@@ -30,3 +30,9 @@ variable "dns_servers" {
   type        = list(string)
   default     = ["10.8.1.10", "10.42.196.10"]
 }
+
+variable "externally_routable_prefixes" {
+  description = "List of externally routable prefixes"
+  type        = list(string)
+  default     = []
+}
