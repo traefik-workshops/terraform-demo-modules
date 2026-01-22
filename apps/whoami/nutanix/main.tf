@@ -25,7 +25,18 @@ module "whoami_vm" {
   # Apply service discovery categories
   categories = local.service_categories
 
-  cloud_init_user_data = ""
+  cloud_init_user_data = <<-EOF
+    #cloud-config
+    hostname: ${var.vm_name}
+    runcmd:
+      - ufw disable
+      - systemctl disable --now ufw
+      - iptables -F
+      - iptables -X
+      - iptables -P INPUT ACCEPT
+      - iptables -P FORWARD ACCEPT
+      - iptables -P OUTPUT ACCEPT
+  EOF
 }
 
 output "ip_address" {
