@@ -35,7 +35,7 @@ resource "null_resource" "wait" {
 
 resource "null_resource" "lke_cluster" {
   provisioner "local-exec" {
-    
+
     command = <<EOT
       echo '${local.kubeconfig_raw}' > lke-kubeconfig.yaml
 

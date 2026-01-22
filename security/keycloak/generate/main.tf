@@ -30,7 +30,7 @@ locals {
   current_timestamp = timestamp()
   current_hour      = formatdate("hh", local.current_timestamp)
   current_date      = formatdate("YYYY-MM-DD", local.current_timestamp)
-  
+
   # Calculate which rotation window we're in (e.g., if rotation_hours=4: 0-3, 4-7, 8-11, etc.)
   rotation_window = "${local.current_date}-${floor(parseint(local.current_hour, 10) / var.token_rotation_hours)}"
 }

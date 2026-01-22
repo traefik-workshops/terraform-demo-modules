@@ -6,7 +6,7 @@ variable "namespace" {
   type = string
 }
 
-resource "kubernetes_config_map" "grafana_aigateway_dashboards" {
+resource "kubernetes_config_map_v1" "grafana_aigateway_dashboards" {
   metadata {
     name      = var.name
     namespace = var.namespace

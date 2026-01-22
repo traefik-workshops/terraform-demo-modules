@@ -1,7 +1,7 @@
 data "azurerm_client_config" "traefik_demo" {}
 
 output "tenant_id" {
-  sensitive = true
+  sensitive   = true
   description = "The tenant ID of the Azure AD directory"
   value       = data.azurerm_client_config.traefik_demo.tenant_id
 }

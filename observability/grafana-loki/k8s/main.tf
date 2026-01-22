@@ -17,12 +17,12 @@ resource "helm_release" "loki" {
         commonConfig = {
           replication_factor = 1
         }
-        schemaConfig = { 
+        schemaConfig = {
           configs = [{
-            from = "2024-04-01"
-            store = "tsdb"
+            from         = "2024-04-01"
+            store        = "tsdb"
             object_store = "s3"
-            schema = "v13"
+            schema       = "v13"
             index = {
               prefix = "loki_index_"
               period = "24h"
@@ -34,7 +34,7 @@ resource "helm_release" "loki" {
         }
         limits_config = {
           allow_structured_metadata = true
-          volume_enabled  = true
+          volume_enabled            = true
         }
         ruler = {
           enable_api = true
@@ -97,7 +97,7 @@ resource "helm_release" "loki" {
 
   set = [
     {
-      name = "loki.auth_enabled"
+      name  = "loki.auth_enabled"
       value = false
     }
   ]

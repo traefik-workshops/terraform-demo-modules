@@ -1,53 +1,53 @@
 locals {
   prometheus_url = var.prometheus.url.override != "" ? var.prometheus.url.override : "http://${var.prometheus.url.service}${var.prometheus.url.namespace != "" ? ".${var.prometheus.url.namespace}.svc" : ""}:${var.prometheus.url.port}"
-  tempo_url      = var.tempo.url.override      != "" ? var.tempo.url.override      : "http://${var.tempo.url.service}${var.tempo.url.namespace != "" ? ".${var.tempo.url.namespace}.svc" : ""}:${var.tempo.url.port}"
-  loki_url       = var.loki.url.override       != "" ? var.loki.url.override       : "http://${var.loki.url.service}${var.loki.url.namespace != "" ? ".${var.loki.url.namespace}.svc" : ""}:${var.loki.url.port}"
+  tempo_url      = var.tempo.url.override != "" ? var.tempo.url.override : "http://${var.tempo.url.service}${var.tempo.url.namespace != "" ? ".${var.tempo.url.namespace}.svc" : ""}:${var.tempo.url.port}"
+  loki_url       = var.loki.url.override != "" ? var.loki.url.override : "http://${var.loki.url.service}${var.loki.url.namespace != "" ? ".${var.loki.url.namespace}.svc" : ""}:${var.loki.url.port}"
 
   datasources = concat(
     var.prometheus.enabled ? [{
-      name = "Prometheus"
-      type = "prometheus"
-      url = local.prometheus_url
-      access = "proxy"
+      name      = "Prometheus"
+      type      = "prometheus"
+      url       = local.prometheus_url
+      access    = "proxy"
       isDefault = true
     }] : [],
     var.tempo.enabled ? [{
-      name = "Tempo"
-      type = "tempo"
-      url = local.tempo_url
-      access = "proxy"
-      isDefault = ! var.prometheus.enabled
+      name      = "Tempo"
+      type      = "tempo"
+      url       = local.tempo_url
+      access    = "proxy"
+      isDefault = !var.prometheus.enabled
     }] : [],
     var.loki.enabled ? [{
-      name = "Loki"
-      type = "loki"
-      url = local.loki_url
-      access = "proxy"
-      isDefault = ! var.prometheus.enabled && ! var.tempo.enabled
-    }] : [])
+      name      = "Loki"
+      type      = "loki"
+      url       = local.loki_url
+      access    = "proxy"
+      isDefault = !var.prometheus.enabled && !var.tempo.enabled
+  }] : [])
 
-    aigateway_dashboard = "aigateway-dashboards"
-    aigateway_path      = "/dashboards/hub/aigateway"
+  aigateway_dashboard = "aigateway-dashboards"
+  aigateway_path      = "/dashboards/hub/aigateway"
 
-    dashboardProviders = concat(var.dashboards.aigateway ? [{
-      name = local.aigateway_dashboard
-      orgId = "1"
-      type = "file"
-      disableDeletion = false
-      editable = true
-      updateIntervalSeconds = 10
-      options = {
-        path = local.aigateway_path
-      }
-    }] : [])
+  dashboardProviders = concat(var.dashboards.aigateway ? [{
+    name                  = local.aigateway_dashboard
+    orgId                 = "1"
+    type                  = "file"
+    disableDeletion       = false
+    editable              = true
+    updateIntervalSeconds = 10
+    options = {
+      path = local.aigateway_path
+    }
+  }] : [])
 
-    configmapMounts = concat(var.dashboards.aigateway ? [{
-      name      = local.aigateway_dashboard
-      mountPath = "${local.aigateway_path}/dashboard.json"
-      subPath   = "dashboard.json"
-      configMap = local.aigateway_dashboard
-      readOnly  = true
-    }] : [])
+  configmapMounts = concat(var.dashboards.aigateway ? [{
+    name      = local.aigateway_dashboard
+    mountPath = "${local.aigateway_path}/dashboard.json"
+    subPath   = "dashboard.json"
+    configMap = local.aigateway_dashboard
+    readOnly  = true
+  }] : [])
 }
 
 resource "helm_release" "grafana" {
@@ -63,7 +63,7 @@ resource "helm_release" "grafana" {
     yamlencode({
       "grafana.ini" = {
         "auth.anonymous" = {
-          enabled = true
+          enabled  = true
           org_name = "Main Org."
           org_role = "Admin"
         }
@@ -73,24 +73,24 @@ resource "helm_release" "grafana" {
       }
       datasources = {
         "datasources.yaml" = {
-          apiVersion = 1
+          apiVersion  = 1
           datasources = local.datasources
         }
       }
       dashboardProviders = {
         "dashboardproviders.yaml" = {
           apiVersion = 1
-          providers = local.dashboardProviders
+          providers  = local.dashboardProviders
         }
       }
       extraConfigmapMounts = local.configmapMounts
-      tolerations = var.tolerations
+      tolerations          = var.tolerations
     }),
     yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
       ingress = {
         enabled = true
-        hosts = ["grafana.${var.ingress_domain}"]
+        hosts   = ["grafana.${var.ingress_domain}"]
         annotations = {
           "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
           "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
@@ -103,7 +103,7 @@ resource "helm_release" "grafana" {
 }
 
 module "aigateway_dashboard" {
-  source    = "./dashboards/aigateway"
+  source = "./dashboards/aigateway"
 
   name      = local.aigateway_dashboard
   namespace = var.namespace

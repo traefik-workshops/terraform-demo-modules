@@ -95,35 +95,35 @@ resource "oci_core_security_list" "traefik_demo" {
 }
 
 resource "oci_core_subnet" "traefik_demo_endpoint" {
-  compartment_id      = var.compartment_id
-  vcn_id              = oci_core_vcn.traefik_demo.id
-  display_name        = "${var.cluster_name}-endpoint-subnet"
-  cidr_block          = "10.0.1.0/24"
-  route_table_id      = oci_core_route_table.traefik_demo.id
-  security_list_ids   = [oci_core_security_list.traefik_demo.id]
-  dns_label           = "endpoint"
+  compartment_id             = var.compartment_id
+  vcn_id                     = oci_core_vcn.traefik_demo.id
+  display_name               = "${var.cluster_name}-endpoint-subnet"
+  cidr_block                 = "10.0.1.0/24"
+  route_table_id             = oci_core_route_table.traefik_demo.id
+  security_list_ids          = [oci_core_security_list.traefik_demo.id]
+  dns_label                  = "endpoint"
   prohibit_public_ip_on_vnic = false
 }
 
 resource "oci_core_subnet" "traefik_demo_nodes" {
-  compartment_id      = var.compartment_id
-  vcn_id              = oci_core_vcn.traefik_demo.id
-  display_name        = "${var.cluster_name}-nodes-subnet"
-  cidr_block          = "10.0.2.0/24"
-  route_table_id      = oci_core_route_table.traefik_demo.id
-  security_list_ids   = [oci_core_security_list.traefik_demo.id]
-  dns_label           = "nodes"
+  compartment_id             = var.compartment_id
+  vcn_id                     = oci_core_vcn.traefik_demo.id
+  display_name               = "${var.cluster_name}-nodes-subnet"
+  cidr_block                 = "10.0.2.0/24"
+  route_table_id             = oci_core_route_table.traefik_demo.id
+  security_list_ids          = [oci_core_security_list.traefik_demo.id]
+  dns_label                  = "nodes"
   prohibit_public_ip_on_vnic = false
 }
 
 resource "oci_core_subnet" "traefik_demo_lb" {
-  compartment_id      = var.compartment_id
-  vcn_id              = oci_core_vcn.traefik_demo.id
-  display_name        = "${var.cluster_name}-lb-subnet"
-  cidr_block          = "10.0.3.0/24"
-  route_table_id      = oci_core_route_table.traefik_demo.id
-  security_list_ids   = [oci_core_security_list.traefik_demo.id]
-  dns_label           = "lb"
+  compartment_id             = var.compartment_id
+  vcn_id                     = oci_core_vcn.traefik_demo.id
+  display_name               = "${var.cluster_name}-lb-subnet"
+  cidr_block                 = "10.0.3.0/24"
+  route_table_id             = oci_core_route_table.traefik_demo.id
+  security_list_ids          = [oci_core_security_list.traefik_demo.id]
+  dns_label                  = "lb"
   prohibit_public_ip_on_vnic = false
 }
 
@@ -206,7 +206,7 @@ data "external" "cluster_token" {
 
 resource "null_resource" "oke_cluster" {
   provisioner "local-exec" {
-    
+
     command = <<EOT
       echo '${data.oci_containerengine_cluster_kube_config.kubeconfig.content}' > oke-kubeconfig.yaml
       # Get the current context name from the OKE kubeconfig

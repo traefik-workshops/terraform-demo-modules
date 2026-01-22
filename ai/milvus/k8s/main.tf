@@ -9,39 +9,39 @@ resource "helm_release" "milvus" {
 
   set = [
     {
-      name = "cluster.enabled"
+      name  = "cluster.enabled"
       value = false
     },
     {
-      name = "etcd.replicaCount"
+      name  = "etcd.replicaCount"
       value = 1
     },
     {
-      name = "etcd.persistence.size"
+      name  = "etcd.persistence.size"
       value = "5Gi"
     },
     {
-      name = "pulsarv3.enabled"
+      name  = "pulsarv3.enabled"
       value = false
     },
     {
-      name = "minio.mode"
+      name  = "minio.mode"
       value = "standalone"
     },
     {
-      name = "minio.persistence.size"
+      name  = "minio.persistence.size"
       value = "5Gi"
     },
     {
-      name = "minio.persistence.annotations.helm\\.sh\\/resource-policy"
+      name  = "minio.persistence.annotations.helm\\.sh\\/resource-policy"
       value = ""
     },
     {
-      name = "standalone.persistence.persistentVolumeClaim.size"
+      name  = "standalone.persistence.persistentVolumeClaim.size"
       value = "5Gi"
     },
     {
-      name = "standalone.persistence.annotations.helm\\.sh\\/resource-policy"
+      name  = "standalone.persistence.annotations.helm\\.sh\\/resource-policy"
       value = ""
     }
   ]

@@ -8,14 +8,14 @@ resource "helm_release" "knative_operator" {
   atomic     = true
 }
 
-resource "kubernetes_namespace" "knative_serving" {
+resource "kubernetes_namespace_v1" "knative_serving" {
   metadata {
     name = "knative-serving"
   }
 }
 
 resource "kubectl_manifest" "knative_serving" {
-  depends_on = [kubernetes_namespace.knative_serving, helm_release.knative_operator]
+  depends_on = [kubernetes_namespace_v1.knative_serving, helm_release.knative_operator]
 
   yaml_body = <<YAML
 apiVersion: operator.knative.dev/v1beta1
@@ -31,7 +31,7 @@ YAML
 }
 
 resource "kubectl_manifest" "knative_serving_domain" {
-  depends_on = [kubernetes_namespace.knative_serving, helm_release.knative_operator]
+  depends_on = [kubernetes_namespace_v1.knative_serving, helm_release.knative_operator]
 
   yaml_body = <<YAML
 apiVersion: v1

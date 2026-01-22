@@ -45,7 +45,7 @@ resource "random_uuid" "traefik_demo_app_role_id" {
 # Create app registration
 resource "azuread_application" "traefik_demo" {
   display_name = "traefik_demo"
-  
+
   # Configure optional claims to include group names
   optional_claims {
     access_token {
@@ -54,10 +54,10 @@ resource "azuread_application" "traefik_demo" {
       additional_properties = ["dns_domain_and_sam_account_name"]
     }
   }
-  
+
   # Configure group membership claims to use names
   group_membership_claims = ["All"]
-  
+
   web {
     redirect_uris = var.redirect_uris
     implicit_grant {
@@ -89,7 +89,7 @@ resource "azuread_application" "traefik_demo" {
 
   # Add API scope
   api {
-    mapped_claims_enabled = true
+    mapped_claims_enabled     = true
     known_client_applications = []
 
     oauth2_permission_scope {
@@ -104,7 +104,7 @@ resource "azuread_application" "traefik_demo" {
     }
   }
 
-  dynamic app_role {
+  dynamic "app_role" {
     for_each = toset(var.users)
 
     content {
@@ -122,7 +122,7 @@ resource "azuread_application" "traefik_demo" {
 resource "azuread_application_password" "traefik_demo" {
   application_id = azuread_application.traefik_demo.id
   display_name   = "traefik-demo-secret"
-  end_date       = "2050-12-31T00:00:00Z"  # Set expiry date
+  end_date       = "2050-12-31T00:00:00Z" # Set expiry date
 }
 
 # Create service principal for the application

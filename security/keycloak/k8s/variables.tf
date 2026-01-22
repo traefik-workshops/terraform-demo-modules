@@ -61,3 +61,18 @@ variable "access_token_lifespan" {
   type        = number
   default     = 2419200 # 28 days
 }
+
+variable "host" {
+  type    = string
+  default = ""
+}
+
+variable "client_certificate" {
+  type    = string
+  default = ""
+}
+
+variable "client_key" {
+  type    = string
+  default = ""
+}

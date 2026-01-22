@@ -8,7 +8,7 @@ module "keycloak_postgres" {
   password  = "topsecretpassword"
 }
 
-resource "kubernetes_secret" "keycloak_db_secret" {
+resource "kubernetes_secret_v1" "keycloak_db_secret" {
   metadata {
     name      = "keycloak-db-secret"
     namespace = var.namespace
@@ -24,7 +24,7 @@ resource "kubernetes_secret" "keycloak_db_secret" {
   }
 }
 
-resource "kubernetes_secret" "keycloak_secret" {
+resource "kubernetes_secret_v1" "keycloak_secret" {
   metadata {
     name      = "keycloak-secret"
     namespace = var.namespace
@@ -113,7 +113,7 @@ resource "kubectl_manifest" "keycloak_realm_import_crds" {
 }
 
 resource "kubectl_manifest" "keycloak_crd" {
-  depends_on = [module.keycloak_postgres, kubernetes_secret.keycloak_db_secret, kubernetes_secret.keycloak_secret, kubectl_manifest.keycloak_crds, kubectl_manifest.keycloak_realm_import_crds]
+  depends_on = [module.keycloak_postgres, kubernetes_secret_v1.keycloak_db_secret, kubernetes_secret_v1.keycloak_secret, kubectl_manifest.keycloak_crds, kubectl_manifest.keycloak_realm_import_crds]
 
   wait = true
 

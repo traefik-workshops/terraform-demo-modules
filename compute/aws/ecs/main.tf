@@ -39,7 +39,7 @@ module "vpc" {
   cidr           = "10.0.0.0/16"
   public_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 
-  }
+}
 
 # Create ECS clusters
 resource "aws_ecs_cluster" "cluster" {

@@ -4,7 +4,7 @@ output "pods" {
   value = { for k, v in module.llms.pods : k => {
     id   = v.id
     host = v.host
-  }}
+  } }
 
-  depends_on = [ module.llms ]
+  depends_on = [module.llms]
 }

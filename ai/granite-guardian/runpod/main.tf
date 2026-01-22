@@ -12,7 +12,7 @@ locals {
         command  = "--model ibm-granite/granite-guardian-3.3-8b"
         pod_type = var.pod_type
       }
-    } : {} 
+    } : {}
   )
 }
 

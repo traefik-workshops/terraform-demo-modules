@@ -37,9 +37,9 @@ locals {
 module "auth" {
   source = "../../../compute/runpod/auth"
 
-  runpod_api_key   = var.runpod_api_key
-  ngc_token        = var.ngc_token
-  ngc_username     = var.ngc_username
+  runpod_api_key = var.runpod_api_key
+  ngc_token      = var.ngc_token
+  ngc_username   = var.ngc_username
 }
 
 module "nims" {

@@ -18,14 +18,14 @@ resource "aws_cognito_user_pool" "pool" {
 
   # Email verification
   auto_verified_attributes = ["email"]
-  
+
   # User attributes
   schema {
     name                = "email"
     attribute_data_type = "String"
-    required           = true
-    mutable            = true
-    
+    required            = true
+    mutable             = true
+
     string_attribute_constraints {
       min_length = 0
       max_length = 2048
@@ -59,14 +59,14 @@ resource "aws_cognito_user_pool_domain" "main" {
 }
 
 resource "aws_cognito_user" "users" {
-  for_each      = toset(var.users)
-  user_pool_id  = aws_cognito_user_pool.pool.id
-  username      = each.key
+  for_each                 = toset(var.users)
+  user_pool_id             = aws_cognito_user_pool.pool.id
+  username                 = each.key
   desired_delivery_mediums = ["EMAIL"]
-  
-  password = "topsecretpassword"
+
+  password       = "topsecretpassword"
   message_action = "SUPPRESS"
-  
+
   attributes = {
     email          = "${each.key}@cognito.traefik"
     email_verified = "true"
@@ -75,17 +75,17 @@ resource "aws_cognito_user" "users" {
 
 resource "aws_cognito_user_group" "groups" {
   for_each = toset(var.users)
-  
+
   name         = "${each.value}s"
   description  = "${title(each.value)} group"
   user_pool_id = aws_cognito_user_pool.pool.id
 }
 
 resource "aws_cognito_user_in_group" "user_group_assignments" {
-  for_each = toset(var.users)
+  for_each     = toset(var.users)
   user_pool_id = aws_cognito_user_pool.pool.id
   group_name   = aws_cognito_user_group.groups[each.key].name
   username     = each.key
 
-  depends_on = [ aws_cognito_user.users, aws_cognito_user_group.groups ]
+  depends_on = [aws_cognito_user.users, aws_cognito_user_group.groups]
 }

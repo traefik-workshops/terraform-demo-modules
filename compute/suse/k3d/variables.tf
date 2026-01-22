@@ -7,7 +7,7 @@ variable "control_plane_nodes" {
   type = object({
     count = number
   })
-  default     = { count: 1 }
+  default     = { count : 1 }
   description = "Cluster Control Plane node config."
 }
 
@@ -17,7 +17,7 @@ variable "worker_nodes" {
     taint = string
     count = number
   }))
-  default = []
+  default     = []
   description = "Worker node config."
 }
 
@@ -27,8 +27,8 @@ variable "ports" {
     to   = number
   }))
   default = [
-    { from: 80,   to: 8000},
-    { from: 443,  to: 8443},
-    { from: 8080, to: 8080},
+    { from : 80, to : 8000 },
+    { from : 443, to : 8443 },
+    { from : 8080, to : 8080 },
   ]
 }

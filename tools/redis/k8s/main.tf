@@ -9,11 +9,11 @@ resource "helm_release" "redis" {
 
   set = [
     {
-      name = "auth.password"
+      name  = "auth.password"
       value = var.password
     },
     {
-      name = "replica.replicaCount"
+      name  = "replica.replicaCount"
       value = var.replicaCount
     }
   ]

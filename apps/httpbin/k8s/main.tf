@@ -1,4 +1,4 @@
-resource "kubernetes_deployment" "httpbin" {
+resource "kubernetes_deployment_v1" "httpbin" {
   metadata {
     name      = "httpbin"
     namespace = "apps"
@@ -19,8 +19,8 @@ resource "kubernetes_deployment" "httpbin" {
       }
       spec {
         container {
-          name = "httpbin"
-          image = "zalbiraw/go-httpbin:latest"
+          name              = "httpbin"
+          image             = "zalbiraw/go-httpbin:latest"
           image_pull_policy = "IfNotPresent"
           port {
             container_port = 8080
@@ -42,10 +42,10 @@ resource "kubernetes_service" "httpbin" {
       app = "httpbin"
     }
     port {
-      port = 8000
+      port        = 8000
       target_port = 8080
     }
   }
 
-  depends_on = [ kubernetes_deployment.httpbin ]
+  depends_on = [kubernetes_deployment_v1.httpbin]
 }

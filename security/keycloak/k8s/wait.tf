@@ -7,6 +7,25 @@ resource "null_resource" "validate_keycloak_deployment" {
       
       echo "=== Validating Keycloak Deployment ==="
       
+      # Configure isolated kubectl context
+      if [ -n "${var.host}" ]; then
+        KUBECONFIG_FILE=$(mktemp)
+        CERT_FILE=$(mktemp)
+        KEY_FILE=$(mktemp)
+        
+        echo "${var.client_certificate}" > "$CERT_FILE"
+        echo "${var.client_key}" > "$KEY_FILE"
+        
+        export KUBECONFIG="$KUBECONFIG_FILE"
+        kubectl config set-cluster remote --server="${var.host}" --insecure-skip-tls-verify=true >/dev/null
+        kubectl config set-credentials admin --client-certificate="$CERT_FILE" --client-key="$KEY_FILE" >/dev/null
+        kubectl config set-context remote --cluster=remote --user=admin >/dev/null
+        kubectl config use-context remote >/dev/null
+        
+        # Ensure cleanup on exit
+        trap 'rm -f "$KUBECONFIG_FILE" "$CERT_FILE" "$KEY_FILE"' EXIT
+      fi
+      
       # Wait for realm import job pod to complete
       echo "Checking realm import job pod..."
       TIMEOUT=300
