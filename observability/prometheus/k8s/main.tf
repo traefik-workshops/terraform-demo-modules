@@ -13,6 +13,22 @@ resource "helm_release" "prometheus" {
         prometheusSpec = {
           scrapeInterval     = "5s"
           evaluationInterval = "5s"
+          serviceMonitorSelector = {
+            matchExpressions = [
+              {
+                key      = "app.kubernetes.io/name"
+                operator = "In"
+                values   = ["prometheus-node-exporter", "kube-state-metrics"]
+              }
+            ]
+          }
+          podMonitorSelector = {
+            matchLabels = {
+              "foo" = "bar"
+            }
+          }
+
+          # This is the ONLY target we want
           additionalScrapeConfigs = var.traefik_metrics_job_url != "" ? [
             {
               job_name     = "traefik-otel-metrics"
@@ -25,12 +41,6 @@ resource "helm_release" "prometheus" {
             }
           ] : []
         }
-      }
-      "prometheus-pushgateway" = {
-        enabled = false
-      }
-      grafana = {
-        enabled = false
       }
     }),
     yamlencode(var.extra_values),
