@@ -58,8 +58,8 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids = var.create_vpc ? module.vpc[0].security_group_ids : var.security_group_ids
   iam_instance_profile   = var.iam_instance_profile != "" ? var.iam_instance_profile : null
 
-  # Generate user data with app-specific Docker settings
-  user_data = <<-EOF
+  # Generate user data with app-specific Docker settings (unless overridden)
+  user_data_base64 = var.user_data_override != "" ? base64encode(var.user_data_override) : base64encode(<<-EOF
     #!/bin/bash
     set -e
     
@@ -91,6 +91,7 @@ resource "aws_instance" "ec2" {
     echo "Container ${each.value.app_name}-${each.value.replica_number} started successfully"
     docker ps
   EOF
+  )
 
   user_data_replace_on_change = true
 
@@ -101,4 +102,8 @@ resource "aws_instance" "ec2" {
       Name = each.key # Format: "app-name-replica-number" (e.g., "whoami-1")
     }
   )
+
+  lifecycle {
+    ignore_changes = [ami]
+  }
 }

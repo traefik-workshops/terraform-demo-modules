@@ -73,3 +73,9 @@ variable "enable_acme_setup" {
   type        = bool
   default     = false
 }
+
+variable "user_data_override" {
+  description = "Optional user data script to override the default Docker-based generation"
+  type        = string
+  default     = ""
+}
