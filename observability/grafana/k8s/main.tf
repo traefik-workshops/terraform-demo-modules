@@ -29,25 +29,47 @@ locals {
   aigateway_dashboard = "aigateway-dashboards"
   aigateway_path      = "/dashboards/hub/aigateway"
 
-  dashboardProviders = concat(var.dashboards.aigateway ? [{
-    name                  = local.aigateway_dashboard
-    orgId                 = "1"
-    type                  = "file"
-    disableDeletion       = false
-    editable              = true
-    updateIntervalSeconds = 10
-    options = {
-      path = local.aigateway_path
-    }
-  }] : [])
+  dashboardProviders = concat(
+    var.dashboards.aigateway ? [{
+      name                  = local.aigateway_dashboard
+      orgId                 = "1"
+      type                  = "file"
+      disableDeletion       = false
+      editable              = true
+      updateIntervalSeconds = 10
+      options = {
+        path = local.aigateway_path
+      }
+    }] : [],
+    [for name, json in var.extra_dashboards : {
+      name                  = "custom-${name}"
+      orgId                 = "1"
+      type                  = "file"
+      disableDeletion       = false
+      editable              = true
+      updateIntervalSeconds = 10
+      options = {
+        path = "/dashboards/custom/${name}"
+      }
+    }]
+  )
 
-  configmapMounts = concat(var.dashboards.aigateway ? [{
-    name      = local.aigateway_dashboard
-    mountPath = "${local.aigateway_path}/dashboard.json"
-    subPath   = "dashboard.json"
-    configMap = local.aigateway_dashboard
-    readOnly  = true
-  }] : [])
+  configmapMounts = concat(
+    var.dashboards.aigateway ? [{
+      name      = local.aigateway_dashboard
+      mountPath = "${local.aigateway_path}/dashboard.json"
+      subPath   = "dashboard.json"
+      configMap = local.aigateway_dashboard
+      readOnly  = true
+    }] : [],
+    [for name, json in var.extra_dashboards : {
+      name      = "custom-${name}"
+      mountPath = "/dashboards/custom/${name}/dashboard.json"
+      subPath   = "dashboard.json"
+      configMap = "custom-dashboard-${name}"
+      readOnly  = true
+    }]
+  )
 }
 
 resource "helm_release" "grafana" {
@@ -109,4 +131,17 @@ module "aigateway_dashboard" {
   namespace = var.namespace
 
   count = var.dashboards.aigateway ? 1 : 0
+}
+
+resource "kubernetes_config_map_v1" "extra_dashboards" {
+  for_each = var.extra_dashboards
+
+  metadata {
+    name      = "custom-dashboard-${each.key}"
+    namespace = var.namespace
+  }
+
+  data = {
+    "dashboard.json" = each.value
+  }
 }

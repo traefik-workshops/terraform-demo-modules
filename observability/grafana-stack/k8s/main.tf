@@ -29,6 +29,7 @@ module "grafana" {
   ingress_domain     = var.ingress_domain
   ingress_entrypoint = var.ingress_entrypoint
   dashboards         = var.dashboards
+  extra_dashboards   = var.extra_dashboards
 
   prometheus = {
     enabled = true

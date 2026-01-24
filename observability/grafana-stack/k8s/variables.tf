@@ -51,3 +51,9 @@ variable "dashboards" {
     apim       = bool
   })
 }
+
+variable "extra_dashboards" {
+  type        = map(string)
+  description = "A map of dashboard names to their JSON content."
+  default     = {}
+}
