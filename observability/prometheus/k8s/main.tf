@@ -11,24 +11,20 @@ resource "helm_release" "prometheus" {
     yamlencode({
       prometheus = {
         prometheusSpec = {
-          scrapeInterval     = "5s"
-          evaluationInterval = "5s"
+          scrapeInterval            = "5s"
+          evaluationInterval        = "5s"
+          enableRemoteWriteReceiver = true
           serviceMonitorSelector = {
-            matchExpressions = [
-              {
-                key      = "app.kubernetes.io/name"
-                operator = "In"
-                values   = ["prometheus-node-exporter", "kube-state-metrics"]
-              }
-            ]
+            matchLabels = {
+              "app.kubernetes.io/instance" = "prometheus"
+            }
           }
           podMonitorSelector = {
             matchLabels = {
-              "foo" = "bar"
+              "benchmark" = "enabled"
             }
           }
 
-          # This is the ONLY target we want
           additionalScrapeConfigs = var.traefik_metrics_job_url != "" ? [
             {
               job_name     = "traefik-otel-metrics"
@@ -42,6 +38,20 @@ resource "helm_release" "prometheus" {
           ] : []
         }
       }
+      kubeStateMetrics = { enabled = true }
+      nodeExporter     = { enabled = true }
+      kubelet          = { enabled = true }
+
+      alertmanager             = { enabled = false }
+      "prometheus-pushgateway" = { enabled = false }
+      grafana                  = { enabled = false }
+      kubeApiServer            = { enabled = false }
+      kubeControllerManager    = { enabled = false }
+      kubeScheduler            = { enabled = false }
+      kubeProxy                = { enabled = false }
+      kubeEtcd                 = { enabled = false }
+      coreDns                  = { enabled = false }
+      defaultRules             = { create = false }
     }),
     yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
