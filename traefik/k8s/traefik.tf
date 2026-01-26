@@ -66,6 +66,9 @@ locals {
       kind              = var.deploymentType
       replicas          = module.config.replica_count
       additionalVolumes = local.deployment_volumes
+      podAnnotations    = var.file_provider_config != "" ? {
+        "checksum/fileprovider" = sha256(var.file_provider_config)
+      } : {}
     }
 
     # Service configuration
