@@ -18,10 +18,10 @@ locals {
     ]
   )
 
-  # Build environment variables list
   # Merge standard env vars with explicit HUB_TOKEN injection (Nutanix pattern)
+  # Filter out K8s-specific env vars (like valueFrom maps) that don't belong on a VM
   env_vars_list = concat(
-    module.config.env_vars_list,
+    [for env in module.config.env_vars_list : env if try(can(tostring(env.value)), false)],
     module.config.traefik_hub_token != "" ? [{ name = "HUB_TOKEN", value = module.config.traefik_hub_token }] : []
   )
 
@@ -39,12 +39,13 @@ module "ec2" {
     }
   }
 
-  instance_type        = var.instance_type
-  create_vpc           = var.create_vpc
-  vpc_id               = var.vpc_id
-  security_group_ids   = var.security_group_ids
-  iam_instance_profile = var.iam_instance_profile
-  enable_acme_setup    = module.config.cloudflare_dns.enabled
+  instance_type          = var.instance_type
+  create_vpc             = var.create_vpc
+  vpc_id                 = var.vpc_id
+  security_group_ids     = var.security_group_ids
+  iam_instance_profile   = var.iam_instance_profile
+  enable_acme_setup      = module.config.cloudflare_dns.enabled
+  root_block_device_size = var.root_block_device_size
 
   common_tags = merge(var.extra_tags, {
     "Name"                                                     = "traefik"

@@ -103,6 +103,11 @@ resource "aws_instance" "ec2" {
     }
   )
 
+  root_block_device {
+    volume_size = var.root_block_device_size
+    volume_type = "gp3"
+  }
+
   lifecycle {
     ignore_changes = [ami]
   }

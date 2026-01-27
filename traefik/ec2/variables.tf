@@ -61,3 +61,9 @@ variable "extra_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "root_block_device_size" {
+  description = "Root block device size in GB"
+  type        = number
+  default     = 20
+}
