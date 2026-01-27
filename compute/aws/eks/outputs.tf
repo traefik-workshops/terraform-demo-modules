@@ -18,3 +18,8 @@ output "token" {
   description = "EKS cluster auth token"
   value       = data.aws_eks_cluster_auth.eks.token
 }
+
+output "cluster_security_group_id" {
+  description = "Security group ID attached to the EKS cluster"
+  value       = module.eks.cluster_security_group_id
+}
