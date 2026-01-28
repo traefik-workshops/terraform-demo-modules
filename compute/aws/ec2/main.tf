@@ -106,6 +106,13 @@ resource "aws_instance" "ec2" {
   root_block_device {
     volume_size = var.root_block_device_size
     volume_type = "gp3"
+    throughput  = 125
+    iops        = 3000
+    tags        = {}
+  }
+
+  credit_specification {
+    cpu_credits = "unlimited"
   }
 
   lifecycle {

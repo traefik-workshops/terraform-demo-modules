@@ -45,8 +45,12 @@ write_files:
 
       [Service]
       User=root
+      Group=root
+      Type=simple
+      ExecStartPre=/usr/bin/chmod +x /usr/local/bin/node_exporter
       ExecStart=/usr/local/bin/node_exporter --web.listen-address=:9101
       Restart=always
+      RestartSec=5
 
       [Install]
       WantedBy=multi-user.target
@@ -60,16 +64,26 @@ write_files:
           config:
             scrape_configs:
               - job_name: 'node-exporter'
-                scrape_interval: 10s
+                scrape_interval: 5s
                 static_configs:
                   - targets: ['localhost:9101']
+              - job_name: 'traefik'
+                scrape_interval: 5s
+                static_configs:
+                  - targets: ['localhost:9100']
       exporters:
         otlphttp:
           endpoint: "${otlp_address}"
+          tls:
+            insecure_skip_verify: true
+      processors:
+        batch:
+          timeout: 5s
       service:
         pipelines:
           metrics:
             receivers: [prometheus]
+            processors: [batch]
             exporters: [otlphttp]
     owner: root:root
     permissions: "0644"
@@ -92,7 +106,6 @@ runcmd:
   - docker pull ${traefik_image}
   - id=$(docker create ${traefik_image})
   - echo "Extracting binary..."
-  # Try typical paths
   - docker cp $id:/traefik-hub /usr/local/bin/traefik-hub || docker cp $id:/usr/local/bin/traefik /usr/local/bin/traefik-hub
   - docker rm -v $id
   - chmod +x /usr/local/bin/traefik-hub
@@ -103,16 +116,23 @@ runcmd:
 
 %{ if otlp_address != "" ~}
   # Install Node Exporter
-  - curl -LO https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
-  - tar xvfz node_exporter-1.7.0.linux-amd64.tar.gz
-  - mv node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
-  - rm -rf node_exporter*
-  - systemctl enable --now node_exporter
+  - |
+    echo "Installing Node Exporter..."
+    curl -sfLO https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz || (echo "FAILED to download node_exporter" && exit 1)
+    tar xvfz node_exporter-1.7.0.linux-amd64.tar.gz || (echo "FAILED to extract node_exporter" && exit 1)
+    cp node_exporter-1.7.0.linux-amd64/node_exporter /usr/local/bin/
+    chmod +x /usr/local/bin/node_exporter
+    rm -rf node_exporter*
+    systemctl daemon-reload
+    systemctl enable --now node_exporter || (journalctl -u node_exporter | tail -n 20)
+    echo "Node Exporter status: $(systemctl is-active node_exporter)"
 
   # Install OTEL Collector
-  - curl -LO https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.118.0/otelcol-contrib_0.118.0_linux_amd64.rpm
-  - rpm -ivh otelcol-contrib_0.118.0_linux_amd64.rpm
-  - systemctl enable --now otelcol-contrib
-  # Restart to pick up config (if rpm started default)
-  - systemctl restart otelcol-contrib
+  - |
+    echo "Installing OTEL Collector..."
+    curl -sfLO https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.118.0/otelcol-contrib_0.118.0_linux_amd64.rpm || (echo "FAILED to download OTEL collector" && exit 1)
+    rpm -ivh otelcol-contrib_0.118.0_linux_amd64.rpm || (echo "FAILED to install OTEL collector" && exit 1)
+    systemctl enable --now otelcol-contrib
+    systemctl restart otelcol-contrib
+    echo "OTEL Collector status: $(systemctl is-active otelcol-contrib)"
 %{ endif ~}
