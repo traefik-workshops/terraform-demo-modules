@@ -26,24 +26,21 @@ module "eks" {
   node_security_group_tags = {
     "kubernetes.io/cluster/${var.cluster_name}" = null
   }
-}
 
-module "eks_node_groups" {
-  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
-  version = "~> 20.0"
-
-  name            = "${var.cluster_name}-ng"
-  cluster_name    = module.eks.cluster_name
-  cluster_version = module.eks.cluster_version
-
-  subnet_ids                        = var.create_vpc ? module.vpc[0].private_subnet_ids : var.private_subnet_ids
-  cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-  vpc_security_group_ids            = [module.eks.node_security_group_id]
-  cluster_service_cidr              = module.eks.cluster_service_cidr
-
-  ami_type       = var.cluster_machine_ami_type
-  instance_types = [var.cluster_node_type]
-  desired_size   = var.cluster_node_count
+  eks_managed_node_groups = merge(
+    {
+      default = {
+        name           = "${var.cluster_name}-ng"
+        ami_type       = var.cluster_node_ami_type
+        instance_types = [var.cluster_node_type]
+        min_size       = var.cluster_node_count
+        max_size       = var.cluster_node_count
+        desired_size   = var.cluster_node_count
+        labels         = var.cluster_node_labels
+      }
+    },
+    var.node_groups
+  )
 }
 
 module "ebs_csi_controller_role" {
@@ -69,7 +66,7 @@ resource "aws_eks_addon" "traefik_demo" {
     }
   })
 
-  depends_on = [module.eks, module.eks_node_groups]
+  depends_on = [module.eks]
 }
 
 resource "null_resource" "eks_cluster" {
