@@ -35,6 +35,8 @@ resource "kubernetes_deployment_v1" "echo" {
       }
 
       spec {
+        node_selector = var.node_selector
+
         container {
           name              = each.key
           image             = each.value.docker_image

@@ -33,3 +33,9 @@ variable "common_labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "node_selector" {
+  description = "Node selector for pod scheduling"
+  type        = map(string)
+  default     = {}
+}
