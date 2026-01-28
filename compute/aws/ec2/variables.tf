@@ -14,7 +14,13 @@ variable "apps" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.large"
+}
+
+variable "ami_architecture" {
+  description = "AMI architecture (x86_64 or arm64)"
+  type        = string
+  default     = "x86_64"
 }
 
 variable "common_tags" {
