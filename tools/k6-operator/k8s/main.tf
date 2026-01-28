@@ -12,5 +12,6 @@ resource "helm_release" "k6_operator" {
     namespace = {
       create = false
     }
+    nodeSelector = var.node_selector
   })]
 }

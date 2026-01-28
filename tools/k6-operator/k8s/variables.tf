@@ -8,3 +8,9 @@ variable "namespace" {
   description = "Namespace for the k6 deployment"
   type        = string
 }
+
+variable "node_selector" {
+  description = "Node selector for pod scheduling"
+  type        = map(string)
+  default     = {}
+}
