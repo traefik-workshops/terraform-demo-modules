@@ -87,10 +87,10 @@ locals {
       },
       var.enable_prometheus ? {
         prometheus = {
-          port       = 9101
-          expose     = { default = true }
-          exposePort = 9101
-          protocol   = "TCP"
+          port        = 9101
+          expose      = { default = true }
+          exposedPort = 9101
+          protocol    = "TCP"
         }
       } : {},
       var.custom_ports
@@ -99,11 +99,13 @@ locals {
     api = {
       dashboard = var.enable_dashboard
       insecure  = var.dashboard_insecure
+      debug     = var.enable_debug
     }
 
     additionalArguments = concat(
+      var.enable_debug ? ["--api.debug=true"] : [],
       var.file_provider_config != "" ? [
-        "--providers.file.filename=${var.file_provider_path}"
+        "--providers.file.directory=${var.file_provider_path}"
       ] : [],
       var.custom_arguments,
       # Nutanix provider CLI arguments (generated from shared config)
@@ -165,7 +167,7 @@ locals {
         }
       }
       access = {
-        enabled = true
+        enabled = var.enable_access_logs
         filters = {
           statuscodes = "200-599"
         }

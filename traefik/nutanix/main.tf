@@ -41,6 +41,40 @@ locals {
     "TraefikServiceName" = "traefik"
     "TraefikServicePort" = "80"
   }
+
+  # Normalize performance tuning with defaults (consistent with EC2)
+  performance_tuning = {
+    limit_nofile        = coalesce(try(var.performance_tuning.limit_nofile, null), 500000)
+    tcp_tw_reuse        = coalesce(try(var.performance_tuning.tcp_tw_reuse, null), 1)
+    tcp_timestamps      = coalesce(try(var.performance_tuning.tcp_timestamps, null), 1)
+    rmem_max            = coalesce(try(var.performance_tuning.rmem_max, null), 16777216)
+    wmem_max            = coalesce(try(var.performance_tuning.wmem_max, null), 16777216)
+    somaxconn           = coalesce(try(var.performance_tuning.somaxconn, null), 4096)
+    netdev_max_backlog  = coalesce(try(var.performance_tuning.netdev_max_backlog, null), 4096)
+    ip_local_port_range = coalesce(try(var.performance_tuning.ip_local_port_range, null), "1024 65535")
+    gomaxprocs          = coalesce(try(var.performance_tuning.gomaxprocs, null), 0)
+    gogc                = coalesce(try(var.performance_tuning.gogc, null), 100)
+    numa_node           = coalesce(try(var.performance_tuning.numa_node, null), -1)
+  }
+}
+
+# Use shared cloud-init module
+module "cloud_init" {
+  source = "../cloud-init"
+
+  traefik_hub_version = module.config.traefik_hub_tag
+  arch                = var.arch
+  cli_arguments       = local.cli_arguments
+  env_vars = concat(
+    module.config.env_vars_list,
+    [{ name = "HUB_TOKEN", value = var.traefik_hub_token }]
+  )
+  file_provider_config = var.file_provider_config
+  dashboard_config     = local.dashboard_config
+  performance_tuning   = local.performance_tuning
+  vip                  = var.vip
+  keepalived_priority  = var.keepalived_priority
+  network_interface    = var.network_interface
 }
 
 module "traefik_vm" {
@@ -56,33 +90,7 @@ module "traefik_vm" {
 
   categories = local.traefik_categories
 
-  cloud_init_user_data = templatefile("${path.module}/cloud-init.tpl", {
-    # Use computed CLI arguments
-    cli_arguments = local.cli_arguments
-
-    # Environment variables
-    env_vars = concat(
-      module.config.env_vars_list,
-      module.config.traefik_hub_token != "" ? [{ name = "HUB_TOKEN", value = module.config.traefik_hub_token }] : []
-    )
-
-    # File provider config (user-provided)
-    file_provider_config = var.file_provider_config
-
-    # Dashboard Config
-    dashboard_config = local.dashboard_config
-
-    # Dynamic ports for firewall
-    ports_to_open = local.ports_to_open
-
-    # Cloudflare DNS flag for conditional ACME setup
-    cloudflare_dns_enabled = module.config.cloudflare_dns.enabled
-
-    # Keepalived config
-    vip                 = var.vip
-    keepalived_priority = var.keepalived_priority
-    network_interface   = var.network_interface
-  })
+  cloud_init_user_data = module.cloud_init.rendered
 }
 
 output "ip_address" {

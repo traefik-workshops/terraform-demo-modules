@@ -116,3 +116,27 @@ variable "kubernetes_namespaces" {
   type        = list(string)
   default     = []
 }
+
+variable "service_annotations" {
+  description = "Extra annotations for the Traefik service"
+  type        = map(string)
+  default     = {}
+}
+
+variable "ingress_class_name" {
+  description = "The name of the ingress class"
+  type        = string
+  default     = "traefik"
+}
+
+variable "ingress_class_is_default" {
+  description = "Whether this ingress class is the default"
+  type        = bool
+  default     = true
+}
+
+variable "external_traffic_policy" {
+  description = "The external traffic policy for the Traefik service"
+  type        = string
+  default     = "Cluster"
+}

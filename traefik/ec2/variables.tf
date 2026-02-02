@@ -11,6 +11,12 @@ variable "instance_type" {
   default     = "t3.small"
 }
 
+variable "ami_architecture" {
+  description = "AMI architecture (x86_64 or arm64)"
+  type        = string
+  default     = "x86_64"
+}
+
 variable "create_vpc" {
   description = "Create VPC if vpc_id is not provided"
   type        = bool
@@ -66,4 +72,49 @@ variable "root_block_device_size" {
   description = "Root block device size in GB"
   type        = number
   default     = 20
+}
+
+# =============================================================================
+# Performance Tuning Configuration
+# =============================================================================
+
+variable "performance_tuning" {
+  description = "OS-level performance tuning parameters for high-throughput workloads"
+  type = object({
+    # Systemd ulimits
+    limit_nofile = optional(number, 500000)
+
+    # Sysctl network tuning
+    tcp_tw_reuse        = optional(number, 1)
+    tcp_timestamps      = optional(number, 1)
+    rmem_max            = optional(number, 16777216)
+    wmem_max            = optional(number, 16777216)
+    somaxconn           = optional(number, 4096)
+    netdev_max_backlog  = optional(number, 4096)
+    ip_local_port_range = optional(string, "1024 65535")
+
+    # Go runtime tuning
+    gomaxprocs = optional(number, 0)   # 0 = use all CPUs
+    gogc       = optional(number, 100) # default GC target percentage
+    numa_node  = optional(number, -1)  # -1 = disabled, 0+ = pin to node
+  })
+  default = {}
+}
+
+variable "wait_for_ready" {
+  description = "Wait for Traefik to be ready (responding on port 80) before completing"
+  type        = bool
+  default     = true
+}
+
+variable "wait_timeout" {
+  description = "Timeout in seconds to wait for Traefik readiness"
+  type        = number
+  default     = 300
+}
+
+variable "create_eip" {
+  description = "Create and attach an Elastic IP to the first Traefik instance"
+  type        = bool
+  default     = false
 }

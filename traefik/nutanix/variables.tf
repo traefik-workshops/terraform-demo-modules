@@ -78,3 +78,30 @@ variable "network_interface" {
   type        = string
   default     = "ens3"
 }
+
+# =============================================================================
+# Performance Tuning Configuration
+# =============================================================================
+
+variable "performance_tuning" {
+  description = "OS-level performance tuning parameters for high-throughput workloads"
+  type = object({
+    # Systemd ulimits
+    limit_nofile = optional(number, 500000)
+
+    # Sysctl network tuning
+    tcp_tw_reuse        = optional(number, 1)
+    tcp_timestamps      = optional(number, 1)
+    rmem_max            = optional(number, 16777216)
+    wmem_max            = optional(number, 16777216)
+    somaxconn           = optional(number, 4096)
+    netdev_max_backlog  = optional(number, 4096)
+    ip_local_port_range = optional(string, "1024 65535")
+
+    # Go runtime tuning
+    gomaxprocs = optional(number, 0)   # 0 = use all CPUs
+    gogc       = optional(number, 100) # default GC target percentage
+    numa_node  = optional(number, -1)  # -1 = disabled, 0+ = pin to node
+  })
+  default = {}
+}

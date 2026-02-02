@@ -46,6 +46,12 @@ variable "enable_preview_mode" {
   default     = false
 }
 
+variable "enable_debug" {
+  description = "Enable Traefik debug mode (pprof)"
+  type        = bool
+  default     = false
+}
+
 variable "replica_count" {
   description = "Number of replicas (VMs, EC2 instances, ECS tasks, K8s pods)"
   type        = number
@@ -106,6 +112,12 @@ variable "log_level" {
   description = "Log level (DEBUG, INFO, WARN, ERROR)"
   type        = string
   default     = "INFO"
+}
+
+variable "enable_access_logs" {
+  description = "Enable Traefik access logs"
+  type        = bool
+  default     = true
 }
 
 variable "otlp_address" {
@@ -193,7 +205,7 @@ variable "file_provider_config" {
 variable "file_provider_path" {
   description = "Path where the file provider config is mounted (platform-specific)"
   type        = string
-  default     = "/file-provider/dynamic.yaml"
+  default     = "/file-provider"
 }
 
 # -----------------------------------------------------------------------------

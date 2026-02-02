@@ -94,6 +94,11 @@ output "ports_list" {
   ]
 }
 
+output "image_tag" {
+  description = "Computed image tag"
+  value       = local.image_tag
+}
+
 output "image_full" {
   description = "Computed full image reference"
   value       = local.image_full
@@ -139,6 +144,11 @@ output "traefik_hub_token" {
   sensitive   = true
 }
 
+output "traefik_hub_tag" {
+  description = "Traefik Hub version tag"
+  value       = var.traefik_hub_tag
+}
+
 output "log_level" {
   description = "Log level"
   value       = var.log_level
@@ -153,6 +163,7 @@ output "dashboard_entrypoints" {
   description = "Dashboard entrypoints"
   value       = var.dashboard_entrypoints
 }
+
 output "enable_api_gateway" {
   value = var.enable_api_gateway
 }

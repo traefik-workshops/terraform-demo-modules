@@ -18,6 +18,7 @@ module "config" {
   enable_api_management = var.enable_api_management
   enable_offline_mode   = var.enable_offline_mode
   enable_preview_mode   = var.enable_preview_mode
+  enable_debug          = var.enable_debug
 
   # Replica count
   replica_count = var.replica_count
@@ -40,6 +41,7 @@ module "config" {
   enable_otlp_metrics          = var.enable_otlp_metrics
   enable_otlp_traces           = var.enable_otlp_traces
   enable_prometheus            = var.enable_prometheus
+  enable_access_logs           = var.enable_access_logs
 
   # Plugins & Extensions
   custom_plugins       = var.custom_plugins
@@ -101,6 +103,12 @@ variable "enable_offline_mode" {
 
 variable "enable_preview_mode" {
   description = "Enable Traefik Hub Preview features"
+  type        = bool
+  default     = false
+}
+
+variable "enable_debug" {
+  description = "Enable Traefik debug mode (pprof)"
   type        = bool
   default     = false
 }
@@ -185,6 +193,12 @@ variable "enable_otlp_application_logs" {
   default     = false
 }
 
+variable "enable_access_logs" {
+  description = "Enable Traefik access logs"
+  type        = bool
+  default     = true
+}
+
 variable "enable_otlp_metrics" {
   description = "Enable OTLP metrics"
   type        = bool
@@ -243,7 +257,7 @@ variable "file_provider_config" {
 variable "file_provider_path" {
   description = "Path where the file provider config is mounted"
   type        = string
-  default     = "/etc/traefik/dynamic.yaml"
+  default     = "/etc/traefik/dynamic"
 }
 
 # Licensing & DNS

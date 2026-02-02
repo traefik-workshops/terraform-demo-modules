@@ -66,15 +66,25 @@ locals {
       kind              = var.deploymentType
       replicas          = module.config.replica_count
       additionalVolumes = local.deployment_volumes
-      podAnnotations    = var.file_provider_config != "" ? {
+      podAnnotations = var.file_provider_config != "" ? {
         "checksum/fileprovider" = sha256(var.file_provider_config)
       } : {}
     }
 
     # Service configuration
     service = {
-      kind = var.serviceType
+      kind                  = var.serviceType
+      annotations           = var.service_annotations
+      externalTrafficPolicy = var.external_traffic_policy
     }
+
+    # IngressClass configuration
+    ingressClass = {
+      enabled        = true
+      isDefaultClass = var.ingress_class_is_default
+      name           = var.ingress_class_name
+    }
+
 
     # Environment variables - add USER env
     env = concat(
