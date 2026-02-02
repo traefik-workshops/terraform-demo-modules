@@ -59,3 +59,9 @@ variable "load_balancer_strategy" {
   type        = string
   default     = ""
 }
+
+variable "whoami_version" {
+  description = "The Whoami version to install"
+  type        = string
+  default     = "v1.10.1"
+}

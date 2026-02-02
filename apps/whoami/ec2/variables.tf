@@ -39,3 +39,15 @@ variable "security_group_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "whoami_version" {
+  description = "The Whoami version to install"
+  type        = string
+  default     = "1.10.1"
+}
+
+variable "ami_architecture" {
+  description = "The architecture (x86_64, arm64)"
+  type        = string
+  default     = "x86_64"
+}

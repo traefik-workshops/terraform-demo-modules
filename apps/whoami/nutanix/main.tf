@@ -11,6 +11,15 @@ locals {
   ) : {}
 }
 
+# Use shared cloud-init module
+module "cloud_init" {
+  source = "../cloud-init"
+
+  whoami_version = var.whoami_version
+  arch           = var.arch
+  port           = var.service_port
+}
+
 module "whoami_vm" {
   source = "../../../compute/nutanix/vm"
 
@@ -25,18 +34,7 @@ module "whoami_vm" {
   # Apply service discovery categories
   categories = local.service_categories
 
-  cloud_init_user_data = <<-EOF
-    #cloud-config
-    hostname: ${var.vm_name}
-    runcmd:
-      - ufw disable
-      - systemctl disable --now ufw
-      - iptables -F
-      - iptables -X
-      - iptables -P INPUT ACCEPT
-      - iptables -P FORWARD ACCEPT
-      - iptables -P OUTPUT ACCEPT
-  EOF
+  cloud_init_user_data = module.cloud_init.rendered
 }
 
 output "ip_address" {
