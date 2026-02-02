@@ -39,8 +39,25 @@ resource "helm_release" "prometheus" {
         }
       }
       kubeStateMetrics = { enabled = true }
-      nodeExporter     = { enabled = true }
-      kubelet          = { enabled = true }
+      kube-state-metrics = {
+        metricLabelsAllowlist = [
+          "nodes=[workload]"
+        ]
+      }
+      nodeExporter = { enabled = true }
+      prometheus-node-exporter = {
+        prometheus = {
+          monitor = {
+            relabelings = [
+              {
+                sourceLabels = ["__meta_kubernetes_pod_node_name"]
+                targetLabel  = "node"
+              }
+            ]
+          }
+        }
+      }
+      kubelet = { enabled = true }
 
       alertmanager             = { enabled = false }
       "prometheus-pushgateway" = { enabled = false }
