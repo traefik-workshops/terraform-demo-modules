@@ -39,6 +39,16 @@ locals {
   }
 }
 
+# Replacement trigger to avoid AWS provider bug with user_data_replace_on_change
+resource "terraform_data" "replacement_trigger" {
+  for_each = local.instances_map
+  input = base64encode(
+    try(var.user_data_overrides[each.key], null) != null ? var.user_data_overrides[each.key] : (
+      var.user_data_override != "" ? var.user_data_override : "default"
+    )
+  )
+}
+
 module "vpc" {
   count  = var.create_vpc ? 1 : 0
   source = "../vpc"
@@ -52,14 +62,16 @@ module "vpc" {
 resource "aws_instance" "ec2" {
   for_each = local.instances_map
 
-  ami                    = data.aws_ami.amazon_linux_2023.id
-  instance_type          = var.instance_type
-  subnet_id              = var.create_vpc ? module.vpc[0].public_subnet_ids[each.value.idx % length(module.vpc[0].public_subnet_ids)] : each.value.subnet_ids[each.value.idx % length(each.value.subnet_ids)]
-  vpc_security_group_ids = var.create_vpc ? module.vpc[0].security_group_ids : var.security_group_ids
-  iam_instance_profile   = var.iam_instance_profile != "" ? var.iam_instance_profile : null
+  ami                         = data.aws_ami.amazon_linux_2023.id
+  instance_type               = var.instance_type
+  subnet_id                   = var.create_vpc ? module.vpc[0].public_subnet_ids[each.value.idx % length(module.vpc[0].public_subnet_ids)] : each.value.subnet_ids[each.value.idx % length(each.value.subnet_ids)]
+  vpc_security_group_ids      = var.create_vpc ? module.vpc[0].security_group_ids : var.security_group_ids
+  iam_instance_profile        = var.iam_instance_profile != "" ? var.iam_instance_profile : null
+  associate_public_ip_address = var.associate_public_ip_address
 
   # Generate user data with app-specific Docker settings (unless overridden)
-  user_data_base64 = var.user_data_override != "" ? base64encode(var.user_data_override) : base64encode(<<-EOF
+  user_data_base64 = try(var.user_data_overrides[each.key], null) != null ? base64encode(var.user_data_overrides[each.key]) : (
+    var.user_data_override != "" ? base64encode(var.user_data_override) : base64encode(<<-EOF
     #!/bin/bash
     set -e
     
@@ -91,9 +103,10 @@ resource "aws_instance" "ec2" {
     echo "Container ${each.value.app_name}-${each.value.replica_number} started successfully"
     docker ps
   EOF
+    )
   )
 
-  user_data_replace_on_change = true
+  user_data_replace_on_change = false # We use replace_triggered_by instead to avoid AWS provider bug with user_data_replace_on_change
 
   tags = merge(
     var.common_tags,
@@ -106,16 +119,12 @@ resource "aws_instance" "ec2" {
   root_block_device {
     volume_size = var.root_block_device_size
     volume_type = "gp3"
-    throughput  = 125
-    iops        = 3000
-    tags        = {}
-  }
-
-  credit_specification {
-    cpu_credits = "unlimited"
   }
 
   lifecycle {
     ignore_changes = [ami]
+    replace_triggered_by = [
+      terraform_data.replacement_trigger[each.key]
+    ]
   }
 }

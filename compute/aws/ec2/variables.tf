@@ -86,8 +86,20 @@ variable "user_data_override" {
   default     = ""
 }
 
+variable "user_data_overrides" {
+  description = "Optional map of user data scripts to override the default Docker-based generation per instance key"
+  type        = map(string)
+  default     = {}
+}
+
 variable "root_block_device_size" {
   description = "Root block device size in GB"
   type        = number
   default     = 20
+}
+
+variable "associate_public_ip_address" {
+  description = "Associate a public IP address with an instance in a VPC"
+  type        = bool
+  default     = true
 }
