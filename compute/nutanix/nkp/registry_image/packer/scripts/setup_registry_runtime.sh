@@ -71,6 +71,15 @@ if ! docker ps --format '{{.Names}}' | grep -q "^nkp-registry$"; then
         docker start nkp-registry
     else
         echo "Creating and starting local Docker registry container..."
+        
+        # Conditional Docker Login
+        if [ -n "$DOCKER_HUB_USERNAME" ] && [ -n "$DOCKER_HUB_ACCESS_TOKEN" ]; then
+            echo "Docker Hub credentials provided. Logging in..."
+            echo "$DOCKER_HUB_ACCESS_TOKEN" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+        else
+             echo "No Docker Hub credentials provided. Skipping login (rate limits may apply)."
+        fi
+
         docker run -d \
             --name nkp-registry \
             --restart always \

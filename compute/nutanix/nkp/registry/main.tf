@@ -60,7 +60,7 @@ resource "terraform_data" "registry_health_check" {
     inline = [
       "sudo mv /tmp/setup_registry_runtime.sh /usr/local/bin/setup_registry_runtime.sh",
       "sudo chmod +x /usr/local/bin/setup_registry_runtime.sh",
-      "sudo /usr/local/bin/setup_registry_runtime.sh",
+      "sudo DOCKER_HUB_USERNAME='${var.docker_hub_username}' DOCKER_HUB_ACCESS_TOKEN='${nonsensitive(var.docker_hub_access_token)}' /usr/local/bin/setup_registry_runtime.sh",
       "# Final health check to ensure registry is serving images",
       "for i in {1..30}; do",
       "  if curl -s http://localhost:5000/v2/ >/dev/null; then",

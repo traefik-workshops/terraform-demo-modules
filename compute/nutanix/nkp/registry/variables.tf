@@ -29,3 +29,16 @@ variable "public_ip" {
   type        = string
   default     = null
 }
+
+variable "docker_hub_username" {
+  description = "Docker Hub Username"
+  type        = string
+  default     = ""
+}
+
+variable "docker_hub_access_token" {
+  description = "Docker Hub Access Token"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
