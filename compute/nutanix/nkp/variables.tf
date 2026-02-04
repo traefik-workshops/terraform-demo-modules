@@ -176,3 +176,9 @@ variable "kubernetes_version" {
   type        = string
   default     = ""
 }
+
+variable "enable_kommander_traefik_fip" {
+  description = "Enable Load Balancer FIP creation"
+  type        = bool
+  default     = false
+}

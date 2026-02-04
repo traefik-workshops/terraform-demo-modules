@@ -45,6 +45,13 @@ if [ -n "${KUBERNETES_VERSION:-}" ]; then
     ARGS+=(--kubernetes-version "$KUBERNETES_VERSION")
 fi
 
+if [ -n "${CLUSTER_HOSTNAMES:-}" ]; then
+    IFS=',' read -ra HOSTNAMES <<< "$CLUSTER_HOSTNAMES"
+    for hostname in "${HOSTNAMES[@]}"; do
+        ARGS+=(--cluster-hostname "$hostname")
+    done
+fi
+
 nkp "${ARGS[@]}"
 
 # Make new cluster KUBECONFIG default

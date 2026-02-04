@@ -23,6 +23,11 @@ output "client_key_data" {
   sensitive   = true
 }
 
+output "traefik_fip" {
+  description = "Map of Private IP to Public IP for Load Balancer FIPs"
+  value       = local.traefik_fip != "" ? local.traefik_fip : null
+}
+
 output "kubeconfig" {
   description = "Kubeconfig content for the cluster"
   value       = local.kubeconfig_raw

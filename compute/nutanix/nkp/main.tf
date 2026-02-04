@@ -11,7 +11,28 @@ locals {
     registry_mirror_full = var.registry_mirror_url
   })
 
+
+  traefik_ip  = var.lb_ip_range != "" ? split("-", var.lb_ip_range)[0] : ""
+  traefik_fip = var.enable_kommander_traefik_fip ? nutanix_floating_ip_v2.lb_fip[0].floating_ip[0].ipv4[0].value : ""
+
   control_plane_fip = var.control_plane_fip
+  cluster_hostnames = local.traefik_fip
+}
+
+resource "nutanix_floating_ip_v2" "lb_fip" {
+  count                     = var.enable_kommander_traefik_fip ? 1 : 0
+  name                      = "${var.cluster_name}-lb-fip"
+  external_subnet_reference = var.external_subnet_uuid
+  association {
+    private_ip_association {
+      vpc_reference = var.vpc_uuid
+      private_ip {
+        ipv4 {
+          value = local.traefik_ip
+        }
+      }
+    }
+  }
 }
 
 resource "nutanix_virtual_machine" "bastion_vm" {
@@ -71,6 +92,7 @@ resource "null_resource" "nkp_create_cluster" {
     nutanix_username    = var.nutanix_username
     nutanix_password    = nonsensitive(var.nutanix_password)
     storage_container   = var.storage_container
+    cluster_hostnames   = local.traefik_fip
   }
 
   connection {
@@ -112,6 +134,7 @@ resource "null_resource" "nkp_create_cluster" {
     export WORKER_MEM="${var.worker_memory_mib}"
     export WORKER_CPU="${var.worker_vcpus}"
     export KUBERNETES_VERSION="${var.kubernetes_version}"
+    export CLUSTER_HOSTNAMES="${local.traefik_fip}"
     EOF
   }
 
