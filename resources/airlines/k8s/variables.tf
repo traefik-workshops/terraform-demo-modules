@@ -42,6 +42,7 @@ variable "tools_access" {
     token = string
     group = string
   }))
+  default = {}
 }
 
 variable "users_access" {
@@ -55,6 +56,12 @@ variable "users_access" {
 
 variable "ai_gateway" {
   description = "Configuration for the AI Gateway (new format)"
+  type        = any
+  default     = {}
+}
+
+variable "dns_traefiker" {
+  description = "Configuration for dns-traefiker"
   type        = any
   default     = {}
 }

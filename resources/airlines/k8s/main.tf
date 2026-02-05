@@ -24,6 +24,7 @@ resource "kubectl_manifest" "airlines" {
               clientSecret = var.oidc_client_secret
               issuerUrl    = var.oidc_issuer_url
             }
+            "dns-traefiker" = var.dns_traefiker
           })
         }
       }
