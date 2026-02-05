@@ -7,6 +7,13 @@ variable "name" {
 variable "namespace" {
   type        = string
   description = "Namespace for the gov deployment"
+  default     = "default"
+}
+
+variable "create_namespace" {
+  type        = bool
+  description = "Whether to create the namespace if it doesn't exist"
+  default     = true
 }
 
 variable "domain" {
