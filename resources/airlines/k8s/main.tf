@@ -51,3 +51,14 @@ resource "kubectl_manifest" "airlines" {
     }
   })
 }
+
+data "kubernetes_secret" "domain_secret" {
+  count = var.unique_domain ? 1 : 0
+
+  metadata {
+    name      = "domain-secret"
+    namespace = var.namespace
+  }
+
+  depends_on = [kubectl_manifest.airlines]
+}
