@@ -262,7 +262,7 @@ variable "file_provider_config" {
 variable "file_provider_path" {
   description = "Path where the file provider config is mounted"
   type        = string
-  default     = "/etc/traefik-hub/dynamic/dynamic.yaml"
+  default     = "/etc/traefik-hub/dynamic/"
 }
 
 # Licensing & DNS
