@@ -4,7 +4,7 @@ resource "helm_release" "chats" {
   create_namespace = var.create_namespace
 
   repository = "oci://ghcr.io/traefik-workshops"
-  chart      = "chats-helm"
+  chart      = "chats"
   version    = var.git_ref
 
   values = [
