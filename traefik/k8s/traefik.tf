@@ -160,7 +160,7 @@ locals {
     # Additional arguments and volumes (K8s-specific)
     additionalArguments    = local.additional_arguments
     additionalVolumeMounts = local.volume_mounts
-    extra_objects          = var.custom_objects
+    extraObjects           = var.custom_objects
   }
 }
 
