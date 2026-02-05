@@ -25,3 +25,12 @@ variable "private_ip" {
   type        = string
   default     = ""
 }
+
+variable "type" {
+  description = "Type of FIP association: 'VM' or 'VPC'"
+  type        = string
+  validation {
+    condition     = contains(["VM", "VPC"], var.type)
+    error_message = "Type must be either 'VM' or 'VPC'."
+  }
+}
