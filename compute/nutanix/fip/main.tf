@@ -1,5 +1,5 @@
 resource "nutanix_floating_ip_v2" "vm_fip" {
-  count = var.vm_nic_uuid != "" ? 1 : 0
+  count = var.type == "VM" ? 1 : 0
 
   name                      = var.name
   external_subnet_reference = var.external_subnet_uuid
@@ -19,7 +19,7 @@ resource "nutanix_floating_ip_v2" "vm_fip" {
 }
 
 resource "nutanix_floating_ip_v2" "vpc_fip" {
-  count = var.private_ip != "" && var.vpc_uuid != "" ? 1 : 0
+  count = var.type == "VPC" ? 1 : 0
 
   name                      = var.name
   external_subnet_reference = var.external_subnet_uuid
