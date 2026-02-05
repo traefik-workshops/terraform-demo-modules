@@ -9,8 +9,10 @@ resource "helm_release" "airlines" {
 
   values = [
     yamlencode({
-      domain         = var.domain
-      unique_domain  = var.unique_domain
+      global = {
+        domain        = var.domain
+        unique_domain = var.unique_domain
+      }
       "tools-access" = var.tools_access
       "users-access" = var.users_access
       ai-gateway     = var.ai_gateway
