@@ -87,12 +87,6 @@ variable "enable_knative_provider" {
   default     = false
 }
 
-variable "nginx_provider_enabled" {
-  description = "Enable NGINX provider"
-  type        = bool
-  default     = false
-}
-
 variable "custom_providers" {
   type        = any
   description = "Custom providers to use for the deployment"

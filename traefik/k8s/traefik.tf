@@ -6,36 +6,21 @@
 # =============================================================================
 
 locals {
-  # K8s-specific CLI arguments (in addition to shared module args)
-  k8s_arguments = concat(
-    var.nginx_provider_enabled ? [
-      "--configFile=/traefik-nginx-config/nginx.yaml"
-    ] : []
-  )
-
   # Combine shared arguments with K8s-specific ones
-  additional_arguments = concat(module.config.cli_arguments, local.k8s_arguments)
+  additional_arguments = module.config.cli_arguments
 
   # K8s-specific volumes for file provider
   deployment_volumes = concat(
     var.file_provider_config != "" ? [{
       name      = "traefik-dynamic-config"
       configMap = { name = "traefik-dynamic-config" }
-    }] : [],
-    var.nginx_provider_enabled ? [{
-      name      = "traefik-nginx-config"
-      configMap = { name = "traefik-nginx-config" }
     }] : []
   )
 
   volume_mounts = concat(
     var.file_provider_config != "" ? [{
       name      = "traefik-dynamic-config"
-      mountPath = "/etc/traefik"
-    }] : [],
-    var.nginx_provider_enabled ? [{
-      name      = "traefik-nginx-config"
-      mountPath = "/traefik-nginx-config"
+      mountPath = "/etc/traefik/dynamic/"
     }] : []
   )
 
@@ -193,32 +178,6 @@ resource "kubernetes_config_map_v1" "traefik-dynamic-config" {
   }
 }
 
-# NGINX provider ConfigMap
-resource "kubernetes_config_map_v1" "traefik-nginx-config" {
-  count = var.nginx_provider_enabled ? 1 : 0
-
-  metadata {
-    name      = "traefik-nginx-config"
-    namespace = var.namespace
-  }
-
-  data = {
-    "nginx.yaml" = yamlencode({
-      global = {
-        checkNewVersion    = true
-        sendAnonymousUsage = true
-      }
-      entryPoints = {
-        web       = { address = ":80" }
-        websecure = { address = ":443" }
-      }
-      providers = {
-        kubernetesIngressNginx = { enabled = true }
-      }
-    })
-  }
-}
-
 # Helm release - merge shared helm_values with K8s overrides
 resource "helm_release" "traefik" {
   name             = var.name
@@ -242,7 +201,6 @@ resource "helm_release" "traefik" {
   depends_on = [
     kubernetes_secret_v1.traefik-hub-license,
     kubernetes_config_map_v1.traefik-dynamic-config,
-    kubernetes_config_map_v1.traefik-nginx-config,
     helm_release.traefik-crds
   ]
 }
