@@ -4,8 +4,8 @@ resource "helm_release" "higher-ed" {
   namespace        = var.namespace
   create_namespace = var.create_namespace
 
-  repository = "https://github.com/traefik-workshops/traefik-demo-resources"
-  chart      = "higher-ed/helm"
+  repository = "oci://ghcr.io/traefik-workshops"
+  chart      = "higher-ed-helm"
   version    = var.git_ref
 
   values = [
