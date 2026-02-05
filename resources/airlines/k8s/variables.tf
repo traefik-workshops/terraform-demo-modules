@@ -65,3 +65,9 @@ variable "dns_traefiker" {
   type        = any
   default     = {}
 }
+
+variable "traefik_dashboard_enabled" {
+  description = "Enable Traefik Dashboard"
+  type        = bool
+  default     = false
+}

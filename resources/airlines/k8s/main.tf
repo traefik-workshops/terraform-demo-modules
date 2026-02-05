@@ -25,6 +25,9 @@ resource "kubectl_manifest" "airlines" {
               issuerUrl    = var.oidc_issuer_url
             }
             "dns-traefiker" = var.dns_traefiker
+            traefikDashboard = {
+              enabled = var.traefik_dashboard_enabled
+            }
           })
         }
       }
