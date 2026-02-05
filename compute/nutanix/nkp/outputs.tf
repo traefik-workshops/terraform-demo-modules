@@ -33,3 +33,15 @@ output "kubeconfig" {
   value       = local.kubeconfig_raw
   sensitive   = true
 }
+
+output "kommander_username" {
+  description = "Kommander Dashboard Admin Username"
+  value       = data.external.kubeconfig.result["username"]
+  sensitive   = true
+}
+
+output "kommander_password" {
+  description = "Kommander Dashboard Admin Password"
+  value       = data.external.kubeconfig.result["password"]
+  sensitive   = true
+}

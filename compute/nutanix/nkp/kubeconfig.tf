@@ -29,12 +29,37 @@ data "external" "kubeconfig" {
       exit 1
     fi
 
+    # Fetch Kommander Credentials
+    pass=""
+    user=""
+    for i in {1..30}; do
+      if raw_creds=$(sshpass -p '${var.bastion_vm_password}' ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        -o ConnectTimeout=10 \
+        ${var.bastion_vm_username}@${local.bastion_vm_ip} \
+        "export KUBECONFIG=~/${var.cluster_name}.conf; kubectl get secret -n kommander dkp-credentials -o jsonpath='{.data.username} {.data.password}' 2>/dev/null" 2>/dev/null); then
+        
+        if [ -n "$raw_creds" ]; then
+             raw_user=$(echo "$raw_creds" | awk '{print $1}')
+             raw_pass=$(echo "$raw_creds" | awk '{print $2}')
+             
+             if [ -n "$raw_user" ] && [ -n "$raw_pass" ]; then
+                user=$(echo "$raw_user" | base64 -d)
+                pass=$(echo "$raw_pass" | base64 -d)
+                break
+             fi
+        fi
+      fi
+      sleep 10
+    done
+
     # Replace VIP with FIP and set insecure-skip-tls-verify
     # We use python for safer JSON encoding of the multiline string
     python3 -c '
 import sys, json, re
 
 raw = sys.argv[1]
+password = sys.argv[2]
+username = sys.argv[3]
 control_plane_vip = "${var.control_plane_vip}"
 control_plane_fip = "${local.control_plane_fip}"
 
@@ -47,8 +72,8 @@ else:
 # Replace CA data with insecure skip
 content = re.sub(r"certificate-authority-data:.*", "insecure-skip-tls-verify: true", content)
 
-print(json.dumps({"content": content}))
-' "$raw_content"
+print(json.dumps({"content": content, "password": password, "username": username}))
+' "$raw_content" "$pass" "$user"
   EOT
   ]
 
