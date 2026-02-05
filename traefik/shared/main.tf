@@ -72,13 +72,6 @@ locals {
           port     = var.entry_points.websecure.port
           expose   = { default = true }
           protocol = "TCP"
-          tls = var.cloudflare_dns.enabled ? {
-            certResolver = "cf"
-            domains = [{
-              main = var.cloudflare_dns.domain
-              sans = concat(["*.${var.cloudflare_dns.domain}"], var.cloudflare_dns.extra_san_domains)
-            }]
-          } : null
         }
         traefik = {
           port   = var.entry_points.traefik.port
@@ -140,6 +133,18 @@ locals {
           "--hub.providers.nutanixPrismCentral.serviceNameCategoryKey=TraefikServiceName",
           "--hub.providers.nutanixPrismCentral.servicePortCategoryKey=TraefikServicePort",
           "--hub.providers.nutanixPrismCentral.loadBalancerStrategyCategoryKey=TraefikLoadBalancerStrategy"
+        ]
+      ) : [],
+
+      # TLS Configuration for EntryPoints (Moved from ports.websecure.tls due to Helm schema strictness)
+      var.cloudflare_dns.enabled ? concat(
+        [
+          "--entrypoints.websecure.http.tls.certResolver=cf",
+          "--entrypoints.websecure.http.tls.domains[0].main=${var.cloudflare_dns.domain}"
+        ],
+        [
+          for i, san in concat(["*.${var.cloudflare_dns.domain}"], var.cloudflare_dns.extra_san_domains) :
+          "--entrypoints.websecure.http.tls.domains[0].sans[${i}]=${san}"
         ]
       ) : []
     )
