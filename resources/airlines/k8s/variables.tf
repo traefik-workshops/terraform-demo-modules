@@ -71,3 +71,9 @@ variable "traefik_dashboard_enabled" {
   type        = bool
   default     = false
 }
+
+variable "unique_domain" {
+  description = "Enable unique domain generation"
+  type        = bool
+  default     = false
+}
