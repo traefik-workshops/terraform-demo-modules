@@ -54,6 +54,7 @@ module "config" {
   # Licensing & DNS
   traefik_hub_token      = var.traefik_hub_token
   cloudflare_dns         = var.cloudflare_dns
+  dns_traefiker          = var.dns_traefiker
   is_staging_letsencrypt = var.is_staging_letsencrypt
 
   # Dashboard
@@ -137,7 +138,7 @@ variable "traefik_tag" {
 variable "traefik_hub_tag" {
   description = "Traefik Hub version tag"
   type        = string
-  default     = "v3.19.0-rc.2"
+  default     = "v3.19.0"
 }
 
 variable "traefik_hub_preview_tag" {
@@ -354,4 +355,20 @@ variable "nutanix_provider" {
     enabled = false
   }
   sensitive = true
+}
+
+variable "dns_traefiker" {
+  description = "DNS Traefiker configuration for automatic domain registration"
+  type = object({
+    enabled                   = optional(bool, false)
+    chart                     = optional(string, "")
+    unique_domain             = optional(bool, false)
+    domain                    = optional(string, "")
+    enable_airlines_subdomain = optional(bool, false)
+    ip_override               = optional(string, "")
+    proxied                   = optional(bool, false)
+  })
+  default = {
+    enabled = false
+  }
 }

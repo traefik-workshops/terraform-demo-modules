@@ -216,3 +216,13 @@ output "enable_otlp_application_logs" {
 output "custom_plugins" {
   value = var.custom_plugins
 }
+
+output "computed_dns_domain" {
+  description = "Computed DNS domain (from dns_traefiker or cloudflare_dns)"
+  value       = local.dns_domain
+}
+
+output "computed_dashboard_match_rule" {
+  description = "Computed dashboard match rule"
+  value       = local.helm_values.ingressRoute.dashboard.matchRule
+}

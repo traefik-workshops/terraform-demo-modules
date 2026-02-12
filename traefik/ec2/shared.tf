@@ -129,7 +129,7 @@ variable "traefik_tag" {
 variable "traefik_hub_tag" {
   description = "Traefik Hub version tag"
   type        = string
-  default     = "v3.19.0-rc.2"
+  default     = "v3.19.0"
 }
 
 variable "traefik_hub_preview_tag" {

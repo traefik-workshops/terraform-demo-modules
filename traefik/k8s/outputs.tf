@@ -3,6 +3,11 @@ output "load_balancer_ip" {
   value       = data.kubernetes_service_v1.traefik.status.0.load_balancer.0.ingress.0.ip
 }
 
+output "domain" {
+  description = "The computed domain for Traefik"
+  value       = var.dns_traefiker.enabled ? data.kubernetes_secret_v1.dns_domain[0].data.domain : var.cloudflare_dns.domain
+}
+
 data "kubernetes_service_v1" "traefik" {
   metadata {
     name      = var.name

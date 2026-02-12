@@ -70,10 +70,10 @@ locals {
       name           = var.ingress_class_name
     }
 
-
     # Environment variables - add USER env
     env = concat(
       [{ name = "USER", value = "traefiker" }],
+      var.dns_traefiker.enabled ? [{ name = "CF_DNS_API_TOKEN", value = data.kubernetes_secret_v1.dns_domain[0].data["token"] }] : [],
       module.config.env_vars_list
     )
 
@@ -120,15 +120,6 @@ locals {
           protocol        = "HTTP"
           namespacePolicy = { from = "All" }
         }
-      }
-    }
-
-    # IngressRoute for dashboard (K8s-specific)
-    ingressRoute = {
-      dashboard = {
-        enabled     = true
-        matchRule   = var.dashboard_match_rule
-        entryPoints = var.dashboard_entrypoints
       }
     }
 
@@ -201,8 +192,39 @@ resource "helm_release" "traefik" {
   depends_on = [
     kubernetes_secret_v1.traefik-hub-license,
     kubernetes_config_map_v1.traefik-dynamic-config,
-    helm_release.traefik-crds
+    helm_release.traefik-crds,
+    helm_release.dns-traefiker
   ]
+}
+
+resource "helm_release" "dns-traefiker" {
+  count = var.dns_traefiker.enabled ? 1 : 0
+
+  name      = "dns-traefiker"
+  namespace = var.namespace
+
+  chart = var.dns_traefiker.chart
+
+  values = [
+    yamlencode({
+      uniqueDomain            = var.dns_traefiker.unique_domain
+      domain                  = var.dns_traefiker.domain
+      enableAirlinesSubdomain = var.dns_traefiker.enable_airlines_subdomain
+      ipOverride              = var.dns_traefiker.ip_override
+      proxied                 = var.dns_traefiker.proxied
+    })
+  ]
+}
+
+data "kubernetes_secret_v1" "dns_domain" {
+  count = var.dns_traefiker.enabled ? 1 : 0
+
+  metadata {
+    name      = "domain-secret"
+    namespace = var.namespace
+  }
+
+  depends_on = [helm_release.dns-traefiker]
 }
 
 # Redis for API Management

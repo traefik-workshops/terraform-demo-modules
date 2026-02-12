@@ -41,18 +41,19 @@ locals {
   user_data_overrides = {
     for i in range(module.config.replica_count) :
     "traefik-${i + 1}" => templatefile("${path.module}/../cloud-init/cloud-init.tpl", {
-      traefik_hub_version  = module.config.image_tag
-      arch                 = var.ami_architecture
-      cli_arguments        = local.cli_arguments
-      env_vars             = local.env_vars_list
-      file_provider_config = var.file_provider_config
-      performance_tuning   = local.performance_tuning
-      otlp_address         = module.config.otlp_endpoint
-      instance_name        = "traefik-${i + 1}" # Explicit unique name as requested
-      dashboard_config     = ""                 # Optional
-      vip                  = ""                 # Optional
-      keepalived_priority  = 100                # Optional
-      network_interface    = "ens3"             # Optional
+      traefik_hub_version   = module.config.image_tag
+      arch                  = var.ami_architecture
+      cli_arguments         = local.cli_arguments
+      env_vars              = local.env_vars_list
+      file_provider_config  = var.file_provider_config
+      performance_tuning    = local.performance_tuning
+      otlp_address          = module.config.otlp_endpoint
+      instance_name         = "traefik-${i + 1}" # Explicit unique name as requested
+      dashboard_config      = ""                 # Optional
+      vip                   = ""                 # Optional
+      keepalived_priority   = 100                # Optional
+      network_interface     = "ens3"             # Optional
+      dns_traefiker_enabled = var.dns_traefiker.enabled
     })
   }
 

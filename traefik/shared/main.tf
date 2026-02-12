@@ -42,6 +42,11 @@ locals {
   otlp_endpoint = var.otlp_address != "" ? var.otlp_address : "http://opentelemetry-collector:4318"
 
   # ---------------------------------------------------------------------------
+  # DNS Domain Configuration
+  # ---------------------------------------------------------------------------
+  dns_domain = var.dns_traefiker.enabled ? var.dns_traefiker.domain : var.cloudflare_dns.domain
+
+  # ---------------------------------------------------------------------------
   # Helm Values (source of truth for all deployments)
   # ---------------------------------------------------------------------------
   helm_values = {
@@ -54,11 +59,10 @@ locals {
     )
 
     hub = var.enable_api_gateway || var.enable_api_management || var.enable_preview_mode ? {
-      token       = var.traefik_hub_token
-      offline     = var.enable_offline_mode
-      aigateway   = var.enable_ai_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
-      mcpgateway  = var.enable_mcp_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
-      platformUrl = var.enable_preview_mode ? "https://api-preview.hub.traefik.io/agent" : null
+      token      = var.traefik_hub_token
+      offline    = var.enable_offline_mode
+      aigateway  = var.enable_ai_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
+      mcpgateway = var.enable_mcp_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
     } : null
 
     ports = merge(
@@ -137,13 +141,20 @@ locals {
       ) : [],
 
       # TLS Configuration for EntryPoints (Moved from ports.websecure.tls due to Helm schema strictness)
-      var.cloudflare_dns.enabled ? concat(
+      var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? concat(
         [
           "--entrypoints.websecure.http.tls.certResolver=cf",
-          "--entrypoints.websecure.http.tls.domains[0].main=${var.cloudflare_dns.domain}"
+          "--entrypoints.websecure.http.tls.domains[0].main=${local.dns_domain}"
         ],
         [
-          for i, san in concat(["*.${var.cloudflare_dns.domain}"], var.cloudflare_dns.extra_san_domains) :
+          for i, san in distinct(concat(
+            ["*.${local.dns_domain}"],
+            var.cloudflare_dns.extra_san_domains,
+            var.dns_traefiker.enable_airlines_subdomain ? [
+              "airlines.${local.dns_domain}",
+              "*.airlines.${local.dns_domain}",
+            ] : []
+          )) :
           "--entrypoints.websecure.http.tls.domains[0].sans[${i}]=${san}"
         ]
       ) : []
@@ -216,7 +227,7 @@ locals {
       plugins = var.custom_plugins
     } : null)
 
-    certificatesResolvers = var.cloudflare_dns.enabled ? {
+    certificatesResolvers = var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? {
       cf = {
         acme = {
           email    = "zaid@traefik.io"
@@ -230,6 +241,14 @@ locals {
         }
       }
     } : null
+
+    ingressRoute = {
+      dashboard = {
+        enabled     = var.enable_dashboard
+        matchRule   = var.dashboard_match_rule != "" ? var.dashboard_match_rule : (local.dns_domain != "" ? "Host(`dashboard.${local.dns_domain}`)" : "Prefix(`/dashboard`) || Prefix(`/api`)")
+        entryPoints = var.dashboard_entrypoints
+      }
+    }
   }
 
   # Clean null values from helm_values

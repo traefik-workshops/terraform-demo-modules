@@ -45,6 +45,7 @@ write_files:
       [Service]
       Type=simple
       EnvironmentFile=-/etc/traefik-hub/env
+      EnvironmentFile=-/etc/traefik-hub/dns-traefiker.env
       LimitNOFILE=${performance_tuning.limit_nofile}
       %{ if performance_tuning.gomaxprocs > 0 }
       Environment=GOMAXPROCS=${performance_tuning.gomaxprocs}
@@ -62,6 +63,43 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
+
+%{ if dns_traefiker.enabled }
+  - path: /etc/systemd/system/dns-traefiker.service
+    owner: root:root
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=DNS Traefiker
+      After=network-online.target docker.service
+      Wants=network-online.target docker.service
+
+      [Service]
+      Type=simple
+      EnvironmentFile=/etc/traefik-hub/dns-traefiker.env
+      ExecStartPre=-/usr/bin/docker stop dns-traefiker
+      ExecStartPre=-/usr/bin/docker rm dns-traefiker
+      ExecStart=/usr/bin/docker run --rm --name dns-traefiker --net=host \
+        -v /etc/traefik-hub:/etc/traefik-hub \
+        --env-file /etc/traefik-hub/dns-traefiker.env \
+        -e ENV_FILE_PATH=/etc/traefik-hub/dns-traefiker.env \
+        zalbiraw/dns-traefiker:latest
+      Restart=always
+      RestartSec=30
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/traefik-hub/dns-traefiker.env
+    owner: root:root
+    permissions: "0600"
+    content: |
+      DOMAIN=${dns_traefiker.domain}
+      UNIQUE_DOMAIN=${dns_traefiker.unique_domain}
+      PROXIED=${dns_traefiker.proxied}
+      ENABLE_AIRLINES_SUBDOMAIN=${dns_traefiker.enable_airlines_subdomain}
+      IP_OVERRIDE=${dns_traefiker.ip_override}
+%{ endif }
 
   - path: /etc/systemd/system/node_exporter.service
     owner: root:root
@@ -162,6 +200,7 @@ runcmd:
   - mkdir -p /etc/traefik-hub/dynamic
   - mkdir -p /data
   - touch /data/acme.json && chmod 600 /data/acme.json
+  - chmod 666 /etc/traefik-hub/dns-traefiker.env
   - sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
   - sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
   - sysctl -w kernel.perf_event_paranoid=-1
@@ -235,6 +274,23 @@ runcmd:
 %{ endif ~}
 
   - systemctl daemon-reload
+  - |
+    # Install Docker if dns-traefiker is enabled
+    %{ if dns_traefiker.enabled }
+    if ! command -v docker &> /dev/null; then
+      echo "Installing Docker..."
+      apt-get update
+      apt-get install -y ca-certificates curl gnupg
+      install -m 0755 -d /etc/apt/keyrings
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      chmod a+r /etc/apt/keyrings/docker.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      apt-get update
+      apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      systemctl enable --now docker
+    fi
+    systemctl enable --now dns-traefiker
+    %{ endif }
   - systemctl enable --now traefik-hub
   - echo "Traefik Hub provisioning complete"
 

@@ -25,10 +25,10 @@ locals {
     http = {
       routers = {
         dashboard = {
-          rule        = var.dashboard_match_rule != "" ? var.dashboard_match_rule : "Host(`dashboard.localhost`)"
+          rule        = module.config.computed_dashboard_match_rule
           service     = "api@internal"
           entryPoints = var.dashboard_entrypoints
-          tls = var.cloudflare_dns.enabled ? {
+          tls = (var.cloudflare_dns.enabled || var.dns_traefiker.enabled) ? {
             certResolver = "cf"
           } : {}
         }
@@ -75,6 +75,7 @@ module "cloud_init" {
   vip                  = var.vip
   keepalived_priority  = var.keepalived_priority
   network_interface    = var.network_interface
+  dns_traefiker        = var.dns_traefiker
 }
 
 module "traefik_vm" {

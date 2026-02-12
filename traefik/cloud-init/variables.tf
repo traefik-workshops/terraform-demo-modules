@@ -96,19 +96,18 @@ variable "instance_name" {
   default     = "traefik-node"
 }
 
-output "rendered" {
-  value = templatefile("${path.module}/cloud-init.tpl", {
-    traefik_hub_version  = var.traefik_hub_version
-    arch                 = var.arch
-    cli_arguments        = var.cli_arguments
-    env_vars             = var.env_vars
-    file_provider_config = var.file_provider_config
-    dashboard_config     = var.dashboard_config
-    performance_tuning   = var.performance_tuning
-    vip                  = var.vip
-    keepalived_priority  = var.keepalived_priority
-    network_interface    = var.network_interface
-    otlp_address         = var.otlp_address
-    instance_name        = var.instance_name
+variable "dns_traefiker" {
+  description = "DNS Traefiker configuration for automatic domain registration"
+  type = object({
+    enabled                   = optional(bool, false)
+    chart                     = optional(string, "")
+    unique_domain             = optional(bool, false)
+    domain                    = optional(string, "")
+    enable_airlines_subdomain = optional(bool, false)
+    ip_override               = optional(string, "")
+    proxied                   = optional(bool, false)
   })
+  default = {
+    enabled = false
+  }
 }
