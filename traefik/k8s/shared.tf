@@ -58,7 +58,7 @@ module "config" {
     enabled                   = var.dns_traefiker.enabled
     chart                     = var.dns_traefiker.chart
     unique_domain             = var.dns_traefiker.unique_domain
-    domain                    = data.kubernetes_secret_v1.dns_domain[0].data["domain"]
+    domain                    = var.dns_traefiker.unique_domain && length(data.kubernetes_secret_v1.dns_domain) > 0 ? data.kubernetes_secret_v1.dns_domain[0].data["domain"] : var.dns_traefiker.domain
     enable_airlines_subdomain = var.dns_traefiker.enable_airlines_subdomain
     ip_override               = var.dns_traefiker.ip_override
     proxied                   = var.dns_traefiker.proxied

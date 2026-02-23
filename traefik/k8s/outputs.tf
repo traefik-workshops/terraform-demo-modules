@@ -5,7 +5,12 @@ output "load_balancer_ip" {
 
 output "domain" {
   description = "The computed domain for Traefik"
-  value       = var.dns_traefiker.enabled ? data.kubernetes_secret_v1.dns_domain[0].data.domain : var.cloudflare_dns.domain
+  value       = var.dns_traefiker.enabled && length(data.kubernetes_secret_v1.dns_domain) > 0 ? data.kubernetes_secret_v1.dns_domain[0].data.domain : var.cloudflare_dns.domain
+}
+
+output "dashboard_url" {
+  description = "The Traefik dashboard URL"
+  value       = "https://dashboard.${var.dns_traefiker.enabled && length(data.kubernetes_secret_v1.dns_domain) > 0 ? data.kubernetes_secret_v1.dns_domain[0].data.domain : var.cloudflare_dns.domain}"
 }
 
 data "kubernetes_service_v1" "traefik" {

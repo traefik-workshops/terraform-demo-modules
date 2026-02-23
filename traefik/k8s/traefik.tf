@@ -73,7 +73,7 @@ locals {
     # Environment variables - add USER env
     env = concat(
       [{ name = "USER", value = "traefiker" }],
-      var.dns_traefiker.enabled ? [{ name = "CF_DNS_API_TOKEN", value = data.kubernetes_secret_v1.dns_domain[0].data["token"] }] : [],
+      var.dns_traefiker.enabled && length(data.kubernetes_secret_v1.dns_domain) > 0 ? [{ name = "CF_DNS_API_TOKEN", value = data.kubernetes_secret_v1.dns_domain[0].data["token"] }] : [],
       module.config.env_vars_list
     )
 
