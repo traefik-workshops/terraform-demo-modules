@@ -96,3 +96,9 @@ variable "extra_dashboards" {
   description = "A map of dashboard names to their JSON content."
   default     = {}
 }
+
+variable "image_renderer" {
+  type        = bool
+  description = "Enable the Grafana Image Renderer plugin for PNG export of panels and dashboards."
+  default     = false
+}
