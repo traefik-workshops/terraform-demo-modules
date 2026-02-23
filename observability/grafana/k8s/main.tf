@@ -108,17 +108,17 @@ resource "helm_release" "grafana" {
       extraConfigmapMounts = local.configmapMounts
       tolerations          = var.tolerations
     }),
-    yamlencode(var.image_renderer ? {
+    var.image_renderer ? yamlencode({
       imageRenderer = {
         enabled = true
       }
       "grafana.ini" = {
         rendering = {
-          server_url  = "http://localhost:8081/render"
+          server_url   = "http://localhost:8081/render"
           callback_url = "http://localhost:3000/"
         }
       }
-    } : {}),
+    }) : yamlencode({}),
     yamlencode(var.extra_values),
     yamlencode(var.ingress == true ? {
       ingress = {
