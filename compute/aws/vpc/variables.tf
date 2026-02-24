@@ -20,3 +20,9 @@ variable "public_subnets" {
   description = "Public subnets."
   default     = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 }
+
+variable "enable_nat_gateway" {
+  type        = bool
+  description = "Enable NAT Gateway."
+  default     = true
+}
