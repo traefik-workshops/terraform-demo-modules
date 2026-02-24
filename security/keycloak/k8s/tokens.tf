@@ -22,6 +22,13 @@ locals {
   ]
 }
 
+# Ensure Keycloak is deployed before attempting to fetch tokens
+resource "null_resource" "validate_keycloak_deployment" {
+  triggers = {
+    release_id = helm_release.keycloak.id
+  }
+}
+
 # Fetch tokens using a Kubernetes Job - runs in-cluster and outputs JSON to logs
 resource "kubernetes_job_v1" "fetch_tokens" {
   depends_on = [null_resource.validate_keycloak_deployment]
