@@ -58,12 +58,20 @@ locals {
       local.image_registry != "" ? { registry = local.image_registry } : {}
     )
 
-    hub = var.enable_api_gateway || var.enable_api_management || var.enable_preview_mode ? {
+    hub = var.enable_api_gateway || var.enable_api_management || var.enable_preview_mode ? merge({
       token      = var.traefik_hub_token
       offline    = var.enable_offline_mode
       aigateway  = var.enable_ai_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
       mcpgateway = var.enable_mcp_gateway ? { enabled = true, maxRequestBodySize = 2097152 } : null
-    } : null
+      },
+      var.multicluster_provider.enabled ? {
+        providers = {
+          multicluster = {
+            enabled = true
+          }
+        }
+      } : {}
+    ) : null
 
     ports = merge(
       {
@@ -141,23 +149,18 @@ locals {
       ) : [],
 
       # TLS Configuration for EntryPoints (Moved from ports.websecure.tls due to Helm schema strictness)
-      var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? concat(
-        [
-          "--entrypoints.websecure.http.tls.certResolver=cf",
-          "--entrypoints.websecure.http.tls.domains[0].main=${local.dns_domain}"
-        ],
-        [
-          for i, san in distinct(concat(
-            ["*.${local.dns_domain}"],
-            var.cloudflare_dns.extra_san_domains,
-            var.dns_traefiker.enable_airlines_subdomain ? [
-              "airlines.${local.dns_domain}",
-              "*.airlines.${local.dns_domain}",
-            ] : []
-          )) :
-          "--entrypoints.websecure.http.tls.domains[0].sans[${i}]=${san}"
-        ]
-      ) : []
+      var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? [
+        "--entrypoints.websecure.http.tls.certResolver=cf",
+        "--entrypoints.websecure.http.tls.domains[0].main=${local.dns_domain}",
+        "--entrypoints.websecure.http.tls.domains[0].sans=${join(",", distinct(concat(
+          ["*.${local.dns_domain}"],
+          var.cloudflare_dns.extra_san_domains,
+          var.dns_traefiker.enable_airlines_subdomain ? [
+            "airlines.${local.dns_domain}",
+            "*.airlines.${local.dns_domain}",
+          ] : []
+        )))}"
+      ] : []
     )
 
     env = concat(
