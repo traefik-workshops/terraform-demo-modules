@@ -14,5 +14,6 @@ resource "helm_release" "k6_operator" {
     }
     nodeSelector = var.node_selector
     tolerations  = var.tolerations
+    resources    = {}
   }, var.extra_values))]
 }
