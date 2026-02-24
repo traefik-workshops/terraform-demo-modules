@@ -66,9 +66,12 @@ locals {
       },
       var.multicluster_provider.enabled ? {
         providers = {
-          multicluster = {
-            enabled = true
-          }
+          multicluster = merge(
+            { enabled = true },
+            var.multicluster_provider.pollInterval != null ? { pollInterval = var.multicluster_provider.pollInterval } : {},
+            var.multicluster_provider.pollTimeout != null ? { pollTimeout = var.multicluster_provider.pollTimeout } : {},
+            length(var.multicluster_provider.children) > 0 ? { children = var.multicluster_provider.children } : {}
+          )
         }
       } : {}
     ) : null
@@ -156,7 +159,6 @@ locals {
           ["*.${local.dns_domain}"],
           var.cloudflare_dns.extra_san_domains,
           var.dns_traefiker.enable_airlines_subdomain ? [
-            "airlines.${local.dns_domain}",
             "*.airlines.${local.dns_domain}",
           ] : []
         )))}"

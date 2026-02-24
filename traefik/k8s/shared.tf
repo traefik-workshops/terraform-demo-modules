@@ -332,7 +332,12 @@ variable "dashboard_insecure" {
 variable "multicluster_provider" {
   description = "Traefik Hub multicluster provider configuration"
   type = object({
-    enabled = optional(bool, false)
+    enabled      = optional(bool, false)
+    pollInterval = optional(number, null)
+    pollTimeout  = optional(number, null)
+    children = optional(map(object({
+      address = string
+    })), {})
   })
   default = {
     enabled = false
