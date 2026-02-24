@@ -93,7 +93,3 @@ module "traefik_vm" {
 
   cloud_init_user_data = module.cloud_init.rendered
 }
-
-output "ip_address" {
-  value = module.traefik_vm.ip_address
-}
