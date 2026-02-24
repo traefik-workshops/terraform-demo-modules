@@ -35,7 +35,7 @@ variable "serviceType" {
 }
 
 variable "resources" {
-  description = "Resources for the Traefik deployment"
+  description = "Resources for the Traefik deployment. Set to null or leave empty strings to use chart defaults."
   type = object({
     requests = object({
       cpu    = string
@@ -46,16 +46,7 @@ variable "resources" {
       memory = string
     })
   })
-  default = {
-    requests = {
-      cpu    = "0"
-      memory = "0"
-    }
-    limits = {
-      cpu    = "0"
-      memory = "0"
-    }
-  }
+  default = null
 }
 
 variable "tolerations" {
