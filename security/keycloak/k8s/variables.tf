@@ -76,3 +76,8 @@ variable "client_key" {
   type    = string
   default = ""
 }
+
+variable "chart" {
+  type        = string
+  description = "Path to the Helm chart for the Keycloak deployment"
+}
