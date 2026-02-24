@@ -62,8 +62,9 @@ module "config" {
   dashboard_entrypoints = var.dashboard_entrypoints
   dashboard_match_rule  = var.dashboard_match_rule
 
-  # Nutanix Provider
-  nutanix_provider = var.nutanix_provider
+  # Providers
+  multicluster_provider = var.multicluster_provider
+  nutanix_provider      = var.nutanix_provider
 }
 
 # =============================================================================
@@ -314,8 +315,18 @@ variable "dashboard_insecure" {
 }
 
 # -----------------------------------------------------------------------------
-# Nutanix Provider
+# Providers
 # -----------------------------------------------------------------------------
+
+variable "multicluster_provider" {
+  description = "Traefik Hub multicluster provider configuration"
+  type = object({
+    enabled = optional(bool, false)
+  })
+  default = {
+    enabled = false
+  }
+}
 
 variable "nutanix_provider" {
   description = "Nutanix Prism Central provider configuration for VM discovery"
@@ -333,4 +344,20 @@ variable "nutanix_provider" {
     enabled = false
   }
   sensitive = true
+}
+
+variable "dns_traefiker" {
+  description = "DNS Traefiker configuration for automatic domain registration"
+  type = object({
+    enabled                   = optional(bool, false)
+    chart                     = optional(string, "")
+    unique_domain             = optional(bool, false)
+    domain                    = optional(string, "")
+    enable_airlines_subdomain = optional(bool, false)
+    ip_override               = optional(string, "")
+    proxied                   = optional(bool, false)
+  })
+  default = {
+    enabled = false
+  }
 }

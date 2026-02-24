@@ -62,8 +62,9 @@ module "config" {
   dashboard_entrypoints = var.dashboard_entrypoints
   dashboard_match_rule  = var.dashboard_match_rule
 
-  # Nutanix Provider
-  nutanix_provider = var.nutanix_provider
+  # Providers
+  multicluster_provider = var.multicluster_provider
+  nutanix_provider      = var.nutanix_provider
 }
 
 # =============================================================================
@@ -314,8 +315,18 @@ variable "dashboard_insecure" {
 }
 
 # -----------------------------------------------------------------------------
-# Nutanix Provider
+# Providers
 # -----------------------------------------------------------------------------
+
+variable "multicluster_provider" {
+  description = "Traefik Hub multicluster provider configuration"
+  type = object({
+    enabled = optional(bool, false)
+  })
+  default = {
+    enabled = false
+  }
+}
 
 variable "nutanix_provider" {
   description = "Nutanix Prism Central provider configuration for VM discovery"

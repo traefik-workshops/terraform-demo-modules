@@ -294,8 +294,17 @@ variable "entry_points" {
 }
 
 # -----------------------------------------------------------------------------
-# Nutanix Provider
+# Providers
 # -----------------------------------------------------------------------------
+variable "multicluster_provider" {
+  description = "Traefik Hub multicluster provider configuration"
+  type = object({
+    enabled = optional(bool, false)
+  })
+  default = {
+    enabled = false
+  }
+}
 
 variable "nutanix_provider" {
   description = "Nutanix Prism Central provider configuration for VM discovery"
