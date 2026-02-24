@@ -100,6 +100,7 @@ variable "dns_traefiker" {
   description = "DNS Traefiker configuration for automatic domain registration"
   type = object({
     enabled                   = optional(bool, false)
+    version                   = optional(string, "v1.0.4")
     chart                     = optional(string, "")
     unique_domain             = optional(bool, false)
     domain                    = optional(string, "")

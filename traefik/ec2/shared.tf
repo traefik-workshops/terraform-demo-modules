@@ -324,9 +324,7 @@ variable "multicluster_provider" {
     enabled      = optional(bool, false)
     pollInterval = optional(number, null)
     pollTimeout  = optional(number, null)
-    children = optional(map(object({
-      address = string
-    })), {})
+    children     = optional(any, {})
   })
   default = {
     enabled = false

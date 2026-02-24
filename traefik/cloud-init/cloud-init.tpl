@@ -78,19 +78,14 @@ write_files:
     content: |
       [Unit]
       Description=DNS Traefiker
-      After=network-online.target docker.service
-      Wants=network-online.target docker.service
+      After=network-online.target
+      Wants=network-online.target
 
       [Service]
       Type=simple
       EnvironmentFile=/etc/traefik-hub/dns-traefiker.env
-      ExecStartPre=-/usr/bin/docker stop dns-traefiker
-      ExecStartPre=-/usr/bin/docker rm dns-traefiker
-      ExecStart=/usr/bin/docker run --rm --name dns-traefiker --net=host \
-        -v /etc/traefik-hub:/etc/traefik-hub \
-        --env-file /etc/traefik-hub/dns-traefiker.env \
-        -e ENV_FILE_PATH=/etc/traefik-hub/dns-traefiker.env \
-        zalbiraw/dns-traefiker:latest
+      Environment=ENV_FILE_PATH=/etc/traefik-hub/dns-traefiker.env
+      ExecStart=/usr/local/bin/dns-traefiker
       Restart=always
       RestartSec=30
 
@@ -281,23 +276,61 @@ runcmd:
 %{ endif ~}
 
   - systemctl daemon-reload
+%{ if dns_traefiker.enabled ~}
   - |
-    # Install Docker if dns-traefiker is enabled
-    %{ if dns_traefiker.enabled }
-    if ! command -v docker &> /dev/null; then
-      echo "Installing Docker..."
-      apt-get update
-      apt-get install -y ca-certificates curl gnupg
-      install -m 0755 -d /etc/apt/keyrings
-      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-      chmod a+r /etc/apt/keyrings/docker.gpg
-      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-      apt-get update
-      apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-      systemctl enable --now docker
+    # Install dns-traefiker binary from GHCR
+    if ! [ -f /usr/local/bin/dns-traefiker ]; then
+      echo "Installing dns-traefiker from GHCR..."
+      DOWNLOAD_ARCH="amd64"
+      [[ "${arch}" == "aarch64" || "${arch}" == "arm64" ]] && DOWNLOAD_ARCH="arm64"
+      GHCR_REPO="traefik-workshops/dns-traefiker-bin"
+      GHCR_TAG="${dns_traefiker.version}-linux-$DOWNLOAD_ARCH"
+
+      for i in {1..5}; do
+        # Get anonymous pull token
+        TOKEN=$(curl -sf "https://ghcr.io/token?scope=repository:$GHCR_REPO:pull" | \
+          python3 -c "import sys,json;print(json.load(sys.stdin)['token'])" 2>/dev/null)
+        if [ -z "$TOKEN" ]; then
+          echo "Failed to get GHCR token (attempt $i/5)"
+          sleep 5
+          continue
+        fi
+
+        # Get manifest and extract binary layer digest
+        DIGEST=$(curl -sf -H "Authorization: Bearer $TOKEN" \
+          -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+          "https://ghcr.io/v2/$GHCR_REPO/manifests/$GHCR_TAG" | \
+          python3 -c "import sys,json;print(json.load(sys.stdin)['layers'][0]['digest'])" 2>/dev/null)
+        if [ -z "$DIGEST" ]; then
+          echo "Failed to get manifest digest (attempt $i/5)"
+          sleep 5
+          continue
+        fi
+
+        # Download binary blob
+        if curl -fL -H "Authorization: Bearer $TOKEN" \
+          "https://ghcr.io/v2/$GHCR_REPO/blobs/$DIGEST" \
+          -o /usr/local/bin/dns-traefiker; then
+          chmod +x /usr/local/bin/dns-traefiker
+          # Verify it's an actual binary
+          if file /usr/local/bin/dns-traefiker | grep -q "ELF"; then
+            echo "dns-traefiker binary installed successfully."
+            break
+          else
+            echo "Downloaded file is not a valid ELF binary (attempt $i/5)"
+            rm -f /usr/local/bin/dns-traefiker
+          fi
+        fi
+        echo "Retrying dns-traefiker download ($i/5)..."
+        sleep 5
+      done
     fi
-    systemctl enable --now dns-traefiker
-    %{ endif }
+    if [ -f /usr/local/bin/dns-traefiker ]; then
+      systemctl enable --now dns-traefiker
+    else
+      echo "WARNING: dns-traefiker binary not found, skipping service start"
+    fi
+%{ endif ~}
   - systemctl enable --now traefik-hub
   - echo "Traefik Hub provisioning complete"
 
