@@ -199,7 +199,7 @@ runcmd:
   - sysctl -p /etc/sysctl.d/99-traefik-perf.conf
   - mkdir -p /etc/traefik-hub/dynamic
   - mkdir -p /data
-  - touch /data/acme.json && chmod 600 /data/acme.json
+  - echo "{}" > /data/acme.json && chmod 600 /data/acme.json
   - chmod 666 /etc/traefik-hub/dns-traefiker.env
   - sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
   - sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
