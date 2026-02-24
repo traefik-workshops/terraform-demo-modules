@@ -178,6 +178,7 @@ resource "helm_release" "traefik" {
   create_namespace = true
   atomic           = true
   wait             = true
+  timeout          = 900
 
   values = [
     # Base values from shared module
