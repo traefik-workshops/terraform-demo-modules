@@ -207,11 +207,13 @@ resource "helm_release" "dns-traefiker" {
 
   values = [
     yamlencode({
-      uniqueDomain            = var.dns_traefiker.unique_domain
-      domain                  = var.dns_traefiker.domain
-      enableAirlinesSubdomain = var.dns_traefiker.enable_airlines_subdomain
-      ipOverride              = var.dns_traefiker.ip_override
-      proxied                 = var.dns_traefiker.proxied
+      uniqueDomain             = var.dns_traefiker.unique_domain
+      domain                   = var.dns_traefiker.domain
+      enableAirlinesSubdomain  = var.dns_traefiker.enable_airlines_subdomain
+      ipOverride               = var.dns_traefiker.ip_override
+      proxied                  = var.dns_traefiker.proxied
+      traefikServiceName       = "traefik"
+      traefikServiceNamespace  = var.namespace
     })
   ]
 }
