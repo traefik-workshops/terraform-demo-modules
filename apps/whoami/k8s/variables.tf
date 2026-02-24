@@ -22,6 +22,12 @@ variable "apps" {
   }))
 }
 
+variable "uplink_enabled" {
+  description = "Enable Uplink CRD and IngressRoute annotation for multicluster routing"
+  type        = bool
+  default     = false
+}
+
 variable "namespace" {
   description = "Kubernetes namespace to deploy applications"
   type        = string

@@ -132,6 +132,19 @@ resource "kubectl_manifest" "middleware_strip_prefix" {
   })
 }
 
+resource "kubectl_manifest" "uplink" {
+  count = var.uplink_enabled ? 1 : 0
+
+  yaml_body = yamlencode({
+    apiVersion = "hub.traefik.io/v1alpha1"
+    kind       = "Uplink"
+    metadata = {
+      name      = "whoami"
+      namespace = var.namespace
+    }
+  })
+}
+
 resource "kubectl_manifest" "ingress_route" {
   for_each = {
     for k, v in var.apps : k => v
@@ -141,12 +154,19 @@ resource "kubectl_manifest" "ingress_route" {
   yaml_body = yamlencode({
     apiVersion = "traefik.io/v1alpha1"
     kind       = "IngressRoute"
-    metadata = {
-      name      = "${each.key}-ingress-route"
-      namespace = var.namespace
-    }
+    metadata = merge(
+      {
+        name      = "${each.key}-ingress-route"
+        namespace = var.namespace
+      },
+      var.uplink_enabled ? {
+        annotations = {
+          "hub.traefik.io/router.uplinks" = "${var.namespace}-whoami"
+        }
+      } : {}
+    )
     spec = {
-      entryPoints = each.value.ingress_route.entrypoints
+      entryPoints = var.uplink_enabled ? each.value.ingress_route.entrypoints : []
       routes = [
         {
           match = join(" && ", compact([
