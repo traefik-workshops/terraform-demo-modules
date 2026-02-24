@@ -12,10 +12,10 @@ resource "helm_release" "k6_operator" {
     namespace = {
       create = false
     }
+    nodeSelector = var.node_selector
+    tolerations  = var.tolerations
     manager = {
-      nodeSelector = var.node_selector
-      tolerations  = var.tolerations
-      resources    = {}
+      resources = {}
     }
   }, var.extra_values))]
 }
