@@ -36,6 +36,12 @@ variable "memory_size_mib" {
   default     = 2048
 }
 
+variable "disk_size_mib" {
+  description = "Disk size in MiB. Overrides the source image disk size."
+  type        = number
+  default     = 20480 # 20 GB
+}
+
 variable "cloud_init_user_data" {
   description = "Cloud-Init User Data (YAML string). Will be base64 encoded by the module."
   type        = string

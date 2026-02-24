@@ -49,6 +49,12 @@ variable "vm_memory_mib" {
   default     = 2048
 }
 
+variable "vm_disk_size_mib" {
+  description = "Disk size in MiB"
+  type        = number
+  default     = 20480 # 20 GB
+}
+
 variable "traefik_static_config" {
   description = "Traefik static configuration (YAML string)"
   type        = string

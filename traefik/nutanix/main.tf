@@ -88,6 +88,7 @@ module "traefik_vm" {
   num_vcpus_per_socket = var.vm_num_vcpus_per_socket
   num_sockets          = var.vm_num_sockets
   memory_size_mib      = var.vm_memory_mib
+  disk_size_mib        = var.vm_disk_size_mib
 
   categories = local.traefik_categories
 

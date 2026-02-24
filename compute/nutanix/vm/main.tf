@@ -14,6 +14,7 @@ resource "nutanix_virtual_machine" "vm" {
       kind = "image"
       uuid = var.image_uuid
     }
+    disk_size_mib = var.disk_size_mib
   }
 
   dynamic "categories" {
