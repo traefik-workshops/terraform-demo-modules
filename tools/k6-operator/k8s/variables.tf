@@ -25,3 +25,9 @@ variable "tolerations" {
   }))
   default = []
 }
+
+variable "extra_values" {
+  description = "Extra values to merge into the Helm chart values"
+  type        = any
+  default     = {}
+}

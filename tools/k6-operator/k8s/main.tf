@@ -7,12 +7,12 @@ resource "helm_release" "k6_operator" {
   timeout    = 900
   atomic     = true
 
-  values = [yamlencode({
+  values = [yamlencode(merge({
     installCRDs = true
     namespace = {
       create = false
     }
     nodeSelector = var.node_selector
     tolerations  = var.tolerations
-  })]
+  }, var.extra_values))]
 }
