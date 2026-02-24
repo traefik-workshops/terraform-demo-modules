@@ -1,5 +1,19 @@
 locals {
-  # Combine all users for token generation
+  # Normalize simple users (email strings) into full user objects
+  simple_users = [
+    for email in var.users : {
+      username = email
+      email    = email
+      password = "password"
+      groups   = []
+      claims   = {}
+    }
+  ]
+
+  # Combine simple users and advanced users into a single list
+  all_users = concat(local.simple_users, var.advanced_users)
+
+  # Extract username/password pairs for token generation
   token_users = [
     for user in local.all_users : {
       username = user.username
