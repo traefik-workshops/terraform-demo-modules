@@ -9,28 +9,21 @@ variable "namespace" {
   type        = string
 }
 
+variable "domain" {
+  type        = string
+  default     = ""
+  description = "Base domain for ingress (e.g., benchmarks.demo.traefik.ai)"
+}
+
 variable "ingress" {
-  type        = bool
-  default     = false
-  description = "Enable ingress for the keycloak service"
-}
-
-variable "ingress_internal" {
-  type        = bool
-  default     = true
-  description = "Enable ingress for the keycloak service"
-}
-
-variable "ingress_domain" {
-  type        = string
-  default     = "cloud"
-  description = "The domain for the ingress, default is `cloud`"
-}
-
-variable "ingress_entrypoint" {
-  type        = string
-  default     = "traefik"
-  description = "The entrypoint to use for the ingress, default is `traefik`"
+  type = object({
+    enabled    = optional(bool, false)
+    internal   = optional(bool, true)
+    domain     = optional(string, "")
+    entrypoint = optional(string, "traefik")
+  })
+  default     = {}
+  description = "Ingress configuration for the keycloak service"
 }
 
 variable "users" {
@@ -79,5 +72,6 @@ variable "client_key" {
 
 variable "chart" {
   type        = string
-  description = "Path to the Helm chart for the Keycloak deployment"
+  default     = ""
+  description = "Path to the Helm chart for the Keycloak deployment. When empty, uses the git-hosted chart."
 }

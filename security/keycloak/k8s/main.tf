@@ -10,9 +10,9 @@ resource "helm_release" "keycloak" {
       namespace = var.namespace
 
       ingress = {
-        enabled    = var.ingress
-        domain     = var.ingress_domain
-        entrypoint = var.ingress_entrypoint
+        enabled    = var.ingress.enabled
+        domain     = var.ingress.domain != "" ? var.ingress.domain : var.domain
+        entrypoint = var.ingress.entrypoint
       }
 
       realm = {
