@@ -13,5 +13,6 @@ resource "helm_release" "k6_operator" {
       create = false
     }
     nodeSelector = var.node_selector
+    tolerations  = var.tolerations
   })]
 }

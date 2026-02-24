@@ -183,8 +183,8 @@ resource "helm_release" "traefik" {
   values = [
     # Base values from shared module
     yamlencode(module.config.helm_values),
-    # K8s-specific overrides
-    yamlencode(local.k8s_overrides),
+    # K8s-specific overrides (strip null values)
+    yamlencode({ for k, v in local.k8s_overrides : k => v if v != null }),
     # User-provided extra values
     yamlencode(var.extra_values)
   ]

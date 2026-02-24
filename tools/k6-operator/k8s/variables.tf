@@ -14,3 +14,14 @@ variable "node_selector" {
   type        = map(string)
   default     = {}
 }
+
+variable "tolerations" {
+  description = "Tolerations for pod scheduling"
+  type = list(object({
+    key      = string
+    operator = string
+    value    = string
+    effect   = string
+  }))
+  default = []
+}
