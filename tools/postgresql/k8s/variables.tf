@@ -21,3 +21,9 @@ variable "database" {
   type        = string
   default     = "postgres"
 }
+
+variable "extra_values" {
+  description = "Extra values to merge into the Helm chart values"
+  type        = any
+  default     = {}
+}

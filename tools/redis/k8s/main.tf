@@ -7,14 +7,14 @@ resource "helm_release" "redis" {
   timeout    = 900
   atomic     = true
 
-  set = [
-    {
-      name  = "auth.password"
-      value = var.password
-    },
-    {
-      name  = "replica.replicaCount"
-      value = var.replicaCount
-    }
+  values = [
+    yamlencode(merge({
+      auth = {
+        password = var.password
+      }
+      replica = {
+        replicaCount = var.replicaCount
+      }
+    }, var.extra_values))
   ]
 }

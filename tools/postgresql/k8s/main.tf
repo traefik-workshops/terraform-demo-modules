@@ -8,7 +8,7 @@ resource "helm_release" "postgres" {
   atomic     = true
 
   values = [
-    yamlencode({
+    yamlencode(merge({
       auth = {
         database = var.database
         password = var.password
@@ -17,6 +17,6 @@ resource "helm_release" "postgres" {
         enabled     = true
         whenDeleted = "Delete"
       }
-    })
+    }, var.extra_values))
   ]
 }
