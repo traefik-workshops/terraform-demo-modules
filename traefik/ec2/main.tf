@@ -41,32 +41,38 @@ locals {
   user_data_overrides = {
     for i in range(module.config.replica_count) :
     "traefik-${i + 1}" => templatefile("${path.module}/../cloud-init/cloud-init.tpl", {
-      traefik_hub_version   = module.config.image_tag
-      arch                  = var.ami_architecture
-      cli_arguments         = local.cli_arguments
-      env_vars              = local.env_vars_list
-      file_provider_config  = var.file_provider_config
-      performance_tuning    = local.performance_tuning
-      otlp_address          = module.config.otlp_endpoint
-      instance_name         = "traefik-${i + 1}" # Explicit unique name as requested
-      dashboard_config      = ""                 # Optional
-      vip                   = ""                 # Optional
-      keepalived_priority   = 100                # Optional
-      network_interface     = "ens3"             # Optional
-      dns_traefiker_enabled = var.dns_traefiker.enabled
+      traefik_hub_version  = module.config.image_tag
+      arch                 = var.ami_architecture
+      cli_arguments        = local.cli_arguments
+      env_vars             = local.env_vars_list
+      file_provider_config = var.file_provider_config
+      performance_tuning   = local.performance_tuning
+      otlp_address         = module.config.otlp_endpoint
+      instance_name        = "traefik-${i + 1}" # Explicit unique name as requested
+      dashboard_config     = ""                 # Optional
+      vip                  = ""                 # Optional
+      keepalived_priority  = 100                # Optional
+      network_interface    = "ens3"             # Optional
+      dns_traefiker        = var.dns_traefiker
     })
   }
 
   # Hash of performance tuning for lifestyle triggers
   performance_tuning_hash = sha256(jsonencode(local.performance_tuning))
+
+  primary_ip = coalesce(
+    try(values(aws_eip.traefik)[0].public_ip, ""),
+    try(values(module.ec2_primary.public_ips)[0], ""),
+    try(values(module.ec2_primary.private_ips)[0], ""),
+  )
 }
 
-module "ec2" {
+module "ec2_primary" {
   source = "../../compute/aws/ec2"
 
   apps = {
     traefik = {
-      replicas   = module.config.replica_count
+      replicas   = 1
       subnet_ids = var.subnet_ids
     }
   }
@@ -89,12 +95,14 @@ module "ec2" {
     "traefik.performance_hash"                                 = local.performance_tuning_hash
   })
 
-  # Pass per-instance user data overrides
-  user_data_overrides = local.user_data_overrides
+  # Pass only primary user data
+  user_data_overrides = {
+    "traefik-1" = local.user_data_overrides["traefik-1"]
+  }
 }
 
 resource "aws_eip" "traefik" {
-  for_each = var.create_eip ? module.ec2.instances : {}
+  for_each = var.create_eip ? module.ec2_primary.instances : {}
 
   domain   = "vpc"
   instance = each.value.instance_id
@@ -103,68 +111,172 @@ resource "aws_eip" "traefik" {
     Name = "traefik-eip-${each.key}"
   })
 
-  depends_on = [module.ec2]
+  depends_on = [module.ec2_primary]
 }
 
-# Health check: wait for Traefik to be ready on port 80
+# Health check: wait for Primary Traefik to be ready
 resource "null_resource" "wait_for_traefik" {
-  count = var.wait_for_ready ? 1 : 0
+  count = var.wait_for_ready || var.sync_acme ? 1 : 0
 
   triggers = {
-    # Re-run when instances, EIPs, or other critical variables change
-    instance_ids = join(",", [for i in module.ec2.instances : i.instance_id])
-    eip_ids      = join(",", [for e in aws_eip.traefik : e.id])
+    instance_ids = join(",", [for i in module.ec2_primary.instances : i.instance_id])
+    primary_ip   = local.primary_ip
   }
 
   provisioner "local-exec" {
     command = <<-EOF
-      # Collect all potential IPs: EIPs > public_ips > private_ips
-      EIP_IPS="${join(" ", [for e in aws_eip.traefik : e.public_ip])}"
-      PUBLIC_IPS="${join(" ", values(module.ec2.public_ips))}"
-      PRIVATE_IPS="${join(" ", values(module.ec2.private_ips))}"
-      
-      TRAEFIK_IPS="$EIP_IPS"
-      if [ -z "$TRAEFIK_IPS" ]; then
-        TRAEFIK_IPS="$PUBLIC_IPS"
-      fi
-      if [ -z "$TRAEFIK_IPS" ]; then
-        TRAEFIK_IPS="$PRIVATE_IPS"
-      fi
-
+      PRIMARY_IP="${local.primary_ip}"
       TIMEOUT=${var.wait_timeout}
-      
-      if [ -z "$TRAEFIK_IPS" ]; then
-        echo "WARNING: No IP addresses found to wait for. Skipping health check."
+
+      if [ -z "$PRIMARY_IP" ]; then
+        echo "WARNING: No IP found for primary Traefik. Skipping wait."
         exit 0
       fi
 
-      for IP in $TRAEFIK_IPS; do
-        echo "Waiting for Traefik at $IP..."
-        
-        # Wait for HTTP readiness (port 80)
-        echo "  Checking HTTP readiness on port 80..."
-        ELAPSED=0
-        while [ $ELAPSED -lt $TIMEOUT ]; do
-          HTTP_CODE=$(curl -s -o /dev/null -w "%%{http_code}" --connect-timeout 5 http://$IP:80/ 2>/dev/null || echo "000")
-          if [ "$HTTP_CODE" = "404" ]; then
-            echo "  Traefik at $IP is ready! (HTTP $HTTP_CODE)"
-            break
-          fi
-          echo "  Waiting for HTTP 404... (Current: $HTTP_CODE, $ELAPSED s)"
-          sleep 5
-          ELAPSED=$((ELAPSED + 5))
-        done
-
-        if [ $ELAPSED -ge $TIMEOUT ]; then
-          echo "ERROR: Traefik at $IP did not respond with 404 on port 80 within $TIMEOUT seconds"
-          exit 1
+      echo "Waiting for primary Traefik at $PRIMARY_IP..."
+      ELAPSED=0
+      while [ $ELAPSED -lt $TIMEOUT ]; do
+        HTTP_CODE=$(curl -s -o /dev/null -w "%%{http_code}" --connect-timeout 5 http://$PRIMARY_IP:80/ 2>/dev/null || echo "000")
+        if [ "$HTTP_CODE" = "404" ]; then
+          echo "  Primary Traefik at $PRIMARY_IP is ready! (HTTP $HTTP_CODE)"
+          break
         fi
+        echo "  Waiting for HTTP 404... (Current: $HTTP_CODE, $ELAPSED s)"
+        sleep 5
+        ELAPSED=$((ELAPSED + 5))
       done
-      
-      echo "All Traefik instances are fully ready!"
+
+      if [ $ELAPSED -ge $TIMEOUT ]; then
+        echo "ERROR: Primary Traefik at $PRIMARY_IP did not respond within $TIMEOUT seconds"
+        exit 1
+      fi
     EOF
   }
 
-  depends_on = [module.ec2]
+  depends_on = [module.ec2_primary, aws_eip.traefik]
 }
 
+# ACME Synchronization: Wait for the primary instance to obtain the certificate
+resource "null_resource" "wait_for_acme_primary" {
+  count = var.sync_acme ? 1 : 0
+
+  triggers = {
+    instance_ids    = join(",", [for i in module.ec2_primary.instances : i.instance_id])
+    primary_ip      = local.primary_ip
+    traefik_ready   = null_resource.wait_for_traefik[0].id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOF
+      PRIMARY_IP="${local.primary_ip}"
+
+      if [ -z "$PRIMARY_IP" ]; then
+        echo "ERROR: Primary IP not found. Cannot wait for ACME."
+        exit 1
+      fi
+
+      export SSHPASS='topsecretpassword'
+      SSH_OPTS="-o StrictHostKeyChecking=no -o PreferredAuthentications=password -o ConnectTimeout=10"
+
+      echo "Waiting for primary Traefik ($PRIMARY_IP) to obtain ACME certificate..."
+      TIMEOUT=${var.wait_timeout}
+      ELAPSED=0
+      DOMAIN="${nonsensitive(module.config.cloudflare_dns.domain)}"
+
+      while [ $ELAPSED -lt $TIMEOUT ]; do
+        if sshpass -e ssh $SSH_OPTS traefiker@$PRIMARY_IP "sudo grep -q '$DOMAIN' /data/acme.json 2>/dev/null"; then
+          echo "  Certificate found on $PRIMARY_IP!"
+          exit 0
+        fi
+        echo "  Waiting for certificate ($DOMAIN) on $PRIMARY_IP... ($ELAPSED s)"
+        sleep 10
+        ELAPSED=$((ELAPSED + 10))
+      done
+
+      echo "ERROR: Primary Traefik did not obtain certificate within $TIMEOUT seconds"
+      exit 1
+    EOF
+  }
+
+  depends_on = [null_resource.wait_for_acme_primary]
+}
+
+module "ec2_secondary" {
+  source = "../../compute/aws/ec2"
+  count  = module.config.replica_count > 1 ? 1 : 0
+
+  apps = {
+    traefik = {
+      replicas   = module.config.replica_count - 1
+      subnet_ids = var.subnet_ids
+    }
+  }
+
+  replica_start_index = 2
+
+  instance_type          = var.instance_type
+  ami_architecture       = var.ami_architecture
+  create_vpc             = var.create_vpc
+  vpc_id                 = var.vpc_id
+  security_group_ids     = var.security_group_ids
+  iam_instance_profile   = var.iam_instance_profile
+  enable_acme_setup      = module.config.cloudflare_dns.enabled
+  root_block_device_size = var.root_block_device_size
+
+  common_tags = merge(var.extra_tags, {
+    "Name"                                                     = "traefik"
+    "traefik.enable"                                           = "true"
+    "traefik.http.routers.dashboard.rule"                      = module.config.dashboard_match_rule
+    "traefik.http.routers.dashboard.entrypoints"               = module.config.dashboard_entrypoints[0]
+    "traefik.http.services.dashboard.loadbalancer.server.port" = "8080"
+    "traefik.performance_hash"                                 = local.performance_tuning_hash
+  })
+
+  # Map primary user data indices to secondary naming scheme
+  user_data_overrides = {
+    for i in range(1, module.config.replica_count) :
+    "traefik-${i + 1}" => local.user_data_overrides["traefik-${i + 1}"]
+  }
+
+  depends_on = [null_resource.wait_for_acme_primary]
+}
+
+resource "null_resource" "sync_acme_secondary" {
+  for_each = (var.sync_acme && module.config.replica_count > 1) ? toset([
+    for i in range(1, module.config.replica_count) : "traefik-${i + 1}"
+  ]) : []
+
+  triggers = {
+    instance_id     = module.ec2_secondary[0].instances[each.key].instance_id
+    primary_ip      = local.primary_ip
+    acme_primary_id = null_resource.wait_for_acme_primary[0].id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOF
+      PRIMARY_IP="${local.primary_ip}"
+      SECONDARY_IP="${coalesce(module.ec2_secondary[0].public_ips[each.key], module.ec2_secondary[0].private_ips[each.key])}"
+
+      export SSHPASS='topsecretpassword'
+      SSH_OPTS="-o StrictHostKeyChecking=no -o PreferredAuthentications=password -o ConnectTimeout=10"
+
+      echo "Syncing acme.json from $PRIMARY_IP to $SECONDARY_IP (${each.key})..."
+
+      # Pull cert from primary
+      sshpass -e ssh $SSH_OPTS traefiker@$PRIMARY_IP \
+        "sudo cp /data/acme.json /home/traefiker/acme.json && sudo chown traefiker:traefiker /home/traefiker/acme.json"
+      sshpass -e scp $SSH_OPTS traefiker@$PRIMARY_IP:/home/traefiker/acme.json ./acme-${each.key}.json
+      sshpass -e ssh $SSH_OPTS traefiker@$PRIMARY_IP "rm /home/traefiker/acme.json"
+
+      # Push cert to secondary and restart
+      sshpass -e scp $SSH_OPTS ./acme-${each.key}.json traefiker@$SECONDARY_IP:/home/traefiker/acme.json
+      sshpass -e ssh $SSH_OPTS traefiker@$SECONDARY_IP \
+        "sudo mv /home/traefiker/acme.json /data/acme.json && sudo chown root:root /data/acme.json && sudo chmod 600 /data/acme.json && sudo systemctl restart traefik-hub"
+
+      rm -f ./acme-${each.key}.json
+      echo "Sync to $SECONDARY_IP (${each.key}) complete!"
+    EOF
+  }
+
+  depends_on = [ module.ec2_secondary ]
+}

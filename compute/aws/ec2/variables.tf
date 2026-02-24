@@ -23,6 +23,12 @@ variable "ami_architecture" {
   default     = "x86_64"
 }
 
+variable "replica_start_index" {
+  description = "Starting index for replica numbering (Default: 1)"
+  type        = number
+  default     = 1
+}
+
 variable "common_tags" {
   description = "Common tags to apply to all instances"
   type        = map(string)

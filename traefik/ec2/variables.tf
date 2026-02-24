@@ -71,7 +71,7 @@ variable "extra_tags" {
 variable "root_block_device_size" {
   description = "Root block device size in GB"
   type        = number
-  default     = 20
+  default     = 30
 }
 
 # =============================================================================
@@ -115,6 +115,12 @@ variable "wait_timeout" {
 
 variable "create_eip" {
   description = "Create and attach an Elastic IP to the first Traefik instance"
+  type        = bool
+  default     = false
+}
+
+variable "sync_acme" {
+  description = "Synchronize acme.json from the first instance to all others"
   type        = bool
   default     = false
 }
