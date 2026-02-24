@@ -57,3 +57,15 @@ variable "extra_dashboards" {
   description = "A map of dashboard names to their JSON content."
   default     = {}
 }
+
+variable "prometheus_extra_values" {
+  type        = any
+  description = "Extra values to pass to the Prometheus deployment."
+  default     = {}
+}
+
+variable "grafana_extra_values" {
+  type        = any
+  description = "Extra values to pass to the Grafana deployment."
+  default     = {}
+}

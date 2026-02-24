@@ -2,6 +2,8 @@ module "observability-prometheus" {
   source = "../../prometheus/k8s"
 
   namespace          = var.namespace
+  tolerations        = var.tolerations
+  extra_values       = var.prometheus_extra_values
   ingress            = var.ingress
   ingress_domain     = var.ingress_domain
   ingress_entrypoint = var.ingress_entrypoint
@@ -12,19 +14,23 @@ module "observability-prometheus" {
 module "observability-grafana-loki" {
   source = "../../grafana-loki/k8s"
 
-  namespace = var.namespace
+  namespace   = var.namespace
+  tolerations = var.tolerations
 }
 
 module "observability-grafana-tempo" {
   source = "../../grafana-tempo/k8s"
 
-  namespace = var.namespace
+  namespace   = var.namespace
+  tolerations = var.tolerations
 }
 
 module "grafana" {
   source = "../../grafana/k8s"
 
   namespace          = var.namespace
+  tolerations        = var.tolerations
+  extra_values       = var.grafana_extra_values
   ingress            = var.ingress
   ingress_domain     = var.ingress_domain
   ingress_entrypoint = var.ingress_entrypoint
