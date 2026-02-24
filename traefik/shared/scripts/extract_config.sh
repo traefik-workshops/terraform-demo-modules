@@ -12,7 +12,7 @@ set -euo pipefail
 INPUT=$(cat)
 
 VALUES_YAML=$(echo "$INPUT" | jq -r '.values_yaml')
-CHART_VERSION=$(echo "$INPUT" | jq -r '.chart_version')
+CHART_VERSION=$(echo "$INPUT" | jq -r '.chart_version' | sed 's/^v//')
 
 # Ensure helm repo is added (suppress output)
 helm repo add traefik https://traefik.github.io/charts >/dev/null 2>&1 || true
@@ -29,6 +29,7 @@ echo "$VALUES_YAML" > "$VALUES_FILE"
 # Render the chart (redirect stderr to avoid plugin warnings in output)
 helm template traefik traefik/traefik \
   --version "$CHART_VERSION" \
+  --devel \
   -f "$VALUES_FILE" 2>/dev/null > "$RENDERED_FILE"
 
 # Use yq with eval-all to handle multi-document YAML

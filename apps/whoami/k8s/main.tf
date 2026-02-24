@@ -166,7 +166,7 @@ resource "kubectl_manifest" "ingress_route" {
       } : {}
     )
     spec = {
-      entryPoints = var.uplink_enabled ? each.value.ingress_route.entrypoints : []
+      entryPoints = var.uplink_enabled ? [] : each.value.ingress_route.entrypoints
       routes = [
         {
           match = join(" && ", compact([

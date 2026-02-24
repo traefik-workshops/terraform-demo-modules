@@ -41,11 +41,18 @@ write_files:
       Description=Traefik Hub
       After=network-online.target
       Wants=network-online.target
+%{ if dns_traefiker.enabled ~}
+      After=dns-traefiker.service
+      Wants=dns-traefiker.service
+%{ endif ~}
 
       [Service]
       Type=simple
       EnvironmentFile=-/etc/traefik-hub/env
       EnvironmentFile=-/etc/traefik-hub/dns-traefiker.env
+%{ if dns_traefiker.enabled ~}
+      ExecStartPre=/bin/bash -c 'for i in $(seq 1 60); do grep -q CF_DNS_API_TOKEN /etc/traefik-hub/dns-traefiker.env && exit 0; sleep 5; done; echo "WARNING: CF token not found after 300s, starting anyway"; exit 0'
+%{ endif ~}
       LimitNOFILE=${performance_tuning.limit_nofile}
       %{ if performance_tuning.gomaxprocs > 0 }
       Environment=GOMAXPROCS=${performance_tuning.gomaxprocs}

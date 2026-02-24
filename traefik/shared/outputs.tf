@@ -35,7 +35,7 @@ output "extracted_cli_args_cloud" {
   description = "CLI arguments extraction filtered for cloud/VM environments (excludes Kubernetes providers)"
   value = [
     for arg in(var.extract_config ? jsondecode(data.external.helm_config[0].result.cli_args) : []) :
-    arg if !startswith(arg, "--providers.kubernetes") && !startswith(arg, "--experimental.kubernetes")
+    arg if !startswith(arg, "--providers.kubernetes") && !startswith(arg, "--experimental.kubernetes") && !startswith(arg, "--hub.token")
   ]
 }
 
