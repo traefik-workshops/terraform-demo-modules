@@ -142,6 +142,9 @@ resource "kubectl_manifest" "uplink" {
       name      = "whoami"
       namespace = var.namespace
     }
+    spec = {
+      exposeName = "whoami"
+    }
   })
 }
 
@@ -161,7 +164,7 @@ resource "kubectl_manifest" "ingress_route" {
       },
       var.uplink_enabled ? {
         annotations = {
-          "hub.traefik.io/router.uplinks" = "${var.namespace}-whoami"
+          "hub.traefik.io/router.uplinks" = "whoami"
         }
       } : {}
     )
