@@ -64,6 +64,7 @@ module "config" {
     proxied                   = var.dns_traefiker.proxied
   }
   is_staging_letsencrypt = var.is_staging_letsencrypt
+  use_distributed_acme   = var.use_distributed_acme
 
   # Dashboard
   enable_dashboard      = var.enable_dashboard
@@ -299,6 +300,12 @@ variable "is_staging_letsencrypt" {
   description = "Use Let's Encrypt staging environment"
   type        = bool
   default     = false
+}
+
+variable "use_distributed_acme" {
+  description = "Use distributedAcme instead of acme (stores certs in K8s secrets instead of acme.json file)"
+  type        = bool
+  default     = true
 }
 
 # Dashboard

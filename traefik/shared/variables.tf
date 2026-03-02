@@ -242,6 +242,12 @@ variable "is_staging_letsencrypt" {
   default     = false
 }
 
+variable "use_distributed_acme" {
+  description = "Use distributedAcme instead of acme (stores certs in K8s secrets instead of acme.json file)"
+  type        = bool
+  default     = false
+}
+
 # -----------------------------------------------------------------------------
 # Dashboard & Entry Points
 # -----------------------------------------------------------------------------

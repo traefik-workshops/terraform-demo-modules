@@ -232,20 +232,37 @@ locals {
       plugins = var.custom_plugins
     } : null)
 
-    certificatesResolvers = var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? {
-      cf = {
-        acme = {
-          email    = "zaid@traefik.io"
-          storage  = "/data/acme.json"
-          caServer = local.letsencrypt_server
-          dnsChallenge = {
-            provider         = "cloudflare"
-            resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
-            delayBeforeCheck = 20
+    certificatesResolvers = var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? jsondecode(
+      var.use_distributed_acme ? jsonencode({
+        cf = {
+          distributedAcme = {
+            email    = "zaid@traefik.io"
+            caServer = local.letsencrypt_server
+            storage = {
+              kubernetes = true
+            }
+            dnsChallenge = {
+              provider         = "cloudflare"
+              resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
+              delayBeforeCheck = 20
+            }
           }
         }
-      }
-    } : null
+      }) : jsonencode({
+        cf = {
+          acme = {
+            email    = "zaid@traefik.io"
+            storage  = "/data/acme.json"
+            caServer = local.letsencrypt_server
+            dnsChallenge = {
+              provider         = "cloudflare"
+              resolvers        = ["1.1.1.1:53", "1.0.0.1:53"]
+              delayBeforeCheck = 20
+            }
+          }
+        }
+      })
+    ) : null
 
     ingressRoute = {
       dashboard = {
