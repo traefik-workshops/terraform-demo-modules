@@ -27,20 +27,37 @@ module "eks" {
     "kubernetes.io/cluster/${var.cluster_name}" = null
   }
 
-  eks_managed_node_groups = merge(
-    {
-      default = {
-        name           = "${var.cluster_name}-ng"
-        ami_type       = var.cluster_node_ami_type
-        instance_types = [var.cluster_node_type]
-        min_size       = var.cluster_node_count
-        max_size       = var.cluster_node_count
-        desired_size   = var.cluster_node_count
-        labels         = var.cluster_node_labels
+  eks_managed_node_groups = length(var.worker_nodes) == 0 ? {
+    default = {
+      name           = "${var.cluster_name}-ng"
+      ami_type       = var.cluster_node_ami_type
+      instance_types = [var.cluster_node_type]
+      min_size       = var.cluster_node_count
+      max_size       = var.cluster_node_count
+      desired_size   = var.cluster_node_count
+    }
+  } : {
+    for wn in var.worker_nodes : wn.label => {
+      name           = "${var.cluster_name}-${wn.label}"
+      ami_type       = var.cluster_node_ami_type
+      instance_types = [var.cluster_node_type]
+      min_size       = wn.count
+      max_size       = wn.count
+      desired_size   = wn.count
+
+      labels = {
+        node = wn.label
       }
-    },
-    var.node_groups
-  )
+
+      taints = {
+        dedicated = {
+          key    = "node"
+          value  = wn.taint
+          effect = "NO_SCHEDULE"
+        }
+      }
+    }
+  }
 }
 
 module "ebs_csi_controller_role" {

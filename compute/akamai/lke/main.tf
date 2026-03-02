@@ -7,10 +7,33 @@ resource "linode_lke_cluster" "traefik_demo" {
     high_availability = var.control_plane_high_availability
   }
 
-  pool {
-    type   = var.cluster_node_type
-    count  = var.cluster_node_count
-    labels = var.node_labels
+  # When worker_nodes is empty, create a single default pool.
+  # When worker_nodes is set, create per-role pools instead.
+  dynamic "pool" {
+    for_each = length(var.worker_nodes) == 0 ? ["default"] : []
+    content {
+      type   = var.cluster_node_type
+      count  = var.cluster_node_count
+      labels = var.node_labels
+    }
+  }
+
+  dynamic "pool" {
+    for_each = var.worker_nodes
+    content {
+      type  = var.cluster_node_type
+      count = pool.value.count
+
+      labels = {
+        node = pool.value.label
+      }
+
+      taint {
+        key    = "node"
+        value  = pool.value.taint
+        effect = "NoSchedule"
+      }
+    }
   }
 
   dynamic "pool" {

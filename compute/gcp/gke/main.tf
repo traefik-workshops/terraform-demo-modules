@@ -5,16 +5,55 @@ resource "google_container_cluster" "traefik_demo" {
   min_master_version  = var.gke_version
   location            = var.cluster_location
   deletion_protection = false
-  initial_node_count  = var.cluster_node_count
+
+  # When worker_nodes is set, the first entry configures the default pool.
+  # Otherwise, create a plain default pool with cluster_node_count.
+  initial_node_count = length(var.worker_nodes) > 0 ? var.worker_nodes[0].count : var.cluster_node_count
 
   node_config {
     machine_type = var.cluster_node_type
     disk_type    = "pd-standard"
+
+    labels = length(var.worker_nodes) > 0 ? {
+      node = var.worker_nodes[0].label
+    } : {}
+
+    dynamic "taint" {
+      for_each = length(var.worker_nodes) > 0 ? [var.worker_nodes[0]] : []
+      content {
+        key    = "node"
+        value  = taint.value.taint
+        effect = "NO_SCHEDULE"
+      }
+    }
   }
 
   monitoring_config {
     managed_prometheus {
       enabled = false
+    }
+  }
+}
+
+resource "google_container_node_pool" "worker" {
+  for_each   = length(var.worker_nodes) > 1 ? { for wn in slice(var.worker_nodes, 1, length(var.worker_nodes)) : wn.label => wn } : {}
+  name       = "${google_container_cluster.traefik_demo.name}-${each.key}"
+  location   = var.cluster_location
+  cluster    = google_container_cluster.traefik_demo.name
+  node_count = each.value.count
+
+  node_config {
+    machine_type = var.cluster_node_type
+    disk_type    = "pd-standard"
+
+    labels = {
+      node = each.value.label
+    }
+
+    taint {
+      key    = "node"
+      value  = each.value.taint
+      effect = "NO_SCHEDULE"
     }
   }
 }
@@ -56,5 +95,5 @@ resource "null_resource" "gke_cluster" {
   }
 
   count      = var.update_kubeconfig ? 1 : 0
-  depends_on = [google_container_cluster.traefik_demo, google_container_node_pool.traefik_demo_gpu]
+  depends_on = [google_container_cluster.traefik_demo, google_container_node_pool.worker, google_container_node_pool.traefik_demo_gpu]
 }

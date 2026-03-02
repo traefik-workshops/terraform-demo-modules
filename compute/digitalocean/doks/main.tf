@@ -4,17 +4,48 @@ resource "digitalocean_kubernetes_cluster" "traefik_demo" {
   version = var.doks_version
 
   node_pool {
-    name       = "default"
+    name       = length(var.worker_nodes) > 0 ? "${var.cluster_name}-${var.worker_nodes[0].label}" : "default"
     size       = var.cluster_node_type
-    node_count = var.cluster_node_count
-    auto_scale = var.enable_autoscaling
-    min_nodes  = var.min_nodes
-    max_nodes  = var.max_nodes
+    node_count = length(var.worker_nodes) > 0 ? var.worker_nodes[0].count : var.cluster_node_count
+    auto_scale = length(var.worker_nodes) > 0 ? false : var.enable_autoscaling
+    min_nodes  = length(var.worker_nodes) > 0 ? null : var.min_nodes
+    max_nodes  = length(var.worker_nodes) > 0 ? null : var.max_nodes
+
+    labels = length(var.worker_nodes) > 0 ? {
+      node = var.worker_nodes[0].label
+    } : {}
+
+    dynamic "taint" {
+      for_each = length(var.worker_nodes) > 0 ? [var.worker_nodes[0]] : []
+      content {
+        key    = "node"
+        value  = taint.value.taint
+        effect = "NoSchedule"
+      }
+    }
+  }
+}
+
+resource "digitalocean_kubernetes_node_pool" "worker" {
+  for_each   = length(var.worker_nodes) > 1 ? { for wn in slice(var.worker_nodes, 1, length(var.worker_nodes)) : wn.label => wn } : {}
+  cluster_id = digitalocean_kubernetes_cluster.traefik_demo.id
+  name       = "${var.cluster_name}-${each.key}"
+  size       = var.cluster_node_type
+  node_count = each.value.count
+
+  labels = {
+    node = each.value.label
+  }
+
+  taint {
+    key    = "node"
+    value  = each.value.taint
+    effect = "NoSchedule"
   }
 }
 
 resource "null_resource" "wait" {
-  depends_on = [digitalocean_kubernetes_cluster.traefik_demo]
+  depends_on = [digitalocean_kubernetes_cluster.traefik_demo, digitalocean_kubernetes_node_pool.worker]
 
   provisioner "local-exec" {
     command = <<EOF

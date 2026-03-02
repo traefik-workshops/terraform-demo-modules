@@ -34,6 +34,16 @@ variable "compartment_id" {
   description = "Oracle Cloud compartment ID."
 }
 
+variable "worker_nodes" {
+  type = list(object({
+    label = string
+    taint = string
+    count = number
+  }))
+  default     = []
+  description = "Worker node pool definitions. Each entry creates a dedicated node pool with the given label and taint. Note: OKE does not support native taints; they are applied via kubectl post-creation."
+}
+
 variable "update_kubeconfig" {
   type        = bool
   default     = true

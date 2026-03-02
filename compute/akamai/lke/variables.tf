@@ -68,3 +68,13 @@ variable "node_labels" {
   default     = {}
   description = "Labels to apply to the default node pool nodes"
 }
+
+variable "worker_nodes" {
+  type = list(object({
+    label = string
+    taint = string
+    count = number
+  }))
+  default     = []
+  description = "Worker node pool definitions. Each entry creates a dedicated pool with the given label and taint."
+}

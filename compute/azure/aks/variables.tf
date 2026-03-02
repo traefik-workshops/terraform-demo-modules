@@ -50,6 +50,16 @@ variable "gpu_node_count" {
   description = "Number of GPU nodes for the cluster"
 }
 
+variable "worker_nodes" {
+  type = list(object({
+    label = string
+    taint = string
+    count = number
+  }))
+  default     = []
+  description = "Worker node pool definitions. Each entry creates a dedicated node pool with the given label and taint."
+}
+
 variable "update_kubeconfig" {
   type        = bool
   default     = true

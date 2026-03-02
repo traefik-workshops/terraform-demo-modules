@@ -45,6 +45,16 @@ variable "max_nodes" {
   description = "Maximum number of nodes in the default node pool"
 }
 
+variable "worker_nodes" {
+  type = list(object({
+    label = string
+    taint = string
+    count = number
+  }))
+  default     = []
+  description = "Worker node pool definitions. Each entry creates a dedicated node pool with the given label and taint."
+}
+
 variable "namespace" {
   type        = string
   default     = "default"

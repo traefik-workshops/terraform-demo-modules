@@ -27,22 +27,20 @@ variable "cluster_node_type" {
   description = "Default machine type for cluster"
 }
 
-variable "cluster_node_labels" {
-  type        = map(string)
-  default     = {}
-  description = "Labels for the default node group"
-}
-
 variable "cluster_node_ami_type" {
   type        = string
   default     = "AL2023_x86_64_STANDARD"
   description = "EKS cluster AMI Type."
 }
 
-variable "node_groups" {
-  description = "Map of EKS managed node group definitions"
-  type        = any
-  default     = {}
+variable "worker_nodes" {
+  type = list(object({
+    label = string
+    taint = string
+    count = number
+  }))
+  default     = []
+  description = "Worker node pool definitions. Each entry creates a dedicated node group with the given label and taint."
 }
 
 variable "update_kubeconfig" {

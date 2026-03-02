@@ -157,7 +157,10 @@ resource "oci_containerengine_cluster" "traefik_demo" {
   }
 }
 
+# When worker_nodes is empty, create a single default pool.
+# When worker_nodes is set, create per-role pools instead.
 resource "oci_containerengine_node_pool" "traefik_demo" {
+  count              = length(var.worker_nodes) == 0 ? 1 : 0
   cluster_id         = oci_containerengine_cluster.traefik_demo.id
   compartment_id     = var.compartment_id
   kubernetes_version = var.oke_version
@@ -185,16 +188,66 @@ resource "oci_containerengine_node_pool" "traefik_demo" {
   ssh_public_key = tls_private_key.traefik_demo.public_key_openssh
 }
 
+resource "oci_containerengine_node_pool" "worker" {
+  for_each           = { for wn in var.worker_nodes : wn.label => wn }
+  cluster_id         = oci_containerengine_cluster.traefik_demo.id
+  compartment_id     = var.compartment_id
+  kubernetes_version = var.oke_version
+  name               = "${var.cluster_name}-${each.key}"
+  node_shape         = var.cluster_node_type
+
+  node_config_details {
+    placement_configs {
+      availability_domain = data.oci_identity_availability_domains.traefik_demo.availability_domains[0].name
+      subnet_id           = oci_core_subnet.traefik_demo_nodes.id
+    }
+    size = each.value.count
+  }
+
+  node_shape_config {
+    ocpus         = 2
+    memory_in_gbs = 16
+  }
+
+  node_source_details {
+    image_id    = data.oci_core_images.traefik_demo.images[0].id
+    source_type = "IMAGE"
+  }
+
+  initial_node_labels {
+    key   = "node"
+    value = each.value.label
+  }
+
+  ssh_public_key = tls_private_key.traefik_demo.public_key_openssh
+}
+
+# OKE does not support native taints on node pools.
+# Apply taints via kubectl after nodes are ready.
+resource "null_resource" "oke_taints" {
+  for_each = { for wn in var.worker_nodes : wn.label => wn }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      for node in $(kubectl get nodes -l node=${each.value.label} -o name 2>/dev/null); do
+        kubectl taint nodes "$node" node=${each.value.taint}:NoSchedule --overwrite 2>/dev/null || true
+      done
+    EOT
+  }
+
+  depends_on = [oci_containerengine_node_pool.worker, null_resource.oke_cluster]
+}
+
 data "oci_containerengine_cluster_kube_config" "kubeconfig" {
   token_version = "2.0.0"
   cluster_id    = oci_containerengine_cluster.traefik_demo.id
   endpoint      = "PUBLIC_ENDPOINT"
 
-  depends_on = [oci_containerengine_node_pool.traefik_demo]
+  depends_on = [oci_containerengine_node_pool.traefik_demo, oci_containerengine_node_pool.worker]
 }
 
 data "external" "cluster_token" {
-  depends_on = [oci_containerengine_node_pool.traefik_demo]
+  depends_on = [oci_containerengine_node_pool.traefik_demo, oci_containerengine_node_pool.worker]
 
   program = ["bash", "-c", <<-EOT
     token_response=$(oci ce cluster generate-token --cluster-id ${oci_containerengine_cluster.traefik_demo.id} --region ${var.cluster_location})
@@ -229,5 +282,5 @@ resource "null_resource" "oke_cluster" {
   }
 
   count      = var.update_kubeconfig ? 1 : 0
-  depends_on = [oci_containerengine_cluster.traefik_demo, oci_containerengine_node_pool.traefik_demo]
+  depends_on = [oci_containerengine_cluster.traefik_demo, oci_containerengine_node_pool.traefik_demo, oci_containerengine_node_pool.worker]
 }

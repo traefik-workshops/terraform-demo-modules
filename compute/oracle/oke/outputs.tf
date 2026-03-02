@@ -40,5 +40,5 @@ output "cluster_id" {
 output "node_pool_id" {
   sensitive   = true
   description = "OKE node pool ID"
-  value       = oci_containerengine_node_pool.traefik_demo.id
+  value       = length(oci_containerengine_node_pool.traefik_demo) > 0 ? oci_containerengine_node_pool.traefik_demo[0].id : null
 }
