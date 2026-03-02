@@ -5,7 +5,7 @@ variable "resource_group_name" {
 
 variable "aks_version" {
   type        = string
-  default     = "1.30"
+  default     = "1.34"
   description = "AKS Kubernetes version"
 }
 
