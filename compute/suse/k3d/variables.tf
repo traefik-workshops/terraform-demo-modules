@@ -27,8 +27,8 @@ variable "ports" {
     to   = number
   }))
   default = [
-    { from : 80, to : 8000 },
-    { from : 443, to : 8443 },
+    { from : 80, to : 80 },
+    { from : 443, to : 443 },
     { from : 8080, to : 8080 },
   ]
 }
