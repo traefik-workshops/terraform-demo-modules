@@ -29,7 +29,7 @@ resource "azurerm_kubernetes_cluster" "traefik_demo" {
 # AKS default_node_pool does not support node_taints.
 # Apply the first worker_node's taint via kubectl.
 resource "null_resource" "aks_default_taint" {
-  count = length(var.worker_nodes) > 0 ? 1 : 0
+  count = length(var.worker_nodes) > 0 && coalesce(var.worker_nodes[0].taint, "") != "" ? 1 : 0
 
   provisioner "local-exec" {
     command = <<EOT
@@ -53,9 +53,9 @@ resource "azurerm_kubernetes_cluster_node_pool" "worker" {
     node = each.value.label
   }
 
-  node_taints = [
+  node_taints = coalesce(each.value.taint, "") != "" ? [
     "node=${each.value.taint}:NoSchedule"
-  ]
+  ] : []
 
   upgrade_settings {
     drain_timeout_in_minutes      = 0

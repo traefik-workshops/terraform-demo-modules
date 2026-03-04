@@ -49,13 +49,13 @@ module "eks" {
         node = wn.label
       }
 
-      taints = {
+      taints = coalesce(wn.taint, "") != "" ? {
         dedicated = {
           key    = "node"
           value  = wn.taint
           effect = "NO_SCHEDULE"
         }
-      }
+      } : {}
     }
   }
 }

@@ -225,7 +225,7 @@ resource "oci_containerengine_node_pool" "worker" {
 # OKE does not support native taints on node pools.
 # Apply taints via kubectl after nodes are ready.
 resource "null_resource" "oke_taints" {
-  for_each = { for wn in var.worker_nodes : wn.label => wn }
+  for_each = { for wn in var.worker_nodes : wn.label => wn if coalesce(wn.taint, "") != "" }
 
   provisioner "local-exec" {
     command = <<EOT

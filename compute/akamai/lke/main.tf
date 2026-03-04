@@ -28,10 +28,13 @@ resource "linode_lke_cluster" "traefik_demo" {
         node = pool.value.label
       }
 
-      taint {
-        key    = "node"
-        value  = pool.value.taint
-        effect = "NoSchedule"
+      dynamic "taint" {
+        for_each = coalesce(pool.value.taint, "") != "" ? [pool.value.taint] : []
+        content {
+          key    = "node"
+          value  = taint.value
+          effect = "NoSchedule"
+        }
       }
     }
   }

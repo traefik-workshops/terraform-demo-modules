@@ -16,7 +16,7 @@ resource "digitalocean_kubernetes_cluster" "traefik_demo" {
     } : {}
 
     dynamic "taint" {
-      for_each = length(var.worker_nodes) > 0 ? [var.worker_nodes[0]] : []
+      for_each = length(var.worker_nodes) > 0 && coalesce(var.worker_nodes[0].taint, "") != "" ? [var.worker_nodes[0]] : []
       content {
         key    = "node"
         value  = taint.value.taint
@@ -37,10 +37,13 @@ resource "digitalocean_kubernetes_node_pool" "worker" {
     node = each.value.label
   }
 
-  taint {
-    key    = "node"
-    value  = each.value.taint
-    effect = "NoSchedule"
+  dynamic "taint" {
+    for_each = coalesce(each.value.taint, "") != "" ? [each.value.taint] : []
+    content {
+      key    = "node"
+      value  = taint.value
+      effect = "NoSchedule"
+    }
   }
 }
 
