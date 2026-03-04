@@ -233,7 +233,7 @@ locals {
     } : null)
 
     certificatesResolvers = var.cloudflare_dns.enabled || var.dns_traefiker.enabled ? jsondecode(
-      var.use_distributed_acme ? jsonencode({
+      var.use_distributed_acme && var.traefik_hub_token != "" ? jsonencode({
         cf = {
           distributedAcme = {
             email    = "zaid@traefik.io"
