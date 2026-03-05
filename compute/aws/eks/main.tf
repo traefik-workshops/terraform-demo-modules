@@ -49,7 +49,7 @@ module "eks" {
         node = wn.label
       }
 
-      taints = coalesce(wn.taint, "") != "" ? {
+      taints = try(length(wn.taint), 0) > 0 ? {
         dedicated = {
           key    = "node"
           value  = wn.taint

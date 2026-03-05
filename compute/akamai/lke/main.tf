@@ -29,7 +29,7 @@ resource "linode_lke_cluster" "traefik_demo" {
       }
 
       dynamic "taint" {
-        for_each = coalesce(pool.value.taint, "") != "" ? [pool.value.taint] : []
+        for_each = try(length(pool.value.taint), 0) > 0 ? [pool.value.taint] : []
         content {
           key    = "node"
           value  = taint.value

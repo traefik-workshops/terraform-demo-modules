@@ -16,7 +16,7 @@ resource "digitalocean_kubernetes_cluster" "traefik_demo" {
     } : {}
 
     dynamic "taint" {
-      for_each = length(var.worker_nodes) > 0 && coalesce(var.worker_nodes[0].taint, "") != "" ? [var.worker_nodes[0]] : []
+      for_each = length(var.worker_nodes) > 0 && try(length(var.worker_nodes[0].taint), 0) > 0 ? [var.worker_nodes[0]] : []
       content {
         key    = "node"
         value  = taint.value.taint
@@ -38,7 +38,7 @@ resource "digitalocean_kubernetes_node_pool" "worker" {
   }
 
   dynamic "taint" {
-    for_each = coalesce(each.value.taint, "") != "" ? [each.value.taint] : []
+    for_each = try(length(each.value.taint), 0) > 0 ? [each.value.taint] : []
     content {
       key    = "node"
       value  = taint.value
