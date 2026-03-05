@@ -9,6 +9,10 @@ resource "helm_release" "keycloak" {
     yamlencode({
       namespace = var.namespace
 
+      global = {
+        domain = var.domain
+      }
+
       ingress = {
         enabled    = var.ingress.enabled
         domain     = var.ingress.domain != "" ? var.ingress.domain : var.domain
