@@ -143,12 +143,13 @@ locals {
           "--hub.providers.nutanixPrismCentral.pollTimeout=${var.nutanix_provider.poll_timeout}"
         ],
 
-        # Category keys for service discovery
-        [
-          "--hub.providers.nutanixPrismCentral.serviceNameCategoryKey=TraefikServiceName",
-          "--hub.providers.nutanixPrismCentral.servicePortCategoryKey=TraefikServicePort",
-          "--hub.providers.nutanixPrismCentral.loadBalancerStrategyCategoryKey=TraefikLoadBalancerStrategy"
-        ]
+        # Category key for service discovery
+        ["--hub.providers.nutanixPrismCentral.serviceNameCategoryKey=TraefikServiceName"],
+
+        # Optional supplementary config file (healthchecks, LB settings, etc.)
+        var.nutanix_provider.filename != "" ? [
+          "--hub.providers.nutanixPrismCentral.filename=${var.nutanix_provider.filename}"
+        ] : []
       ) : [],
 
       # TLS Configuration for EntryPoints (Moved from ports.websecure.tls due to Helm schema strictness)

@@ -326,6 +326,7 @@ variable "nutanix_provider" {
     insecure_skip_verify = optional(bool, false)
     poll_interval        = optional(string, "30s")
     poll_timeout         = optional(string, "5s")
+    filename             = optional(string, "")
   })
   default = {
     enabled = false

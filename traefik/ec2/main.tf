@@ -46,6 +46,7 @@ locals {
       cli_arguments        = local.cli_arguments
       env_vars             = local.env_vars_list
       file_provider_config = var.file_provider_config
+      extra_files          = var.extra_files
       performance_tuning   = local.performance_tuning
       otlp_address         = module.config.otlp_endpoint
       instance_name        = "traefik-${i + 1}" # Explicit unique name as requested
@@ -54,6 +55,8 @@ locals {
       keepalived_priority  = 100                # Optional
       network_interface    = "ens3"             # Optional
       dns_traefiker        = var.dns_traefiker
+      enable_preview_mode  = var.enable_preview_mode
+      preview_image        = module.config.image_full
     })
   }
 

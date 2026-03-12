@@ -71,11 +71,14 @@ module "cloud_init" {
   )
   file_provider_config = var.file_provider_config
   dashboard_config     = local.dashboard_config
+  extra_files          = var.extra_files
   performance_tuning   = local.performance_tuning
   vip                  = var.vip
   keepalived_priority  = var.keepalived_priority
   network_interface    = var.network_interface
   dns_traefiker        = var.dns_traefiker
+  enable_preview_mode  = var.enable_preview_mode
+  preview_image        = module.config.image_full
 }
 
 module "traefik_vm" {

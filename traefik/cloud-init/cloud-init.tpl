@@ -135,6 +135,14 @@ write_files:
       ${indent(6, file_provider_config)}
 %{ endif ~}
 
+%{ for f in extra_files ~}
+  - path: ${f.path}
+    owner: root:root
+    permissions: "0644"
+    content: |
+      ${indent(6, f.content)}
+%{ endfor ~}
+
 %{ if dashboard_config != "" ~}
   - path: /etc/traefik-hub/dynamic/dashboard.yaml
     owner: root:root
@@ -235,6 +243,55 @@ runcmd:
       systemctl enable node_exporter || true
       systemctl start node_exporter || true
     fi
+%{ if enable_preview_mode ~}
+  - |
+    # Preview Mode: Install Docker, pull preview image, extract binary
+    echo "Preview mode enabled - installing Docker to extract binary from container image..."
+
+    # Install Docker
+    apt-get update
+    apt-get install -y ca-certificates curl gnupg
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+    apt-get update
+    apt-get install -y docker-ce docker-ce-cli containerd.io
+
+    # Pull preview image and extract binary
+    PREVIEW_IMAGE="${preview_image}"
+    echo "Pulling preview image: $PREVIEW_IMAGE..."
+
+    for i in {1..5}; do
+      if docker pull "$PREVIEW_IMAGE"; then
+        # Create temporary container and copy binary out
+        CONTAINER_ID=$(docker create "$PREVIEW_IMAGE")
+        if docker cp "$CONTAINER_ID:/usr/local/bin/traefik-hub" /usr/local/bin/traefik-hub 2>/dev/null || \
+           docker cp "$CONTAINER_ID:/traefik-hub" /usr/local/bin/traefik-hub 2>/dev/null || \
+           docker cp "$CONTAINER_ID:/usr/bin/traefik-hub" /usr/local/bin/traefik-hub 2>/dev/null; then
+          chmod +x /usr/local/bin/traefik-hub
+          echo "Traefik Hub preview binary extracted successfully."
+        else
+          echo "Searching for traefik-hub binary in container..."
+          BINARY_PATH=$(docker run --rm --entrypoint="" "$PREVIEW_IMAGE" which traefik-hub 2>/dev/null || echo "")
+          if [ -n "$BINARY_PATH" ]; then
+            docker cp "$CONTAINER_ID:$BINARY_PATH" /usr/local/bin/traefik-hub
+            chmod +x /usr/local/bin/traefik-hub
+            echo "Traefik Hub preview binary found at $BINARY_PATH and extracted."
+          fi
+        fi
+        docker rm "$CONTAINER_ID" 2>/dev/null || true
+        break
+      fi
+      echo "Retrying preview image pull ($i/5)..."
+      sleep 5
+    done
+
+    if [ ! -f /usr/local/bin/traefik-hub ]; then
+      echo "ERROR: Failed to extract Traefik Hub binary from preview image"
+      exit 1
+    fi
+%{ else ~}
   - |
     # Robust download and install
     ARCH="${arch}"
@@ -242,10 +299,10 @@ runcmd:
     [[ ! $VERSION =~ ^v ]] && VERSION="v$VERSION"
     DOWNLOAD_ARCH="amd64"
     [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]] && DOWNLOAD_ARCH="arm64"
-    
+
     URL="https://github.com/traefik/hub/releases/download/$VERSION/traefik-hub_$${VERSION}_linux_$${DOWNLOAD_ARCH}.tar.gz"
     echo "Downloading Traefik Hub from $URL..."
-    
+
     for i in {1..5}; do
       if curl -L --connect-timeout 10 --max-time 120 "$URL" -o /tmp/traefik-hub.tar.gz; then
         mkdir -p /tmp/traefik-hub-extract
@@ -267,6 +324,7 @@ runcmd:
       echo "ERROR: Failed to install Traefik Hub after retries"
       exit 1
     fi
+%{ endif ~}
 
 %{ if vip != "" ~}
   - |

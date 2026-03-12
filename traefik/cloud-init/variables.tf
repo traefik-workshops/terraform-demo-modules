@@ -9,6 +9,18 @@ variable "traefik_hub_version" {
   description = "The Traefik Hub version to download"
 }
 
+variable "enable_preview_mode" {
+  description = "Enable Traefik Hub Preview features (pulls binary from Docker image instead of GitHub releases)"
+  type        = bool
+  default     = false
+}
+
+variable "preview_image" {
+  description = "Full Docker image reference for preview mode (e.g. europe-west9-docker.pkg.dev/traefiklabs/traefik-hub/traefik-hub:latest-v3)"
+  type        = string
+  default     = ""
+}
+
 variable "cli_arguments" {
   type        = list(string)
   description = "CLI arguments for Traefik Hub"
@@ -28,6 +40,15 @@ variable "file_provider_config" {
   type        = string
   description = "Dynamic configuration for the file provider"
   default     = ""
+}
+
+variable "extra_files" {
+  type = list(object({
+    path    = string
+    content = string
+  }))
+  description = "Extra files to write to the VM at cloud-init time (e.g. Nutanix provider supplementary config)"
+  default     = []
 }
 
 variable "dashboard_config" {

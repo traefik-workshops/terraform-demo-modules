@@ -261,6 +261,15 @@ variable "file_provider_config" {
   default     = ""
 }
 
+variable "extra_files" {
+  type = list(object({
+    path    = string
+    content = string
+  }))
+  description = "Extra files to write to the VM at cloud-init time"
+  default     = []
+}
+
 variable "file_provider_path" {
   description = "Path where the file provider config is mounted"
   type        = string
@@ -363,6 +372,7 @@ variable "nutanix_provider" {
     insecure_skip_verify = optional(bool, false)
     poll_interval        = optional(string, "30s")
     poll_timeout         = optional(string, "5s")
+    filename             = optional(string, "")
   })
   default = {
     enabled = false
