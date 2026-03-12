@@ -55,7 +55,8 @@ locals {
         repository = local.image_repository
         tag        = local.image_tag
       },
-      local.image_registry != "" ? { registry = local.image_registry } : {}
+      local.image_registry != "" ? { registry = local.image_registry } : {},
+      var.enable_preview_mode ? { pullPolicy = "Always" } : {}
     )
 
     hub = var.enable_api_gateway || var.enable_api_management || var.enable_preview_mode ? merge({
