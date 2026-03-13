@@ -14,7 +14,7 @@ variable "arch" {
 
 variable "nkp_version" {
   type    = string
-  default = "2.17.0"
+  default = "2.17.1"
 }
 
 variable "nkp_bundle_path" {

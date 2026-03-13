@@ -80,7 +80,7 @@ variable "nutanix_insecure" {
 variable "nkp_version" {
   description = "NKP Version"
   type        = string
-  default     = "2.17.0"
+  default     = "2.17.1"
 }
 
 variable "nkp_image_name" {
@@ -138,31 +138,31 @@ variable "control_plane_replicas" {
 variable "worker_replicas" {
   description = "Number of Worker Nodes"
   type        = number
-  default     = 3
+  default     = 4
 }
 
 variable "control_plane_memory_mib" {
   description = "Memory in MiB for Control Plane Nodes"
   type        = number
-  default     = 32768
+  default     = 65536
 }
 
 variable "control_plane_vcpus" {
   description = "vCPUs for Control Plane Nodes"
   type        = number
-  default     = 16
+  default     = 32
 }
 
 variable "worker_memory_mib" {
   description = "Memory in MiB for Worker Nodes"
   type        = number
-  default     = 32768
+  default     = 65536
 }
 
 variable "worker_vcpus" {
   description = "vCPUs for Worker Nodes"
   type        = number
-  default     = 16
+  default     = 32
 }
 
 variable "update_kubeconfig" {

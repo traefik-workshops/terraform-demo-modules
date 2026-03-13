@@ -14,7 +14,7 @@ variable "arch" {
 
 variable "nkp_version" {
   type    = string
-  default = "2.17.0"
+  default = "2.17.1"
 }
 
 variable "nkp_bundle_path" {
@@ -121,7 +121,10 @@ build {
       "sudo apt-get update",
       "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
       "sudo usermod -aG docker traefiker",
-      
+
+      # Pre-pull registry:2 so the image is self-sufficient at runtime (no Docker Hub access needed)
+      "sudo docker pull registry:2",
+
       # Kubectl Installation
       "curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\"",
       "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
