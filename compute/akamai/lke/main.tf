@@ -63,17 +63,25 @@ resource "null_resource" "lke_cluster" {
   provisioner "local-exec" {
 
     command = <<EOT
-      echo '${local.kubeconfig_raw}' > lke-kubeconfig.yaml
+      TMPKUBE=/tmp/lke-kubeconfig-${var.cluster_name}.yaml
+      TMPMERGE=/tmp/lke-merged-${var.cluster_name}.yaml
+      LOCKDIR=/tmp/lke-kubeconfig-merge.lock
+      echo '${local.kubeconfig_raw}' > "$TMPKUBE"
 
-      export KUBECONFIG=~/.kube/config:lke-kubeconfig.yaml
-      kubectl config view --flatten > merged.yaml
-      mv merged.yaml ~/.kube/config
+      while ! mkdir "$LOCKDIR" 2>/dev/null; do sleep 0.5; done
+      trap "rm -rf '$LOCKDIR'" EXIT
+
+      export KUBECONFIG=~/.kube/config:"$TMPKUBE"
+      kubectl config view --flatten > "$TMPMERGE"
+      mv "$TMPMERGE" ~/.kube/config
+
+      rm -rf "$LOCKDIR"
 
       kubectl config delete-context "${var.cluster_name_prefix}${var.cluster_name}" 2>/dev/null || true
       kubectl config rename-context "lke${linode_lke_cluster.traefik_demo.id}-ctx" "${var.cluster_name_prefix}${var.cluster_name}"
       kubectl config use-context "${var.cluster_name_prefix}${var.cluster_name}"
 
-      rm lke-kubeconfig.yaml
+      rm "$TMPKUBE"
     EOT
   }
 

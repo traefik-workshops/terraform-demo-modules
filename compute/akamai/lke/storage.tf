@@ -4,7 +4,7 @@ provider "kubernetes" {
   token                  = local.token
 }
 
-resource "kubernetes_storage_class" "default" {
+resource "kubernetes_storage_class_v1" "default" {
   metadata {
     name = "default"
     annotations = {
