@@ -72,6 +72,12 @@ variable "skip_crds" {
   default     = false
 }
 
+variable "skip_gateway_api_crds" {
+  description = "Skip Gateway API CRD installation"
+  type        = bool
+  default     = false
+}
+
 variable "enable_knative_provider" {
   description = "Enable Knative provider"
   type        = bool

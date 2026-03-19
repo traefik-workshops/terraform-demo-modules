@@ -27,7 +27,7 @@ resource "helm_release" "traefik-crds" {
 }
 
 resource "null_resource" "gateway_api_experimental" {
-  count = var.skip_crds ? 0 : 1
+  count = var.skip_crds || var.skip_gateway_api_crds ? 0 : 1
 
   provisioner "local-exec" {
     command = <<EOF
