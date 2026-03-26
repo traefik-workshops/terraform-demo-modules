@@ -1,41 +1,22 @@
 
-resource "helm_release" "traefik-crds" {
+resource "null_resource" "traefik-crds" {
   count = var.skip_crds ? 0 : 1
 
-  name       = "traefik-crds"
-  namespace  = var.namespace
-  repository = "https://traefik.github.io/charts"
-  chart      = "traefik-crds"
-  version    = "1.11.1"
-  timeout    = 900
-  atomic     = true
-
-  set = [
-    {
-      name  = "gatewayAPI"
-      value = true
-    },
-    {
-      name  = "hub"
-      value = true
-    },
-    {
-      name  = "deleteOnUninstall"
-      value = true
-    }
-  ]
-}
-
-resource "null_resource" "gateway_api_experimental" {
-  count = var.skip_crds || var.skip_gateway_api_crds ? 0 : 1
-
-  provisioner "local-exec" {
-    command = <<EOF
-    kubectl apply --server-side \
-      -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml \
-      --force-conflicts
-EOF
+  triggers = {
+    chart_version  = "1.16.0"
+    gateway_api    = tostring(!var.skip_gateway_api_crds)
+    hub            = tostring(var.enable_api_gateway || var.enable_api_management)
   }
 
-  depends_on = [helm_release.traefik-crds]
+  provisioner "local-exec" {
+    command = <<-EOT
+      helm repo add traefik https://traefik.github.io/charts --force-update
+      helm template traefik-crds traefik/traefik-crds \
+        --version 1.16.0 \
+        --set gatewayAPI=${var.skip_gateway_api_crds ? "false" : "true"} \
+        --set gatewayAPIExperimental=${var.skip_gateway_api_crds ? "false" : "true"} \
+        --set knative=false \
+        --set hub=${var.enable_api_gateway || var.enable_api_management ? "true" : "false"} | kubectl apply --server-side --force-conflicts -f -
+    EOT
+  }
 }

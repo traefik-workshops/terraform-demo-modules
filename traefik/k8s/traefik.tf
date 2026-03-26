@@ -192,7 +192,7 @@ resource "helm_release" "traefik" {
   depends_on = [
     kubernetes_secret_v1.traefik-hub-license,
     kubernetes_config_map_v1.traefik-dynamic-config,
-    helm_release.traefik-crds,
+    null_resource.traefik-crds,
     helm_release.dns-traefiker
   ]
 }
