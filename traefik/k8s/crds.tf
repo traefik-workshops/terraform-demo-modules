@@ -14,7 +14,6 @@ resource "null_resource" "traefik-crds" {
       helm template traefik-crds traefik/traefik-crds \
         --version 1.16.0 \
         --set gatewayAPI=${var.skip_gateway_api_crds ? "false" : "true"} \
-        --set gatewayAPIExperimental=${var.skip_gateway_api_crds ? "false" : "true"} \
         --set knative=false \
         --set hub=${var.enable_api_gateway || var.enable_api_management ? "true" : "false"} | kubectl apply --server-side --force-conflicts -f -
     EOT
