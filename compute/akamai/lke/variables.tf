@@ -1,6 +1,6 @@
 variable "lke_version" {
   type        = string
-  default     = "1.33"
+  default     = "1.35"
   description = "LKE Kubernetes version"
 }
 
