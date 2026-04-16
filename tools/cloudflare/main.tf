@@ -4,7 +4,7 @@ resource "cloudflare_dns_record" "root" {
   content = var.record_type == "A" ? var.ip : var.hostname
   type    = var.record_type
   ttl     = 1
-  proxied = false
+  proxied = var.proxied
 }
 
 resource "cloudflare_dns_record" "wildcard" {
@@ -13,5 +13,5 @@ resource "cloudflare_dns_record" "wildcard" {
   content = var.record_type == "A" ? var.ip : var.hostname
   type    = var.record_type
   ttl     = 1
-  proxied = false
+  proxied = var.proxied
 }

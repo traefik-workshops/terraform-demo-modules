@@ -35,3 +35,9 @@ variable "record_type" {
   type        = string
   default     = "A"
 }
+
+variable "proxied" {
+  description = "Whether the record is proxied through Cloudflare"
+  type        = bool
+  default     = false
+}
