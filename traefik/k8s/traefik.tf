@@ -9,19 +9,21 @@ locals {
   # Combine shared arguments with K8s-specific ones
   additional_arguments = module.config.cli_arguments
 
-  # K8s-specific volumes for file provider
+  # K8s-specific volumes for file provider + user-provided additional volumes
   deployment_volumes = concat(
     var.file_provider_config != "" ? [{
       name      = "traefik-dynamic-config"
       configMap = { name = "traefik-dynamic-config" }
-    }] : []
+    }] : [],
+    var.additional_volumes,
   )
 
   volume_mounts = concat(
     var.file_provider_config != "" ? [{
       name      = "traefik-dynamic-config"
       mountPath = "/etc/traefik/dynamic/"
-    }] : []
+    }] : [],
+    var.additional_volume_mounts,
   )
 
   # K8s-specific overrides to merge with shared helm_values
@@ -207,13 +209,13 @@ resource "helm_release" "dns-traefiker" {
 
   values = [
     yamlencode({
-      uniqueDomain             = var.dns_traefiker.unique_domain
-      domain                   = var.dns_traefiker.domain
-      enableAirlinesSubdomain  = var.dns_traefiker.enable_airlines_subdomain
-      ipOverride               = var.dns_traefiker.ip_override
-      proxied                  = var.dns_traefiker.proxied
-      traefikServiceName       = "traefik"
-      traefikServiceNamespace  = var.namespace
+      uniqueDomain            = var.dns_traefiker.unique_domain
+      domain                  = var.dns_traefiker.domain
+      enableAirlinesSubdomain = var.dns_traefiker.enable_airlines_subdomain
+      ipOverride              = var.dns_traefiker.ip_override
+      proxied                 = var.dns_traefiker.proxied
+      traefikServiceName      = "traefik"
+      traefikServiceNamespace = var.namespace
     })
   ]
 }

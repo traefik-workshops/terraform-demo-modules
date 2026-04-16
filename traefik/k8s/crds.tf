@@ -3,9 +3,9 @@ resource "null_resource" "traefik-crds" {
   count = var.skip_crds ? 0 : 1
 
   triggers = {
-    chart_version  = "1.16.0"
-    gateway_api    = tostring(!var.skip_gateway_api_crds)
-    hub            = tostring(var.enable_api_gateway || var.enable_api_management)
+    chart_version = "1.16.0"
+    gateway_api   = tostring(!var.skip_gateway_api_crds)
+    hub           = tostring(var.enable_api_gateway || var.enable_api_management)
   }
 
   provisioner "local-exec" {

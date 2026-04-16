@@ -52,9 +52,9 @@ module "config" {
   file_provider_path   = var.file_provider_path
 
   # Licensing & DNS
-  traefik_hub_token      = var.traefik_hub_token
-  cloudflare_dns         = var.cloudflare_dns
-  dns_traefiker          = {
+  traefik_hub_token = var.traefik_hub_token
+  cloudflare_dns    = var.cloudflare_dns
+  dns_traefiker = {
     enabled                   = var.dns_traefiker.enabled
     chart                     = var.dns_traefiker.chart
     unique_domain             = var.dns_traefiker.unique_domain
@@ -257,6 +257,18 @@ variable "custom_envs" {
     value = string
   }))
   default = []
+}
+
+variable "additional_volumes" {
+  description = "Additional volumes to mount in the Traefik pod"
+  type        = list(any)
+  default     = []
+}
+
+variable "additional_volume_mounts" {
+  description = "Additional volume mounts for the Traefik container"
+  type        = list(any)
+  default     = []
 }
 
 variable "file_provider_config" {
