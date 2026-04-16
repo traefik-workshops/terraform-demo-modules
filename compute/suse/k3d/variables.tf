@@ -32,3 +32,18 @@ variable "ports" {
     { from : 8080, to : 8080 },
   ]
 }
+
+variable "volumes" {
+  type        = list(string)
+  default     = []
+  description = "Volume mounts in 'host_path:container_path' format, applied to all nodes."
+}
+
+variable "host_aliases" {
+  type = list(object({
+    ip        = string
+    hostnames = list(string)
+  }))
+  default     = []
+  description = "Entries injected into /etc/hosts on nodes and CoreDNS."
+}

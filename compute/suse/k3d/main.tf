@@ -14,6 +14,24 @@ ports:
     nodeFilters:
       - loadbalancer
 %{endfor~}
+%{if length(var.volumes) > 0~}
+volumes:
+%{for vol in var.volumes~}
+  - volume: ${vol}
+    nodeFilters:
+      - all
+%{endfor~}
+%{endif~}
+%{if length(var.host_aliases) > 0~}
+hostAliases:
+%{for alias in var.host_aliases~}
+  - ip: ${alias.ip}
+    hostnames:
+%{for hostname in alias.hostnames~}
+      - ${hostname}
+%{endfor~}
+%{endfor~}
+%{endif~}
 options:
   k3s:
     extraArgs:
