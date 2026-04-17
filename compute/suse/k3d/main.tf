@@ -32,6 +32,19 @@ hostAliases:
 %{endfor~}
 %{endfor~}
 %{endif~}
+%{if length(var.registries_use) > 0 || var.registries_config != ""~}
+registries:
+%{if length(var.registries_use) > 0~}
+  use:
+%{for reg in var.registries_use~}
+    - ${reg}
+%{endfor~}
+%{endif~}
+%{if var.registries_config != ""~}
+  config: |
+${indent(4, "\n${var.registries_config}")}
+%{endif~}
+%{endif~}
 options:
   k3s:
     extraArgs:

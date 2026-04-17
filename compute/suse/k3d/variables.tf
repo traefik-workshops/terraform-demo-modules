@@ -47,3 +47,15 @@ variable "host_aliases" {
   default     = []
   description = "Entries injected into /etc/hosts on nodes and CoreDNS."
 }
+
+variable "registries_use" {
+  type        = list(string)
+  default     = []
+  description = "Names of existing k3d-managed registries to attach to this cluster's network."
+}
+
+variable "registries_config" {
+  type        = string
+  default     = ""
+  description = "Contents of /etc/rancher/k3s/registries.yaml rendered into the cluster (mirrors/auth)."
+}
