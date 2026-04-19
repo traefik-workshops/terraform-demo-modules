@@ -208,23 +208,46 @@ locals {
       }
     }
 
-    metrics = var.enable_prometheus ? {
-      prometheus = {
+    # The Traefik Helm chart uses `{{- with .Values.metrics.prometheus }}`
+    # which is truthy for any non-null map (even with enabled:false). To
+    # actually disable the endpoint we must set the key to null so Helm
+    # merges it away from the chart defaults.
+    metrics = {
+      prometheus = var.enable_prometheus ? {
+        enabled              = true
         addEntryPointsLabels = true
         addRoutersLabels     = true
         addServicesLabels    = true
-      }
-    } : null
+      } : null
+      otlp = var.enable_otlp_metrics ? {
+        enabled              = true
+        addEntryPointsLabels = true
+        addRoutersLabels     = true
+        addServicesLabels    = true
+        http = merge({
+          enabled  = true
+          endpoint = "${local.otlp_endpoint}/v1/metrics"
+          },
+          # Traefik rejects TLS config on http:// endpoints: "insecure HTTP
+          # endpoint cannot use TLS client configuration". Only include tls
+          # when the endpoint is actually TLS.
+          startswith(local.otlp_endpoint, "https://") ? {
+            tls = { insecureSkipVerify = true }
+          } : {}
+        )
+      } : null
+    }
 
     tracing = var.enable_otlp_traces && var.otlp_address != "" ? {
       serviceName = var.otlp_service_name
       otlp = {
-        http = {
+        http = merge({
           endpoint = "${local.otlp_endpoint}/v1/traces"
-          tls = {
-            insecureSkipVerify = true
-          }
-        }
+          },
+          startswith(local.otlp_endpoint, "https://") ? {
+            tls = { insecureSkipVerify = true }
+          } : {}
+        )
       }
     } : null
 
