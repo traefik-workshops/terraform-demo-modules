@@ -180,13 +180,14 @@ locals {
         otlp = {
           enabled     = var.enable_otlp_application_logs
           serviceName = var.otlp_service_name
-          http = {
+          http = merge({
             enabled  = true
             endpoint = "${local.otlp_endpoint}/v1/logs"
-            tls = {
-              insecureSkipVerify = true
-            }
-          }
+            },
+            startswith(local.otlp_endpoint, "https://") ? {
+              tls = { insecureSkipVerify = true }
+            } : {}
+          )
         }
       }
       access = {
@@ -197,13 +198,14 @@ locals {
         otlp = {
           enabled     = var.enable_otlp_access_logs
           serviceName = var.otlp_service_name
-          http = {
+          http = merge({
             enabled  = true
             endpoint = "${local.otlp_endpoint}/v1/logs"
-            tls = {
-              insecureSkipVerify = true
-            }
-          }
+            },
+            startswith(local.otlp_endpoint, "https://") ? {
+              tls = { insecureSkipVerify = true }
+            } : {}
+          )
         }
       }
     }
@@ -241,7 +243,9 @@ locals {
     tracing = var.enable_otlp_traces && var.otlp_address != "" ? {
       serviceName = var.otlp_service_name
       otlp = {
+        enabled = true
         http = merge({
+          enabled  = true
           endpoint = "${local.otlp_endpoint}/v1/traces"
           },
           startswith(local.otlp_endpoint, "https://") ? {
