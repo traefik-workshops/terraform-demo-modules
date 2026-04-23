@@ -114,6 +114,31 @@ variable "honeycomb_dataset" {
   default     = ""
 }
 
+variable "enable_langsmith" {
+  type        = bool
+  description = "Enable LangSmith trace export. LangSmith's OTLP endpoint ingests traces only — metrics and logs are not accepted and will not be exported there."
+  default     = false
+}
+
+variable "langsmith_endpoint" {
+  type        = string
+  description = "LangSmith OTLP endpoint. Use https://api.smith.langchain.com/otel (US), https://eu.api.smith.langchain.com/otel (EU), or https://<self-hosted>/api/v1/otel."
+  default     = "https://api.smith.langchain.com/otel"
+}
+
+variable "langsmith_api_key" {
+  type        = string
+  description = "LangSmith API key"
+  sensitive   = true
+  default     = ""
+}
+
+variable "langsmith_project" {
+  type        = string
+  description = "LangSmith project name. All traces from this collector land in this project unless overridden per-span via the Langsmith-Project header."
+  default     = "default"
+}
+
 variable "ingress" {
   type        = bool
   description = "Enable Ingress for the OpenTelemetry deployment."

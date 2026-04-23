@@ -4,10 +4,11 @@ locals {
   newrelic_exporter   = var.enable_new_relic ? ["otlphttp/nri"] : []
   dash0_exporter      = var.enable_dash0 ? ["otlphttp/dash0"] : []
   honeycomb_exporter  = var.enable_honeycomb ? ["otlphttp/honeycomb"] : []
+  langsmith_exporter  = var.enable_langsmith ? ["otlphttp/langsmith"] : []
   prometheus_exporter = var.enable_prometheus ? ["prometheus"] : []
 
   log_exporters    = concat(local.loki_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter)
-  trace_exporters  = concat(local.tempo_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter)
+  trace_exporters  = concat(local.tempo_exporter, local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter, local.langsmith_exporter)
   metric_exporters = concat(local.newrelic_exporter, local.dash0_exporter, local.honeycomb_exporter, local.prometheus_exporter)
 
   logs_pipeline = length(local.log_exporters) > 0 ? concat([
@@ -132,6 +133,15 @@ resource "helm_release" "opentelemetry" {
               headers = {
                 x-honeycomb-team    = var.honeycomb_api_key
                 x-honeycomb-dataset = var.honeycomb_dataset
+              }
+            }
+            } : {}, var.enable_langsmith ? {
+            "otlphttp/langsmith" = {
+              endpoint    = var.langsmith_endpoint
+              compression = "gzip"
+              headers = {
+                x-api-key         = var.langsmith_api_key
+                Langsmith-Project = var.langsmith_project
               }
             }
             } : {}, var.enable_prometheus ? {
