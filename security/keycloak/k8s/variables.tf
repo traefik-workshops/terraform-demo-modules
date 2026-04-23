@@ -70,6 +70,12 @@ variable "client_key" {
   default = ""
 }
 
+variable "instances" {
+  type        = number
+  default     = 1
+  description = "Number of Keycloak pods behind the shared Postgres backend. Scale when multiple independent test runs hit the OIDC endpoint in parallel."
+}
+
 variable "chart" {
   type        = string
   default     = ""

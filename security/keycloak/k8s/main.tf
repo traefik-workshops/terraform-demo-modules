@@ -19,6 +19,10 @@ resource "helm_release" "keycloak" {
         entrypoint = var.ingress.entrypoint
       }
 
+      keycloak = {
+        instances = var.instances
+      }
+
       realm = {
         name                = "traefik"
         accessTokenLifespan = var.access_token_lifespan
