@@ -69,3 +69,9 @@ variable "grafana_extra_values" {
   description = "Extra values to pass to the Grafana deployment."
   default     = {}
 }
+
+variable "prometheus_url_override" {
+  type        = string
+  default     = ""
+  description = "If non-empty, Grafana's Prometheus datasource URL is set to this value instead of the default kube-prometheus-stack service. Useful when you route queries through a Prom-compatible backend like VictoriaMetrics vmselect."
+}

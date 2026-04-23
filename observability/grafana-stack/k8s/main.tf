@@ -43,7 +43,7 @@ module "grafana" {
       service   = "prometheus-kube-prometheus-prometheus"
       port      = 9090
       namespace = ""
-      override  = ""
+      override  = var.prometheus_url_override
     }
   }
 
