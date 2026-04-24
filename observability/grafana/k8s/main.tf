@@ -124,12 +124,15 @@ resource "helm_release" "grafana" {
       ingress = {
         enabled = true
         hosts   = ["grafana.${var.ingress_domain}"]
-        annotations = {
-          "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
-          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
-          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
-        }
+        annotations = merge(
+          { "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint },
+          var.ingress_observability ? {} : {
+            "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+            "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+            "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
+          },
+          var.ingress_annotations,
+        )
       }
     } : {})
   ]

@@ -44,6 +44,18 @@ variable "ingress_entrypoint" {
   description = "The entrypoint to use for the ingress, default is `traefik`"
 }
 
+variable "ingress_observability" {
+  type        = bool
+  description = "Emit Traefik observability signals (access logs, metrics, traces) for the stack's Prometheus and Grafana ingress routers. Set to false to add the three `traefik.ingress.kubernetes.io/router.observability.*: \"false\"` annotations on each child module. Same switch shape as other observability/k8s modules."
+  default     = true
+}
+
+variable "ingress_annotations" {
+  type        = map(string)
+  description = "Additional metadata annotations merged onto each child module's Ingress. Useful for custom router options beyond the three observability toggles."
+  default     = {}
+}
+
 variable "dashboards" {
   type = object({
     aigateway  = bool
