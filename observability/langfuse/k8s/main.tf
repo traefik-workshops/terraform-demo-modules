@@ -93,8 +93,9 @@ resource "kubernetes_manifest" "ingressroute" {
     apiVersion = "traefik.io/v1alpha1"
     kind       = "IngressRoute"
     metadata = {
-      name      = "${var.name}-web"
-      namespace = var.namespace
+      name        = "${var.name}-web"
+      namespace   = var.namespace
+      annotations = var.ingress_annotations
     }
     spec = {
       entryPoints = [var.ingress_entrypoint]

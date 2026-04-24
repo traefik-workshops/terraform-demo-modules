@@ -133,3 +133,9 @@ variable "ingress_external_port" {
   description = "External port on which `ingress_host` is reachable from a browser — used only to build the NEXTAUTH_URL."
   default     = 8080
 }
+
+variable "ingress_annotations" {
+  type        = map(string)
+  description = "Extra annotations on the Traefik IngressRoute. Useful for disabling trace / access-log emission on the UI route via `traefik.ingress.kubernetes.io/router.observability.{tracing,accesslogs,metrics}: \"false\"`."
+  default     = {}
+}
