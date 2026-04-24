@@ -172,12 +172,15 @@ resource "helm_release" "opentelemetry" {
             port     = 4318
           }]
         }]
-        annotations = {
-          "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
-          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
-          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
-        }
+        annotations = merge(
+          { "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint },
+          var.ingress_observability ? {} : {
+            "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+            "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+            "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
+          },
+          var.ingress_annotations,
+        )
       }
     } : {})
   ]

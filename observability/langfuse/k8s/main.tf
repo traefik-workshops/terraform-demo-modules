@@ -93,9 +93,16 @@ resource "kubernetes_manifest" "ingressroute" {
     apiVersion = "traefik.io/v1alpha1"
     kind       = "IngressRoute"
     metadata = {
-      name        = "${var.name}-web"
-      namespace   = var.namespace
-      annotations = var.ingress_annotations
+      name      = "${var.name}-web"
+      namespace = var.namespace
+      annotations = merge(
+        var.ingress_observability ? {} : {
+          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
+        },
+        var.ingress_annotations,
+      )
     }
     spec = {
       entryPoints = [var.ingress_entrypoint]

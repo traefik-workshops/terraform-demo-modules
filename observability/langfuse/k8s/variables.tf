@@ -6,8 +6,8 @@ variable "name" {
 
 variable "namespace" {
   type        = string
-  description = "Namespace of the langfuse release. Caller is expected to create it."
-  default     = "langfuse"
+  description = "Namespace of the langfuse release. Caller is expected to create it. Default matches the opentelemetry/k8s module so collector + langfuse can live side by side."
+  default     = "traefik-observability"
 }
 
 variable "chart_version" {
@@ -134,8 +134,14 @@ variable "ingress_external_port" {
   default     = 8080
 }
 
+variable "ingress_observability" {
+  type        = bool
+  description = "Emit Traefik observability signals (access logs, metrics, traces) for the Langfuse UI router. Set to false to add the three `traefik.ingress.kubernetes.io/router.observability.*: \"false\"` annotations. Same switch shape as other observability/k8s modules."
+  default     = true
+}
+
 variable "ingress_annotations" {
   type        = map(string)
-  description = "Extra annotations on the Traefik IngressRoute. Useful for disabling trace / access-log emission on the UI route via `traefik.ingress.kubernetes.io/router.observability.{tracing,accesslogs,metrics}: \"false\"`."
+  description = "Additional metadata annotations merged onto the IngressRoute. Useful for custom router options beyond the three observability toggles."
   default     = {}
 }

@@ -182,3 +182,15 @@ variable "ingress_entrypoint" {
   default     = "traefik"
   description = "The entrypoint to use for the ingress, default is `traefik`"
 }
+
+variable "ingress_observability" {
+  type        = bool
+  description = "Emit Traefik observability signals (access logs, metrics, traces) for the OTLP collector router. Default is false because tracing the collector's own ingest endpoint creates an obvious feedback loop. Same switch shape as observability/langfuse/k8s."
+  default     = false
+}
+
+variable "ingress_annotations" {
+  type        = map(string)
+  description = "Additional metadata annotations merged onto the Ingress. Useful for custom router options beyond the three observability toggles."
+  default     = {}
+}
