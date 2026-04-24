@@ -46,12 +46,15 @@ resource "kubernetes_ingress_v1" "argocd-traefik" {
   metadata {
     name      = "argocd"
     namespace = "traefik-tools"
-    annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
-      "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
-      "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
-      "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
-    }
+    annotations = merge(
+      { "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint },
+      var.ingress_observability ? {} : {
+        "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+        "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+        "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
+      },
+      var.ingress_annotations,
+    )
   }
 
   dynamic "spec" {
