@@ -53,7 +53,7 @@ variable "init_project_name" {
 
 variable "init_user_email" {
   type        = string
-  description = "Email of the seeded admin user. Used to log into the UI (LANGFUSE_INIT_USER_EMAIL)."
+  description = "Email of the seeded admin user. Used to log into the UI (LANGFUSE_INIT_USER_EMAIL). Langfuse requires a valid email; the local-part is what users type as the login handle."
   default     = "admin@langfuse.localhost"
 }
 
@@ -67,7 +67,7 @@ variable "init_user_password" {
   type        = string
   description = "Password of the seeded admin user (LANGFUSE_INIT_USER_PASSWORD). Demo default; override for anything real."
   sensitive   = true
-  default     = "langfusedemo"
+  default     = "topsecretpassword"
 }
 
 variable "disable_signup" {
