@@ -1,9 +1,9 @@
 resource "helm_release" "keycloak" {
-  name       = var.name
-  namespace  = var.namespace
-  chart      = var.chart
-  wait       = true
-  timeout    = 600
+  name      = var.name
+  namespace = var.namespace
+  chart     = var.chart
+  wait      = true
+  timeout   = 600
 
   values = [
     yamlencode({
@@ -14,9 +14,11 @@ resource "helm_release" "keycloak" {
       }
 
       ingress = {
-        enabled    = var.ingress.enabled
-        domain     = var.ingress.domain != "" ? var.ingress.domain : var.domain
-        entrypoint = var.ingress.entrypoint
+        enabled       = var.ingress.enabled
+        domain        = var.ingress.domain != "" ? var.ingress.domain : var.domain
+        entrypoint    = var.ingress.entrypoint
+        observability = var.ingress_observability
+        annotations   = var.ingress_annotations
       }
 
       keycloak = {

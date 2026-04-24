@@ -26,6 +26,18 @@ variable "ingress" {
   description = "Ingress configuration for the keycloak service"
 }
 
+variable "ingress_observability" {
+  type        = bool
+  description = "Emit Traefik observability signals (access logs, metrics, traces) for the Keycloak ingress router. Set to false to add the three `traefik.ingress.kubernetes.io/router.observability.*: \"false\"` annotations. Same switch shape as other k8s modules."
+  default     = true
+}
+
+variable "ingress_annotations" {
+  type        = map(string)
+  description = "Additional metadata annotations merged onto the Ingress. Useful for custom router options beyond the three observability toggles."
+  default     = {}
+}
+
 variable "users" {
   description = "List of users to create in the security module"
   type        = list(string)
