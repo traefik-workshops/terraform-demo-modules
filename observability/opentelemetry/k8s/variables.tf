@@ -139,6 +139,32 @@ variable "langsmith_project" {
   default     = "default"
 }
 
+variable "enable_langfuse" {
+  type        = bool
+  description = "Enable Langfuse trace export (SaaS cloud.langfuse.com or self-hosted). Langfuse's OTLP endpoint currently accepts traces only (metrics/logs in preview); we only wire the traces pipeline here."
+  default     = false
+}
+
+variable "langfuse_endpoint" {
+  type        = string
+  description = "Langfuse OTLP base URL. SaaS US: https://us.cloud.langfuse.com/api/public/otel. EU: https://cloud.langfuse.com/api/public/otel. Self-hosted: https://<host>/api/public/otel."
+  default     = "https://us.cloud.langfuse.com/api/public/otel"
+}
+
+variable "langfuse_public_key" {
+  type        = string
+  description = "Langfuse public key (pk-lf-...). Pairs with langfuse_secret_key as HTTP Basic auth."
+  sensitive   = true
+  default     = ""
+}
+
+variable "langfuse_secret_key" {
+  type        = string
+  description = "Langfuse secret key (sk-lf-...). Pairs with langfuse_public_key as HTTP Basic auth."
+  sensitive   = true
+  default     = ""
+}
+
 variable "ingress" {
   type        = bool
   description = "Enable Ingress for the OpenTelemetry deployment."
