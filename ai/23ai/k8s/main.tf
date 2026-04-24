@@ -121,12 +121,15 @@ resource "kubernetes_ingress_v1" "oracle-23ai-traefik" {
   metadata {
     name      = var.name
     namespace = var.namespace
-    annotations = {
-      "traefik.ingress.kubernetes.io/router.entrypoints"              = var.ingress_entrypoint
-      "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "true"
-      "traefik.ingress.kubernetes.io/router.observability.metrics"    = "true"
-      "traefik.ingress.kubernetes.io/router.observability.tracing"    = "true"
-    }
+    annotations = merge(
+      { "traefik.ingress.kubernetes.io/router.entrypoints" = var.ingress_entrypoint },
+      var.ingress_observability ? {} : {
+        "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+        "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+        "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
+      },
+      var.ingress_annotations,
+    )
   }
 
   spec {
