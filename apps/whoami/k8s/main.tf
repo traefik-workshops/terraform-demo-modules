@@ -157,17 +157,19 @@ resource "kubectl_manifest" "ingress_route" {
   yaml_body = yamlencode({
     apiVersion = "traefik.io/v1alpha1"
     kind       = "IngressRoute"
-    metadata = merge(
-      {
-        name      = "${each.key}-ingress-route"
-        namespace = var.namespace
-      },
-      var.uplink_enabled ? {
-        annotations = {
-          "hub.traefik.io/router.uplinks" = "whoami"
-        }
-      } : {}
-    )
+    metadata = {
+      name      = "${each.key}-ingress-route"
+      namespace = var.namespace
+      annotations = merge(
+        var.uplink_enabled ? { "hub.traefik.io/router.uplinks" = "whoami" } : {},
+        var.ingress_observability ? {} : {
+          "traefik.ingress.kubernetes.io/router.observability.accesslogs" = "false"
+          "traefik.ingress.kubernetes.io/router.observability.metrics"    = "false"
+          "traefik.ingress.kubernetes.io/router.observability.tracing"    = "false"
+        },
+        var.ingress_annotations,
+      )
+    }
     spec = {
       entryPoints = var.uplink_enabled ? [] : each.value.ingress_route.entrypoints
       routes = [

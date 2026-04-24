@@ -45,3 +45,15 @@ variable "node_selector" {
   type        = map(string)
   default     = {}
 }
+
+variable "ingress_observability" {
+  type        = bool
+  description = "Emit Traefik observability signals (access logs, metrics, traces) for every whoami IngressRoute this module creates. Set to false to add the three `traefik.ingress.kubernetes.io/router.observability.*: \"false\"` annotations. Same switch shape as other k8s modules."
+  default     = true
+}
+
+variable "ingress_annotations" {
+  type        = map(string)
+  description = "Additional metadata annotations merged onto every whoami IngressRoute. Useful for custom router options beyond the three observability toggles."
+  default     = {}
+}
