@@ -54,7 +54,7 @@ variable "init_project_name" {
 variable "init_user_email" {
   type        = string
   description = "Email of the seeded admin user. Used to log into the UI (LANGFUSE_INIT_USER_EMAIL). Langfuse requires a valid email; the local-part is what users type as the login handle."
-  default     = "admin@langfuse.localhost"
+  default     = "admin@traefik.io"
 }
 
 variable "init_user_name" {
